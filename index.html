@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="Digital Monster Ver.1–5 育成對戰模擬（個人非商業用途）">
+  <meta name="theme-color" content="#1c3048">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="對打機">
+  <title>數碼怪獸對打機</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="apple-touch-startup-image" href="./icons/splash-1280x800.png" media="(orientation: landscape)">
+  <link rel="apple-touch-startup-image" href="./icons/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="./icons/splash-1280x800.png">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="app-landscape">
+  <div class="rotate-hint">請將裝置橫向放置遊玩<br>Please rotate to landscape</div>
+  <div id="banner" class="banner hidden"></div>
+  <div id="app">
+    <div class="device">
+      <div class="device-title">DIGITAL MONSTER</div>
+      <div class="bezel">
+        <canvas id="screen" width="256" height="160" aria-label="對打機畫面"></canvas>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="pad-btn" id="btn-a" aria-label="A 取消／左">A</button>
+        <button type="button" class="pad-btn b" id="btn-b" aria-label="B 右">B</button>
+        <button type="button" class="pad-btn c" id="btn-c" aria-label="C 確定">C</button>
+      </div>
+      <div class="hint-keys">A 左／取消　B 右　C 確定　（鍵盤 ← → Enter）</div>
+    </div>
+  </div>
+
+  <!-- Boot -->
+  <div id="overlay-boot" class="overlay">
+    <div class="panel">
+      <h2>數碼怪獸對打機</h2>
+      <p>Digital Monster Ver.1–5 育成模擬。個人非商業用途，角色名稱與進化路線依官方資料，圖像為自行繪製的像素風格。</p>
+      <div class="row">
+        <button class="btn primary" id="boot-continue">繼續育成</button>
+        <button class="btn" id="boot-new">新的數碼蛋</button>
+        <button class="btn" id="boot-import">匯入存檔</button>
+        <button class="btn" id="boot-install">安裝到主畫面</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Egg select -->
+  <div id="overlay-egg" class="overlay">
+    <div class="panel">
+      <h2>選擇數碼蛋</h2>
+      <p>每顆蛋對應一個官方版本的幼年期Ⅰ與進化樹。對戰對手來自全部版本。</p>
+      <div class="row egg-grid" id="egg-row">
+        <button class="egg-card" data-egg="1"><canvas id="egg-c-ver1" width="32" height="32"></canvas><div class="n">Ver.1</div><div class="e">黑球獸</div></button>
+        <button class="egg-card" data-egg="2"><canvas id="egg-c-ver2" width="32" height="32"></canvas><div class="n">Ver.2</div><div class="e">普尼獸</div></button>
+        <button class="egg-card" data-egg="3"><canvas id="egg-c-ver3" width="32" height="32"></canvas><div class="n">Ver.3</div><div class="e">浮游獸</div></button>
+        <button class="egg-card" data-egg="4"><canvas id="egg-c-ver4" width="32" height="32"></canvas><div class="n">Ver.4</div><div class="e">浮球獸</div></button>
+        <button class="egg-card" data-egg="5"><canvas id="egg-c-ver5" width="32" height="32"></canvas><div class="n">Ver.5</div><div class="e">狡猾獸</div></button>
+        <button class="egg-card" data-egg="random"><div class="n" style="padding:22px 0">隨機</div><div class="e">Ver.1–5</div></button>
+      </div>
+      <h3>20th 特殊蛋</h3>
+      <p style="font-size:12px;color:#8a9aaa">官方解鎖條件僅作說明（本單機版可直接選擇）：茲巴 100 勝、哈克 50 勝、藍蛋圖鑑 5、綠蛋圖鑑 25、多路為 WAVE1 與 WAVE2 通信。</p>
+      <div class="row egg-grid">
+        <button class="egg-card" data-egg="zuba"><canvas id="egg-c-zuba" width="32" height="32"></canvas><div class="n">茲巴</div><div class="e">→ 杜蘭達獸</div></button>
+        <button class="egg-card" data-egg="hack"><canvas id="egg-c-hack" width="32" height="32"></canvas><div class="n">哈克</div><div class="e">→ 傑斯獸</div></button>
+        <button class="egg-card" data-egg="dra_blue"><canvas id="egg-c-dra_blue" width="32" height="32"></canvas><div class="n">龍仔藍（黑蛋）</div><div class="e">→ 斬龍獸</div></button>
+        <button class="egg-card" data-egg="dra_green"><canvas id="egg-c-dra_green" width="32" height="32"></canvas><div class="n">龍仔綠（白蛋）</div><div class="e">→ 破壞龍獸</div></button>
+        <button class="egg-card" data-egg="doru"><canvas id="egg-c-doru" width="32" height="32"></canvas><div class="n">多路</div><div class="e">→ 阿爾法獸</div></button>
+      </div>
+      <h3>20th 限定蛋</h3>
+      <p style="font-size:12px;color:#8a9aaa">官方需與 5 個不同訓練師名稱的 20th 通信。官方 Ver.1 究極體為電光暴龍獸，不是戰鬥暴龍獸；動畫蛋為線性限定路線。</p>
+      <div class="row egg-grid">
+        <button class="egg-card" data-egg="anime_agumon"><canvas id="egg-c-anime_agumon" width="32" height="32"></canvas><div class="n">動畫亞古獸蛋</div><div class="e">→ 戰鬥暴龍獸</div></button>
+        <button class="egg-card" data-egg="anime_gabumon"><canvas id="egg-c-anime_gabumon" width="32" height="32"></canvas><div class="n">動畫加布獸蛋</div><div class="e">→ 鋼鐵加魯魯獸</div></button>
+        <button class="egg-card" data-egg="corona"><canvas id="egg-c-corona" width="32" height="32"></canvas><div class="n">日冕</div><div class="e">→ 阿波羅獸</div></button>
+        <button class="egg-card" data-egg="luna"><canvas id="egg-c-luna" width="32" height="32"></canvas><div class="n">露娜</div><div class="e">→ 狄安娜獸</div></button>
+        <button class="egg-card" data-egg="meicoo"><canvas id="egg-c-meicoo" width="32" height="32"></canvas><div class="n">梅可可</div><div class="e">→ 拉結爾獸</div></button>
+      </div>
+      <div class="row"><button class="btn" data-close>返回</button></div>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div id="overlay-status" class="overlay">
+    <div class="panel">
+      <h2>狀態</h2>
+      <div id="status-body"></div>
+      <div class="row"><button class="btn primary" data-close>關閉</button></div>
+    </div>
+  </div>
+
+  <!-- Food -->
+  <div id="overlay-food" class="overlay">
+    <div class="panel">
+      <h2>食物</h2>
+      <p>肉恢復飢餓（吃飽再餵會過食）。蛋白質恢復體力，每 4 次增加 1 DP。</p>
+      <div class="row">
+        <button class="btn primary" id="feed-meat">餵肉</button>
+        <button class="btn" id="feed-protein">蛋白質</button>
+        <button class="btn" data-close>關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Battle -->
+  <div id="overlay-battle" class="overlay">
+    <div class="panel">
+      <h2>對戰</h2>
+      <p>CPU 與線上 PvP 都會記入本階段對戰場次與勝率（進化用），並同時累加生涯紀錄。</p>
+      <div class="row">
+        <button class="btn primary" id="cpu-battle">對戰 CPU</button>
+      </div>
+      <div id="jogress-box" class="hidden"></div>
+      <h3>線上對戰（交換對戰碼 / QR）</h3>
+      <p style="font-size:13px">一方按「發出邀請」把邀請碼給對方；對方貼上後按「接受邀請」會得到結果碼，再傳回給發起方按「套用結果」。</p>
+      <textarea class="codebox" id="pvp-in" placeholder="在此貼上邀請碼或結果碼"></textarea>
+      <div class="row">
+        <button class="btn" id="pvp-offer">發出邀請</button>
+        <button class="btn" id="pvp-accept">接受邀請</button>
+        <button class="btn" id="pvp-result">套用結果</button>
+      </div>
+      <textarea class="codebox" id="pvp-out" placeholder="產生的對戰碼會顯示在這裡" readonly></textarea>
+      <div id="pvp-qr"></div>
+      <div class="row"><button class="btn" data-close>關閉</button></div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div id="overlay-settings" class="overlay">
+    <div class="panel">
+      <h2>設定</h2>
+      <p>時間速度（預設 60 倍；1 倍為接近原機節奏）</p>
+      <div class="row">
+        <select id="speed" class="btn">
+          <option value="1">×1</option>
+          <option value="10">×10</option>
+          <option value="60" selected>×60</option>
+          <option value="120">×120</option>
+          <option value="600">×600</option>
+        </select>
+      </div>
+      <div class="row">
+        <button class="btn" id="btn-export">匯出存檔（文字 + QR）</button>
+        <button class="btn" id="btn-import">匯入存檔</button>
+        <button class="btn" id="btn-install">安裝到主畫面</button>
+        <button class="btn danger" id="btn-newgame">放棄並重新選蛋</button>
+        <button class="btn" data-close>關閉</button>
+      </div>
+      <p style="font-size:12px;color:#8a9aaa">進度會自動存在此裝置的瀏覽器（localStorage）。換裝置請先匯出存檔碼。</p>
+    </div>
+  </div>
+
+  <!-- Export -->
+  <div id="overlay-export" class="overlay">
+    <div class="panel">
+      <h2>匯出存檔</h2>
+      <p>把這串存檔碼或 QR 碼拿到另一台裝置匯入。請妥善保管，任何人拿到都能讀取你的進度。</p>
+      <textarea class="codebox" id="export-code" readonly></textarea>
+      <div class="row"><button class="btn primary" id="copy-export">複製存檔碼</button></div>
+      <div id="qrbox"></div>
+      <div class="row"><button class="btn" data-close>關閉</button></div>
+    </div>
+  </div>
+
+  <!-- Import -->
+  <div id="overlay-import" class="overlay">
+    <div class="panel">
+      <h2>匯入存檔</h2>
+      <p>貼上存檔碼，或用相機掃描 QR。若已有進度，匯入前會再確認一次。</p>
+      <textarea class="codebox" id="import-code" placeholder="在此貼上 DM20. 開頭的存檔碼"></textarea>
+      <div class="row">
+        <button class="btn primary" id="do-import">匯入</button>
+        <button class="btn" id="start-scan">開啟相機掃描</button>
+        <button class="btn" id="stop-scan">關閉相機</button>
+      </div>
+      <video id="scan" class="hidden" playsinline muted></video>
+      <div class="row"><button class="btn" data-close>關閉</button></div>
+    </div>
+  </div>
+
+  <!-- Install hint -->
+  <div id="overlay-install" class="overlay">
+    <div class="panel">
+      <h2>安裝到主畫面（像 App 一樣）</h2>
+      <h3>iPhone / iPad（Safari）</h3>
+      <ol>
+        <li>用 <b>Safari</b> 開啟本頁（其他瀏覽器無法加入主畫面）。</li>
+        <li>點底端的「分享」按鈕（方塊向上箭頭）。</li>
+        <li>向下捲動，點「加入主畫面」。
+        </li>
+        <li>名稱預設為「對打機」，再點「加入」。</li>
+      </ol>
+      <h3>Android（Chrome）</h3>
+      <ol>
+        <li>用 <b>Chrome</b> 開啟本頁。</li>
+        <li>點右上角「⋮」選單。</li>
+        <li>選擇「安裝應用程式」或「加入主畫面」。</li>
+        <li>確認安裝後，主畫面會出現對打機圖示，可離線遊玩。</li>
+      </ol>
+      <h3>電腦（Chrome / Edge）</h3>
+      <p>網址列右側會出現「安裝」圖示，或到瀏覽器選單選擇「安裝數碼怪獸對打機」。</p>
+      <p style="font-size:12px;color:#8a9aaa">需要以 HTTPS（或本機 localhost）開啟，服務工作執行緒才能快取資源並離線遊玩。相機掃描 QR 同樣需要 HTTPS 與權限。</p>
+      <div class="row"><button class="btn primary" data-close>知道了</button></div>
+    </div>
+  </div>
+
+  <script src="./vendor/lz-string.min.js"></script>
+  <script src="./vendor/qrcode.min.js"></script>
+  <script src="./vendor/jsQR.min.js"></script>
+  <script src="./js/evolution-data.js"></script>
+  <script src="./js/evolution.js"></script>
+  <script src="./js/sprites.js"></script>
+  <script src="./js/save.js"></script>
+  <script src="./js/battle.js"></script>
+  <script src="./js/engine.js"></script>
+  <script src="./js/ui.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var map = {
+        ver1:'egg_v1', ver2:'egg_v2', ver3:'egg_v3', ver4:'egg_v4', ver5:'egg_v5',
+        zuba:'egg_zuba', hack:'egg_hack', dra_blue:'egg_dra_blue', dra_green:'egg_dra_green',
+        doru:'egg_doru', anime_agumon:'egg_anime_agumon', anime_gabumon:'egg_anime_gabumon',
+        corona:'egg_corona', luna:'egg_luna', meicoo:'egg_meicoo'
+      };
+      Object.keys(map).forEach(function (k) {
+        var c = document.getElementById('egg-c-' + k);
+        if (!c || !window.SpriteAtlas) return;
+        var sp = window.SpriteAtlas.SPRITES[map[k]];
+        if (!sp) return;
+        var src = window.SpriteAtlas.renderToImageData(sp, 'idle0', 1);
+        var ctx = c.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0,0,32,32);
+        ctx.drawImage(src, 0, 0, 32, 32);
+      });
+    });
+  </script>
+</body>
+</html>
