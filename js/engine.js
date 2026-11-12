@@ -84,7 +84,11 @@
       album: mon ? [mon] : [],
       events: [],
       sleepStart: 21,
-      sleepEnd: 8
+      sleepEnd: 8,
+      steps: (root.Steps && root.Steps.empty) ? root.Steps.empty() : {
+        days: {}, lastHealthSyncAt: 0, lastHealthSyncDate: '', lastHealthSyncTotal: 0,
+        lifetime: 0, dayEffectsDate: '', dayEffort: 0, dayStrength: 0, dayWeightLoss: 0
+      }
     };
   }
 
@@ -173,7 +177,8 @@
       wins: state.wins,
       winRate: winRate(state.battles, state.wins),
       timeInStage: mins,
-      eggKind: state.eggKind || null
+      eggKind: state.eggKind || null,
+      lifeSteps: (state.steps && state.steps.lifetime) || 0
     };
     var r = evo.resolveEvolution(data, state.mon, stats);
     if (!r.stayed && r.to && r.to !== state.mon) {
@@ -503,7 +508,9 @@
       timeInStageMin: Math.floor(timeInStage(state) / 60),
       lifespanMin: m.lifespanMin,
       canBattle: !!(m.canBattle && !state.dead),
-      tagWins: state.tagWins || 0
+      tagWins: state.tagWins || 0,
+      lifeSteps: (state.steps && state.steps.lifetime) || 0,
+      steps: root.Steps ? root.Steps.todaySummary(state) : null
     };
   }
 
@@ -511,6 +518,9 @@
     if (randomize) version = 1 + Math.floor(Math.random() * 5);
     var s = defaultState(version, special || null);
     s.speed = state && state.speed ? state.speed : 60;
+    if (root.Steps && root.Steps.carryLedger) {
+      root.Steps.carryLedger(state, s);
+    }
     albumAdd(s, s.mon);
     return s;
   }

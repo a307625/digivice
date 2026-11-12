@@ -1,5 +1,5 @@
 /* Offline cache for 數碼怪獸對打機 */
-var CACHE = 'digivice-v18';
+var CACHE = 'digivice-v19';
 var ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ var ASSETS = [
   './js/sprites.js',
   './js/save.js',
   './js/battle.js',
+  './js/steps.js',
   './js/engine.js',
   './js/ui.js',
   './vendor/lz-string.min.js',

@@ -31,6 +31,10 @@
   var evoFx = { t: 0, from: '', to: '' };
   var battleFx = { t: 0, foe: '', result: '', active: false };
   var poseFx = { name: null, until: 0 };
+  var motionOn = false;
+  var pedometer = null;
+  var healthAppliedThisSession = false;
+  var stepsPromptShown = false;
 
   function playPose(name, ms, extra) {
     poseFx.name = name;
@@ -396,15 +400,36 @@
 
   function persist() {
     if (!state) return;
-    try { window.SaveIO.saveLocal(state); lastSave = Date.now(); } catch (e) {}
+    try {
+      window.SaveIO.saveLocal(state);
+      if (window.Steps) window.Steps.syncLedger(state);
+      lastSave = Date.now();
+    } catch (e) {}
+  }
+
+  function settlePendingSteps(s) {
+    if (!s || !window.Steps) return 0;
+    window.Steps.ensure(s);
+    window.Steps.mergeLedgerInto(s, window.Steps.loadLedger());
+    var total = 0;
+    var days = s.steps.days || {};
+    Object.keys(days).forEach(function (d) {
+      total += (window.Steps.settleDay(s, d).delta || 0);
+    });
+    window.Steps.syncLedger(s);
+    return total;
   }
 
   function loadGame(s) {
     state = s;
+    settlePendingSteps(state);
     state.lastReal = Date.now();
     if (state.dead) view = 'play';
     else view = 'play';
     persist();
+    fillStepsPanels();
+    // Defer so a caller that hideAllOverlays() right after loadGame does not dismiss the prompt.
+    setTimeout(maybePromptSteps, 0);
   }
 
   function newEgg(version, special, randomize) {
@@ -414,8 +439,10 @@
     view = 'play';
     hideAllOverlays();
     persist();
+    fillStepsPanels();
     var m = mon();
     toast((m ? m.nameZh : '數碼蛋') + ' 開始育成');
+    setTimeout(maybePromptSteps, 0);
   }
 
   function confirmOverwrite(msg, fn) {
@@ -452,6 +479,7 @@
       '<h3>生涯對戰（顯示用）</h3>' +
       '<p>對戰 <b>' + s.lifeBattles + '</b>　勝 <b>' + s.lifeWins + '</b>　敗 <b>' + s.lifeLosses +
       '</b>　勝率 <b>' + wr(s.lifeWinRate) + '</b></p>';
+    fillStepsPanels();
     showOverlay('overlay-status', true);
   }
 
@@ -668,9 +696,146 @@
     if (v) { v.srcObject = null; v.classList.add('hidden'); }
   }
 
+  function stepsStatusHtml() {
+    if (!window.Steps) return '';
+    if (!state) {
+      return '<p class="steps-muted">開始育成後會顯示這隻數碼寶貝的步數。</p>';
+    }
+    window.Steps.ensure(state);
+    var sum = window.Steps.todaySummary(state);
+    var sync = window.Steps.formatSyncTime(sum.lastHealthSyncAt);
+    var dateBit = sum.lastHealthSyncDate ? '，日期 ' + sum.lastHealthSyncDate : '';
+    return (
+      '<div class="status-grid">' +
+      '<div>今天入帳 <b>' + sum.credited + '</b></div><div>累計步數 <b>' + sum.lifetime + '</b></div>' +
+      '<div>健康 <b>' + sum.health + '</b></div><div>走路計步 <b>' + sum.motion + '</b>（暫計）</div>' +
+      '</div>' +
+      '<p class="steps-muted">上次同步：' + sync + dateBit + '</p>' +
+      '<p class="steps-muted">走路計步是暫計：與「健康」同步後，當天入帳取兩者較高值，只補差額，不會重複計算。每 500 步 +1 訓練（每天最多 8）並 +1 體力（每天最多 2，上限 4）；每 1000 步體重 −1 g（每天最多 3 g，不會低於基礎體重）。幼年期與蛋只累計步數、不套用訓練效果。累計步數會一直跟著這隻數碼寶貝（進化不重置），可作為未來進化條件，目前官方路線還沒有步數門檻。</p>'
+    );
+  }
+
+  function fillStepsPanels() {
+    var html = stepsStatusHtml();
+    var a = $('steps-status');
+    if (a) a.innerHTML = html;
+    var b = $('steps-settings');
+    if (b) b.innerHTML = html;
+    document.querySelectorAll('.js-motion-steps').forEach(function (btn) {
+      btn.textContent = motionOn ? '走路計步已開啟' : '開啟走路計步';
+    });
+  }
+
+  function maybePromptSteps() {
+    if (stepsPromptShown || healthAppliedThisSession || !state || !window.Steps) return;
+    var sum = window.Steps.todaySummary(state);
+    var today = window.Steps.localDate(new Date());
+    if (sum.lastHealthSyncDate === today) return;
+    stepsPromptShown = true;
+    showOverlay('overlay-steps-prompt', true);
+  }
+
+  function ingestUrl() {
+    if (!window.Steps) return;
+    var parsed = window.Steps.parseParams(location.search, location.hash);
+    if (!parsed.present) return;
+    // Strip first so a re-entrant pageshow / visibilitychange cannot double-apply (and double-toast).
+    window.Steps.stripWindowHistory();
+    if (!parsed.ok) {
+      toast('步數連結無效（' + (parsed.reason === 'too-large' ? '超過每天 100000 步上限' : parsed.reason === 'negative' ? '步數是負的' : parsed.reason === 'bad-date' ? '日期格式不對' : '步數不是有效數字') + '）');
+      return;
+    }
+    var target = state;
+    var fromLocal = false;
+    if (!target) {
+      target = window.SaveIO.loadLocal();
+      fromLocal = !!target;
+    }
+    if (!target) {
+      window.Steps.recordHealthReading(parsed, Date.now());
+      healthAppliedThisSession = true;
+      toast('已記下今天的健康步數 ' + parsed.steps + '，開始育成後會生效', 2400);
+      return;
+    }
+    window.Steps.ensure(target);
+    var r = window.Steps.applyHealth(target, parsed, Date.now());
+    window.Steps.syncLedger(target);
+    if (state) persist();
+    else if (fromLocal) {
+      try { window.SaveIO.saveLocal(target); } catch (e) {}
+    }
+    healthAppliedThisSession = true;
+    fillStepsPanels();
+    if (r.ok && r.delta > 0) {
+      var extra = '';
+      if (r.effects && r.effects.effort) extra += '，訓練 +' + r.effects.effort;
+      if (r.effects && r.effects.strength) extra += '，體力 +' + r.effects.strength;
+      if (r.effects && r.effects.weightLoss) extra += '，體重 −' + r.effects.weightLoss + 'g';
+      toast('同步步數 +' + r.delta + '（今天共 ' + r.credited + '）' + extra, 2400);
+    } else if (r.ok) {
+      toast('步數已是最新（今天 ' + r.credited + '）', 2000);
+    }
+  }
+
+  function runShortcut() {
+    if (!window.Steps) return;
+    var url = window.Steps.shortcutRunURL();
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (!isIOS) {
+      toast('請在 iPhone 的「捷徑」App 執行「數碼寶貝步數」');
+      openStepsHelp();
+      return;
+    }
+    window.location.href = url;
+  }
+
+  function openStepsHelp() {
+    hideAllOverlays();
+    showOverlay('overlay-steps-help', true);
+  }
+
+  function onDeviceMotion(e) {
+    if (!motionOn || !state || !window.Steps) return;
+    if (document.visibilityState && document.visibilityState !== 'visible') return;
+    var a = e.accelerationIncludingGravity || e.acceleration;
+    if (!a || a.x == null) return;
+    if (!pedometer) pedometer = window.Steps.createPedometer();
+    if (pedometer.feed(a.x, a.y, a.z, Date.now())) {
+      var r = window.Steps.addMotion(state, 1);
+      if (r.ok && r.delta > 0) persist();
+    }
+  }
+
+  function requestMotion() {
+    if (motionOn) {
+      toast('走路計步已開啟。畫面開著時會計算搖晃與走路。');
+      return;
+    }
+    function start() {
+      if (motionOn) return;
+      if (!pedometer && window.Steps) pedometer = window.Steps.createPedometer();
+      window.addEventListener('devicemotion', onDeviceMotion, true);
+      motionOn = true;
+      fillStepsPanels();
+      toast('走路計步已開啟。畫面開著、螢幕亮著時會計算搖晃與走路；與健康同步後取較高值，不會重複計算。', 2800);
+    }
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission().then(function (perm) {
+        if (perm === 'granted') start();
+        else toast('需要允許「動作與方向」才能計步。請再按一次，並在跳出的視窗選擇「允許」。', 2800);
+      }).catch(function () { toast('無法開啟走路計步'); });
+    } else if (typeof DeviceMotionEvent !== 'undefined') {
+      start();
+    } else {
+      toast('這個裝置沒有動作感應器');
+    }
+  }
+
   function openSettings() {
     var sel = $('speed');
     if (sel && state) sel.value = String(state.speed || 60);
+    fillStepsPanels();
     showOverlay('overlay-settings', true);
   }
 
@@ -844,6 +1009,23 @@
     if (window.SaveIO.hasLocal()) $('boot-continue').disabled = false;
     else $('boot-continue').disabled = true;
     showOverlay('overlay-boot', true);
+
+    document.querySelectorAll('.js-sync-steps').forEach(function (btn) {
+      btn.addEventListener('click', function () { runShortcut(); });
+    });
+    document.querySelectorAll('.js-motion-steps').forEach(function (btn) {
+      btn.addEventListener('click', function () { requestMotion(); });
+    });
+    document.querySelectorAll('.js-steps-help').forEach(function (btn) {
+      btn.addEventListener('click', function () { openStepsHelp(); });
+    });
+
+    ingestUrl();
+    window.addEventListener('pageshow', function () { ingestUrl(); });
+    window.addEventListener('hashchange', function () { ingestUrl(); });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') ingestUrl();
+    });
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(function () {});

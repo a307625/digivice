@@ -150,3 +150,40 @@ video#scan { width: 100%; max-height: 240px; background: #000; border: 2px solid
 @media (orientation: landscape) {
   .rotate-hint { display: none; }
 }
+
+/* Fit small landscape phones (e.g. iPhone 7: 667x375 minus Safari bars).
+   Screen is sized by the smaller of available width and height; buttons move to the side. */
+@media (orientation: landscape) {
+  #app { padding: 4px; height: var(--app-h, 100vh); }
+  .device {
+    flex-direction: row; padding: 10px 12px; gap: 12px; border-radius: 20px;
+    max-height: calc(var(--app-h, 100vh) - 8px);
+  }
+  .device-title, .hint-keys { display: none; }
+  .bezel { padding: 6px; }
+  .btn-row { flex-direction: column; gap: 14px; padding: 0; }
+  .pad-btn { width: 48px; height: 48px; }
+  #screen {
+    width: min(calc(100vw - 112px), calc((var(--app-h, 100vh) - 44px) * 1.6), 960px);
+  }
+}
+@media (orientation: landscape) and (min-height: 600px) {
+  .device { flex-direction: column; padding: 18px 18px 16px; }
+  .device-title, .hint-keys { display: block; }
+  .btn-row { flex-direction: row; gap: 22px; }
+  #screen { width: min(92vw, calc((var(--app-h, 100vh) - 190px) * 1.6), 960px); }
+}
+
+/* Steps info lives only inside overlay panels, not the device chrome. */
+.steps-note { font-size: 13px; line-height: 1.55; color: var(--text); }
+.steps-note b { color: var(--amber); font-weight: 600; }
+.steps-muted { font-size: 12px; color: var(--muted); margin: 6px 0 0; line-height: 1.55; }
+.panel code {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  background: #0a141c;
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: #d0e8c8;
+  word-break: break-all;
+}

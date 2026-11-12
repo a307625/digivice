@@ -17,6 +17,14 @@
   <link rel="apple-touch-startup-image" href="./icons/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
   <link rel="apple-touch-startup-image" href="./icons/splash-1280x800.png">
   <link rel="stylesheet" href="./css/style.css">
+  <script>
+    (function () {
+      function fit() { document.documentElement.style.setProperty('--app-h', window.innerHeight + 'px'); }
+      fit();
+      window.addEventListener('resize', fit);
+      window.addEventListener('orientationchange', function () { setTimeout(fit, 300); });
+    })();
+  </script>
 </head>
 <body class="app-landscape">
   <div class="rotate-hint">請將裝置橫向放置遊玩<br>Please rotate to landscape</div>
@@ -90,7 +98,14 @@
     <div class="panel">
       <h2>狀態</h2>
       <div id="status-body"></div>
-      <div class="row"><button class="btn primary" data-close>關閉</button></div>
+      <h3>步數</h3>
+      <div id="steps-status" class="steps-note"></div>
+      <div class="row">
+        <button type="button" class="btn primary js-sync-steps">同步步數</button>
+        <button type="button" class="btn js-motion-steps">開啟走路計步</button>
+        <button type="button" class="btn js-steps-help">捷徑設定說明</button>
+        <button type="button" class="btn primary" data-close>關閉</button>
+      </div>
     </div>
   </div>
 
@@ -151,6 +166,13 @@
         <button class="btn danger" id="btn-newgame">放棄並重新選蛋</button>
         <button class="btn" data-close>關閉</button>
       </div>
+      <h3>步數</h3>
+      <div id="steps-settings" class="steps-note"></div>
+      <div class="row">
+        <button type="button" class="btn primary js-sync-steps">同步步數</button>
+        <button type="button" class="btn js-motion-steps">開啟走路計步</button>
+        <button type="button" class="btn js-steps-help">捷徑設定說明</button>
+      </div>
       <p style="font-size:12px;color:#8a9aaa">進度會自動存在此裝置的瀏覽器（localStorage）。換裝置請先匯出存檔碼。</p>
     </div>
   </div>
@@ -209,6 +231,40 @@
     </div>
   </div>
 
+  <!-- Steps sync prompt (overlay, not in the device layout) -->
+  <div id="overlay-steps-prompt" class="overlay">
+    <div class="panel">
+      <h2>同步今天的步數</h2>
+      <p>從 iPhone「健康」讀取今天的步數。每次打開遊戲都可以再同步，只會計算比上次增加的部分，不會重複計算。</p>
+      <p class="steps-muted">建議把捷徑「數碼寶貝步數」放到主畫面，每次從那個圖示進入遊戲，就會先讀步數再打開。</p>
+      <div class="row">
+        <button type="button" class="btn primary js-sync-steps">同步步數</button>
+        <button type="button" class="btn js-steps-help">先看設定說明</button>
+        <button type="button" class="btn" data-close>稍後</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Condensed shortcut help; full steps are in shortcut-setup.md -->
+  <div id="overlay-steps-help" class="overlay">
+    <div class="panel">
+      <h2>設定「數碼寶貝步數」捷徑</h2>
+      <p>iPhone 的網頁不能自己讀「健康」的步數，要靠內建的「捷徑」App 代為讀取，再打開遊戲網址。捷徑名稱必須剛好是「<b>數碼寶貝步數</b>」，遊戲裡的「同步步數」才找得到它。</p>
+      <ol>
+        <li>打開「捷徑」App，右上角「＋」新增捷徑，把名稱改成「數碼寶貝步數」。</li>
+        <li>加入動作「<b>尋找健康樣本</b>」（在搜尋欄輸入這個名稱，它屬於「健康」App）。把「類型」設成「步數」，「開始日期」設成「是今天」。展開參數後，若有「分組方式」，選「天」（這樣結果就是今天的總步數）。</li>
+        <li>若沒有「分組方式」、或結果只是一小段步數而不是整天的總和：再加入「<b>計算統計資料</b>」（請在搜尋欄輸入「統計」；若實際名稱是「計算統計」，也是同一個動作），把統計方式改成「總和」。</li>
+        <li>加入「<b>日期</b>」（目前日期），再加入「<b>格式化日期</b>」，日期格式選「自訂」，格式化字串填 <code>yyyy-MM-dd</code>。</li>
+        <li>加入「<b>文字</b>」，內容為：<br>
+          <code>https://a307625.github.io/digivice/index.html?steps=</code>然後插入上一步的步數變數，接著打 <code>&amp;date=</code>，再插入格式化後的日期。</li>
+        <li>最後加入「<b>打開 URL</b>」，輸入接上一段的文字。</li>
+      </ol>
+      <p>第一次執行會跳出「健康」權限，請允許讀取「步數」。然後到捷徑的詳細資料選「加入主畫面」，之後每次從這個圖示進入就會先同步步數。</p>
+      <p class="steps-muted">更完整、對照 iOS 15 繁體中文介面的逐步說明，請看遊戲專案裡的 shortcut-setup.md。</p>
+      <div class="row"><button type="button" class="btn primary" data-close>知道了</button></div>
+    </div>
+  </div>
+
   <script src="./vendor/lz-string.min.js"></script>
   <script src="./vendor/qrcode.min.js"></script>
   <script src="./vendor/jsQR.min.js"></script>
@@ -217,6 +273,7 @@
   <script src="./js/sprites.js"></script>
   <script src="./js/save.js"></script>
   <script src="./js/battle.js"></script>
+  <script src="./js/steps.js"></script>
   <script src="./js/engine.js"></script>
   <script src="./js/ui.js"></script>
   <script>

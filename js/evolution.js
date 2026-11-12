@@ -22,7 +22,7 @@
   /**
    * @param {object} rule
    * @param {object} stats
-   *   calls, train, overfeed, sleepDist, weight, battles, wins, winRate, timeInStage
+   *   calls, train, overfeed, sleepDist, weight, battles, wins, winRate, timeInStage, lifeSteps
    */
   function matchesRule(rule, stats) {
     if (rule.leftover) return true;
@@ -41,7 +41,8 @@
       inRange(num(stats.weight, 0), rule.weight) &&
       inRange(battles, rule.battles) &&
       inRange(winRate, rule.winRate) &&
-      inRange(num(stats.timeInStage, Infinity), rule.timeInStage)
+      inRange(num(stats.timeInStage, Infinity), rule.timeInStage) &&
+      inRange(num(stats.lifeSteps, 0), rule.lifeSteps)
     );
   }
 
