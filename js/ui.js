@@ -780,9 +780,7 @@
   }
 
   function newEgg(version, special, randomize) {
-    var prevSpeed = (state && state.speed) || 60;
     state = window.Engine.hatchIfEggSelect(state, version, !!randomize, special || null);
-    state.speed = prevSpeed;
     view = 'play';
     sel = -1;
     hideAllOverlays();
@@ -1587,7 +1585,21 @@
     }
   }
 
+  function debugMode() {
+    try { return new URLSearchParams(location.search).get('debug') === '1'; }
+    catch (e) { return false; }
+  }
+
+  function applyDebugUi() {
+    var box = $('speed-debug');
+    if (box) {
+      if (debugMode()) box.removeAttribute('hidden');
+      else box.setAttribute('hidden', '');
+    }
+  }
+
   function bind() {
+    applyDebugUi();
     canvas = $('screen');
     canvas.width = LCD_W;
     canvas.height = LCD_H;
@@ -1678,7 +1690,7 @@
     });
     $('btn-settings').addEventListener('click', function () {
       hideAllOverlays();
-      if (state) $('speed').value = String(state.speed || 60);
+      if (state && $('speed')) $('speed').value = String(state.speed || 1);
       updateSoundBtn();
       showOverlay('overlay-settings', true);
     });
@@ -1705,12 +1717,15 @@
       updateSoundBtn();
       if (soundOn) beep();
     });
-    $('speed').addEventListener('change', function () {
-      if (!state) return;
-      state.speed = parseInt($('speed').value, 10) || 60;
-      persist();
-      toast('時間速度 ×' + state.speed);
-    });
+    if ($('speed')) {
+      $('speed').addEventListener('change', function () {
+        if (!state) return;
+        state.speed = parseInt($('speed').value, 10) || 1;
+        state.speedMigrated = true;
+        persist();
+        toast('時間速度 ×' + state.speed);
+      });
+    }
     $('copy-export').addEventListener('click', function () {
       var t = $('export-code').value;
       if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { toast('已複製存檔碼'); });

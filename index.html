@@ -100,15 +100,17 @@
   <div id="overlay-settings" class="overlay">
     <div class="panel">
       <h2>設定</h2>
-      <p>時間速度（預設 60 倍；1 倍較接近原機節奏）</p>
-      <div class="row">
-        <select id="speed" class="btn">
-          <option value="1">×1</option>
-          <option value="10">×10</option>
-          <option value="60" selected>×60</option>
-          <option value="120">×120</option>
-          <option value="600">×600</option>
-        </select>
+      <div id="speed-debug" hidden>
+        <p>時間速度（除錯用；原機為即時 ×1。僅在網址加上 ?debug=1 時顯示。）</p>
+        <div class="row">
+          <select id="speed" class="btn">
+            <option value="1" selected>×1</option>
+            <option value="10">×10</option>
+            <option value="60">×60</option>
+            <option value="120">×120</option>
+            <option value="600">×600</option>
+          </select>
+        </div>
       </div>
       <p style="margin-top:10px">按鍵音效</p>
       <div class="row">

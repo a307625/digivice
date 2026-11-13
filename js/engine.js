@@ -72,7 +72,8 @@
       lastReal: now(),
       tagWins: 0,
       clockOffset: clock.getHours() * 3600 + clock.getMinutes() * 60 + clock.getSeconds(),
-      speed: 60,
+      speed: 1,
+      speedMigrated: true,
       hunger: 4,
       hungerCap: 4,
       strength: 4,
@@ -1078,7 +1079,11 @@
   function hatchIfEggSelect(state, version, randomize, special) {
     if (randomize) version = 1 + Math.floor(Math.random() * 5);
     var s = defaultState(version, special || null);
-    s.speed = state && state.speed ? state.speed : 60;
+    // Real-time (1x) is the official default. Inherit a previous speed only
+    // when that save already went through speedMigrated (a deliberate debug
+    // rate). An unmigrated 60x default must not carry onto the new egg.
+    s.speed = (state && state.speedMigrated && state.speed) ? state.speed : 1;
+    s.speedMigrated = true;
     if (root.Steps && root.Steps.carryLedger) {
       root.Steps.carryLedger(state, s);
     }
@@ -1118,6 +1123,13 @@
     if (state.sleepCalledTonight == null) state.sleepCalledTonight = false;
     if (state.cpuPlayerInitiates == null) state.cpuPlayerInitiates = true;
     if (state.emptyCallSince == null && state.emptySince != null) state.emptyCallSince = state.emptySince;
+    // Official device is real-time. Old builds defaulted to 60x, which
+    // starved pets in minutes. One-shot: 60 or missing → 1, then flag.
+    // Already-migrated saves keep a debug rate (including 60) the user set.
+    if (!state.speedMigrated) {
+      if (state.speed == null || state.speed === 60) state.speed = 1;
+      state.speedMigrated = true;
+    }
     applySpeciesCare(state, { migrate: true });
     if (state.evoDueAt == null) {
       var m = mon(state);
