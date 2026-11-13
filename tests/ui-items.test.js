@@ -61,7 +61,7 @@ ok(items.ITEMS.skull && items.ITEMS.skull.src === 'reconstructed', 'skull marked
 ok(items.ITEMS.grave && items.ITEMS.grave.w === 16 && items.ITEMS.grave.src === 'reconstructed', 'grave 16x16 reconstructed');
 
 console.log('5) Egg picker: one flat list, names only, no targets, no random');
-ok(items.EGG_PICKER.length === 26, '26 eggs (15 prior + 11 Pendulum OG)');
+ok(items.EGG_PICKER.length === 28, '28 eggs (15 prior + 11 Pendulum OG + 2 Ver.20th)');
 ok(items.EGG_PICKER.every((e) => e.label && e.id && e.dataEgg && e.label.indexOf('→') < 0), 'labels have no arrows');
 ok(items.EGG_PICKER.every((e) => !/斬龍|破壞龍|杜蘭達|阿爾法|拉結爾|戰鬥暴龍|傑斯|阿波羅|狄安娜/.test(e.label)), 'labels have no mega targets');
 ok(items.EGG_PICKER.every((e) => e.dataEgg !== 'random'), 'no random pool');
@@ -78,5 +78,15 @@ const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 ok(!/h3>20th/.test(html) && !/特殊蛋/.test(html) && !/限定蛋/.test(html), 'egg picker has no category headers');
 ok(!/data-egg="random"/.test(html), 'no random egg button in HTML');
 
+
+// Pendulum Ver.20th picker: two eggs, no roster spoilers, no Dukemon/Beelzebumon names.
+const p20sk = items.EGG_PICKER.find((e) => e.dataEgg === 'pen_20th_sk');
+const p20sb = items.EGG_PICKER.find((e) => e.dataEgg === 'pen_20th_sb');
+ok(p20sk && p20sk.label === '新超代 銀黑數碼蛋', 'SK picker label is 新超代 銀黑數碼蛋');
+ok(p20sb && p20sb.label === '新超代 銀藍數碼蛋', 'SB picker label is 新超代 銀藍數碼蛋');
+ok(items.EGG_PICKER.every((e) => !/Dukemon|Beelzebumon|帝皇龍|別西卜|紅金|紫黑/.test(e.label)), 'picker has no DC/BC spoiler or unverified colorway');
+ok(items.EGG_PICKER.filter((e) => /^pen_20th/.test(e.dataEgg)).length === 2, 'only SK+SB Pen20 eggs in the picker');
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
+
 process.exit(failed ? 1 : 0);

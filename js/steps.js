@@ -169,6 +169,10 @@
     if (!info.canCare) return result;
     rollDayEffects(state, date);
 
+    // Pen20: Humulos — training is the only way to add Effort. Steps still
+    // count (ungated) but must not grant effortQ / strength / weight.
+    if (state.family === 'pen20') return result;
+
     var newEffortBlocks = Math.floor(s.lifetime / STEPS_PER_EFFORT) - Math.floor(prev / STEPS_PER_EFFORT);
     var effortGrant = Math.min(newEffortBlocks, Math.max(0, DAILY_EFFORT_CAP - s.dayEffort));
     if (effortGrant > 0) {

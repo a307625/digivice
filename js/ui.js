@@ -121,6 +121,11 @@
     return !!(d && d.family === 'pendulum');
   }
 
+  function isPen20() {
+    var d = currentDevice();
+    return !!(d && d.family === 'pen20');
+  }
+
   function engine() {
     if (window.Devices && window.Devices.engineFor) return window.Devices.engineFor(state);
     return window.Engine;
@@ -183,7 +188,7 @@
       }
     }
     var fake = document.getElementById('btn-shake-fallback');
-    if (fake) fake.hidden = !(d && d.family === 'pendulum');
+    if (fake) fake.hidden = !(d && (d.family === 'pendulum' || d.family === 'pen20'));
     function placeIcon(id, box) {
       var el = document.getElementById('icon-' + id);
       if (!el || !box) return;
@@ -855,6 +860,11 @@
   function draw() {
     if (!ctx) return;
     ctx.imageSmoothingEnabled = false;
+    if (isPen20() && window.Pen20UI) {
+      window.Pen20UI.draw(penHost());
+      updateIcons();
+      return;
+    }
     if (isPendulum() && window.PendulumUI) {
       window.PendulumUI.draw(penHost());
       updateIcons();
@@ -885,6 +895,9 @@
       (view === 'lightMenu') ? 'LIGHT' :
       (view === 'album' || view === 'albumView' || view === 'albumRecord') ? 'ALBUM' :
       (view === 'connect') ? 'CONNECT' :
+      (view === 'healMenu') ? 'MEDIC' :
+      (view === 'coloMenu' || view === 'colo') ? 'COLOSSEUM' :
+      (view === 'eggPick') ? 'STATUS' :
       (view === 'battle' || view === 'battleMenu') ? 'BATTLE' : (sel >= 0 ? selectable()[sel] : null)
     );
     document.querySelectorAll('.face-icon').forEach(function (el) {
@@ -1324,6 +1337,9 @@
       clockSetAdjust('h');
       return;
     }
+    if (isPen20() && window.Pen20UI) {
+      if (window.Pen20UI.pressA(penHost())) return;
+    }
     if (isPendulum() && window.PendulumUI) {
       if (window.PendulumUI.pressA(penHost())) return;
     }
@@ -1340,6 +1356,9 @@
       if (getClockHold().shouldIgnoreClick()) return;
       clockSetAdjust('m');
       return;
+    }
+    if (isPen20() && window.Pen20UI) {
+      if (window.Pen20UI.pressB(penHost())) return;
     }
     if (isPendulum() && window.PendulumUI) {
       if (window.PendulumUI.pressB(penHost())) return;
@@ -1359,6 +1378,9 @@
       view = 'play';
       sel = -1;
       return;
+    }
+    if (isPen20() && window.Pen20UI) {
+      if (window.Pen20UI.pressC(penHost())) return;
     }
     if (isPendulum() && window.PendulumUI) {
       if (window.PendulumUI.pressC(penHost())) return;
@@ -1441,6 +1463,9 @@
         view = 'dying';
       }
       if (Date.now() - lastSave > 2500) persist();
+    }
+    if (isPen20() && window.Pen20UI) {
+      window.Pen20UI.tickMinigame(penHost());
     }
     if (isPendulum() && window.PendulumUI) {
       window.PendulumUI.tickMinigame(penHost());
@@ -1803,6 +1828,30 @@
       var ep = new URLSearchParams(location.search).get('egg');
       if (ep && DM20_EGGS[ep]) { state.eggKind = ep; state.version = 'special'; }
       else if (ep && /^[1-5]$/.test(ep)) { state.eggKind = 'ver' + ep; state.version = parseInt(ep, 10); }
+      else if ((ep && /^pen_20th/.test(String(ep))) || (name && String(name).indexOf('pen-20th') === 0)) {
+        if (window.Pen20Engine) {
+          var egg20 = 'pen_20th_sk';
+          if (ep && /^pen_20th/.test(ep)) egg20 = ep;
+          else if (name && /pen-20th-sb/.test(String(name))) egg20 = 'pen_20th_sb';
+          state = window.Pen20Engine.defaultState(egg20);
+          state.clockInitialized = true;
+          state.clockSet = { on: false, h24: 10, min: 34 };
+          state.gameTime = 70;
+          state.clockOffset = 10 * 3600 + 34 * 60 + 5 - 70;
+          state.lastReal = Date.now();
+          window.Pen20Engine.tick(state, Date.now());
+          var p0 = state.pets && state.pets[0];
+          if (p0 && (p0.mon === 'egg' || p0.level === 'egg')) {
+            var baby = (window.Pen20Data && window.Pen20Data.baby1ForEgg(p0.eggId)) || 'bubb';
+            window.Pen20Engine.applyMon(p0, baby, state.gameTime);
+            p0.hunger = 4; p0.strength = 3; p0.calling = false;
+            if (window.Pen20Engine.albumAdd) window.Pen20Engine.albumAdd(state, baby);
+          } else if (p0) {
+            p0.hunger = 4; p0.strength = 3; p0.calling = false;
+          }
+          state.lights = true;
+        }
+      }
       else if ((ep && /^pen_/.test(String(ep))) || (name && String(name).indexOf('pen-') === 0)) {
         if (window.PendulumEngine) {
           var eggKind = 'pen_1_0';
@@ -1990,6 +2039,34 @@
           window.DeviceButtons.setPressed($(id), true);
         });
       }
+    } else if (name === 'pen-20th-sk-shell' || name === 'pen-20th-sb-shell' ||
+               name === 'pen-20th-sk-idle' || name === 'pen-20th-sb-idle') {
+      view = 'play';
+      sel = -1;
+    } else if (name === 'pen-20th-fridge' || name === 'pen-20th-sk-fridge' || name === 'pen-20th-lights-fridge') {
+      if (state && state.pets && state.pets[0] && window.Pen20Engine) {
+        var fp = state.pets[0];
+        fp.frozen = true;
+        fp.tired = false;
+        fp.sleeping = false;
+        fp.calling = false;
+      }
+      view = 'play';
+      sel = -1;
+    } else if (name === 'pen-20th-sleep' || name === 'pen-20th-sk-sleep' || name === 'pen-20th-lights-sleep') {
+      if (state && state.pets && state.pets[0]) {
+        var sp = state.pets[0];
+        sp.sleeping = true;
+        sp.putToBed = true;
+        sp.tired = false;
+        sp.frozen = false;
+        sp.calling = false;
+      }
+      view = 'play';
+      sel = -1;
+    } else if (name === 'pen-20th-light') {
+      if (window.Pen20UI && window.Pen20UI.setSubSel) window.Pen20UI.setSubSel(0);
+      view = 'lightMenu';
     }
   }
 
@@ -2029,6 +2106,12 @@
     function tryChord() {
       if (recentChord()) { keyA = true; keyC = true; }
       var r = maybeNewEggCombo() || maybeClockSetCombo();
+      if (!r && isPen20() && window.Pen20UI && window.Pen20UI.maybeChord(penHost(), keyA, keyC)) {
+        r = true;
+      }
+      if (!r && isPen20() && window.Pen20UI && window.Pen20UI.maybeAB && window.Pen20UI.maybeAB(penHost(), keyA, keyB)) {
+        r = true;
+      }
       if (!r && isPendulum() && window.PendulumUI && window.PendulumUI.maybeChord(penHost(), keyA, keyC)) {
         r = true;
       }
@@ -2125,15 +2208,19 @@
     if (canvas) {
       canvas.style.touchAction = 'manipulation';
       canvas.addEventListener('pointerdown', function (ev) {
+        if (isPen20() && window.Pen20UI) window.Pen20UI.onCanvasPointerDown(penHost(), ev);
         if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerDown(penHost(), ev);
       });
       canvas.addEventListener('pointermove', function (ev) {
+        if (isPen20() && window.Pen20UI) window.Pen20UI.onCanvasPointerMove(penHost(), ev);
         if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerMove(penHost(), ev);
       });
       canvas.addEventListener('pointerup', function (ev) {
+        if (isPen20() && window.Pen20UI) window.Pen20UI.onCanvasPointerUp(ev);
         if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerUp(ev);
       });
       canvas.addEventListener('pointercancel', function (ev) {
+        if (isPen20() && window.Pen20UI) window.Pen20UI.onCanvasPointerUp(ev);
         if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerUp(ev);
       });
     }
@@ -2240,6 +2327,7 @@
     if (shakeBtn) {
       shakeBtn.addEventListener('click', function () {
         if (window.PendulumShake) window.PendulumShake.simulate(1);
+        if (isPen20() && window.Pen20UI) window.Pen20UI.noteShakeOnState(penHost(), 1);
         if (isPendulum() && window.PendulumUI) window.PendulumUI.noteShakeOnState(penHost(), 1);
         toast('模擬搖動 +1');
       });

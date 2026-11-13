@@ -23,6 +23,9 @@ const PenEng = require('../js/devices/pendulum/engine.js');
 global.PendulumEngine = PenEng;
 const LO = require('../js/lights-off.js');
 const Devices = require('../js/devices/registry.js');
+global.Pen20Data = require('../js/devices/pen20/data.js');
+global.Pen20Engine = require('../js/devices/pen20/engine.js');
+require('../js/devices/pen20/profiles.js');
 // data.js already registered pen-1-0 if Devices was loaded first — in node,
 // PendulumData was required before Devices. Re-register.
 if (Devices && PendulumData.PROFILE) Devices.register(PendulumData.PROFILE);
@@ -228,6 +231,33 @@ console.log('4) After a menu / clock SET / reload, the mode still follows the la
   d.sleeping = true;
   const d2 = JSON.parse(JSON.stringify(d));
   eq(mode(d2, 'play', 'dm20'), 'paper-sleep', 'reloaded DM20 Babydmon nap is still paper-sleep, not dark');
+}
+
+console.log('5) Pendulum Ver.20th: Off is freeze (fridge on paper) or sleep on paper; never blank-dark or black-z');
+{
+  const Eng = global.Pen20Engine;
+  function p20(extra) {
+    const s = Eng.defaultState('pen_20th_sk');
+    s.clockInitialized = true;
+    s.pets[0].mon = 'bubb';
+    s.pets[0].level = 'I';
+    Object.assign(s.pets[0], extra || {});
+    return s;
+  }
+  const frozen = p20({ frozen: true, sleeping: false, tired: false });
+  eq(mode(frozen, 'play', 'pen20'), 'paper-fridge', 'frozen pet is paper-fridge');
+  const sleep = p20({ frozen: false, sleeping: true, tired: false });
+  eq(mode(sleep, 'play', 'pen20'), 'paper-sleep', 'sleeping pet is paper-sleep');
+  const idle = p20({ frozen: false, sleeping: false });
+  eq(mode(idle, 'play', 'pen20'), 'paper', 'idle (lamp not a darkener) is paper');
+  eq(mode(frozen, 'clock', 'pen20'), 'paper', 'clock is paper');
+  eq(mode(frozen, 'lightMenu', 'pen20'), 'paper', 'On/Off menu is paper');
+  eq(mode(frozen, 'food', 'pen20'), 'paper', 'food is paper');
+  eq(LO.isDarkPlayfield('paper-fridge'), false, 'fridge is not a dark playfield');
+  eq(LO.isDarkPlayfield('paper-sleep'), false, 'pen20 sleep is not a dark playfield');
+  // Must never regress other families
+  eq(mode({ mon: 'botamon', lights: false, sleeping: false }, 'play', 'dm1997'), 'blank-dark', '1997 still blank-dark');
+  eq(mode({ mon: 'babumon', lights: false, sleeping: false, family: 'pendulum' }, 'play', 'pendulum'), 'black', 'PenOG still black');
 }
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

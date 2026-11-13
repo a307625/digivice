@@ -215,7 +215,7 @@ console.log('7) Cross-version same-position Jogress is blocked (NHOKO)');
 console.log('8) Egg labels: sprite + name only, no roster spoilers');
 {
   const items = require('../js/items.js');
-  const pen = items.EGG_PICKER.filter((e) => String(e.dataEgg).indexOf('pen_') === 0);
+  const pen = items.EGG_PICKER.filter((e) => /^pen_/.test(String(e.dataEgg)) && !/^pen_20th/.test(String(e.dataEgg)));
   eq(pen.length, 11, '11 Pendulum eggs');
   ok(pen.every((e) => e.label && e.id && e.dataEgg && e.label.indexOf('→') < 0), 'no arrows');
   ok(pen.every((e) => !/甲蟲|比多|大力神|炸薯|三角龍|Heracles|Atlur|奧米加|Omegamon|WarGrey|MetalGaru|Holydra|Venom|Mugendra/.test(e.label)),

@@ -177,8 +177,19 @@
     return !!(p && p.family === 'pendulum');
   }
 
+  function isPen20(state) {
+    var p = profileFor(state);
+    return !!(p && p.family === 'pen20');
+  }
+
+  function isPen20Egg(kind) {
+    var p = profileByEgg(kind);
+    return !!(p && p.family === 'pen20');
+  }
+
   function engineFor(state) {
     var p = profileFor(state);
+    if (p && p.family === 'pen20' && root.Pen20Engine) return root.Pen20Engine;
     if (p && p.family === 'pendulum' && root.PendulumEngine) return root.PendulumEngine;
     return root.Engine;
   }
@@ -196,6 +207,13 @@
   }
 
   function hatchEgg(prev, version, randomize, special) {
+    if (isPen20Egg(special) && root.Pen20Engine) {
+      var s20 = root.Pen20Engine.defaultState(special);
+      s20.speed = (prev && prev.speedMigrated && prev.speed) ? prev.speed : 1;
+      s20.speedMigrated = true;
+      if (root.Steps && root.Steps.carryLedger) root.Steps.carryLedger(prev, s20);
+      return s20;
+    }
     if (isPendulumEgg(special) && root.PendulumEngine) {
       var s = root.PendulumEngine.defaultState(special);
       s.speed = (prev && prev.speedMigrated && prev.speed) ? prev.speed : 1;
@@ -217,6 +235,8 @@
     dm20Profile: dm20Profile,
     isPendulum: isPendulum,
     isPendulumEgg: isPendulumEgg,
+    isPen20: isPen20,
+    isPen20Egg: isPen20Egg,
     engineFor: engineFor,
     tick: tick,
     migrate: migrate,

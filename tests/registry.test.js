@@ -16,6 +16,9 @@ require('../js/devices/pendulum/versions.js');
 // data.js registers 1.0; versions.js registers 1.5–ZERO
 const PendulumEngine = require('../js/devices/pendulum/engine.js');
 global.PendulumEngine = PendulumEngine;
+global.Pen20Data = require('../js/devices/pen20/data.js');
+global.Pen20Engine = require('../js/devices/pen20/engine.js');
+require('../js/devices/pen20/profiles.js');
 
 let passed = 0, failed = 0;
 const failures = [];
@@ -127,14 +130,17 @@ console.log('5) 1997 Engine.tick ignores (delegates) a pendulum save');
 console.log('6) Egg picker is still one flat list with no spoilers (items)');
 {
   const items = require('../js/items.js');
-  ok(items.EGG_PICKER.length === 26, '26 eggs');
-  const last = items.EGG_PICKER[items.EGG_PICKER.length - 1];
-  eq(last.dataEgg, 'pen_zero', 'Pendulum ZERO egg is last');
+  ok(items.EGG_PICKER.length === 28, '28 eggs');
+  ok(items.EGG_PICKER.some((e) => e.dataEgg === 'pen_zero'), 'Pendulum ZERO egg still present');
   ok(items.EGG_PICKER.some((e) => e.dataEgg === 'pen_1_0'), '1.0 egg still present');
   ok(items.EGG_PICKER.some((e) => e.dataEgg === 'pen_1_5'), '1.5 egg present');
-  ok(last.label.indexOf('→') < 0, 'no arrow spoilers');
-  ok(!/甲蟲|比多|大力神|炸薯|三角龍|Heracles|Atlur/.test(last.label), 'no roster spoilers in the label');
+  const sk = items.EGG_PICKER.find((e) => e.dataEgg === 'pen_20th_sk');
+  const sb = items.EGG_PICKER.find((e) => e.dataEgg === 'pen_20th_sb');
+  eq(sk && sk.label, '新超代 銀黑數碼蛋', 'SK no-spoiler label');
+  eq(sb && sb.label, '新超代 銀藍數碼蛋', 'SB no-spoiler label');
+  ok(items.EGG_PICKER.every((e) => e.label && e.label.indexOf('→') < 0), 'no arrow spoilers');
   ok(items.EGG_PICKER.every((e) => e.label && e.id && e.dataEgg), 'every egg has sprite id + name');
+  ok(!items.EGG_PICKER.some((e) => /pen_20th_dc|pen_20th_bc/.test(e.dataEgg)), 'DC/BC omitted from picker');
 }
 
 
@@ -177,6 +183,40 @@ console.log('7) All Pendulum OG versions 1.0–5.5 + ZERO are registered');
     })();
     eq(hatched, V.baby1, egg + ' hatches to ' + V.baby1);
   });
+}
+
+console.log('8) Pendulum Ver.20th is its own family, not pendulum / 1997');
+{
+  const p = Devices.profileByEgg('pen_20th_sk');
+  ok(p, 'SK profile registered');
+  eq(p && p.family, 'pen20', 'family is pen20 (not pendulum)');
+  eq(p && p.id, 'pen-20th-sk', 'device id');
+  eq(p && p.shell, 'pen-20th-sk', 'own shell');
+  eq(p && p.orient, 'landscape', 'landscape');
+  eq(p && p.clockSet, 'pen20', 'own clock-SET');
+  eq(p && !!p.layout.chamber, false, 'no left chamber');
+  eqArr(p.selectable, ['STATUS', 'FEED', 'TRAIN', 'COLOSSEUM', 'FLUSH', 'LIGHT', 'MEDIC', 'ALBUM', 'CONNECT'], '9 selectables, Call is an indicator');
+  ok(p.statusPages.indexOf('bj') >= 0 && p.statusPages.indexOf('weight') >= 0, 'BJ and Weight status pages');
+  ok(!Devices.isPendulumEgg('pen_20th_sk'), 'isPendulumEgg is false');
+  ok(Devices.isPen20Egg('pen_20th_sk'), 'isPen20Egg is true');
+  const s = Pen20Engine.defaultState('pen_20th_sk');
+  eq(s.family, 'pen20', 'default family');
+  eq(Devices.engineFor(s), Pen20Engine, 'engineFor returns Pen20Engine');
+  ok(Devices.isPen20(s), 'isPen20');
+  ok(!Devices.isPendulum(s), 'isPendulum is false');
+  const sb = Devices.profileByEgg('pen_20th_sb');
+  eq(sb && sb.shell, 'pen-20th-sb', 'SB own shell');
+  // hatch 70s
+  s.clockInitialized = true;
+  s.clockSet.on = false;
+  s.lastReal = Date.now() - 70 * 1000;
+  Pen20Engine.tick(s, Date.now());
+  eq(s.pets[0].mon, 'bubb', 'SK hatches Bubbmon');
+  // 1997 Engine.tick delegates and does not apply 1997 formulas
+  const before = s.pets[0].mon;
+  const Engine = require('../js/engine.js');
+  Engine.tick(s, Date.now());
+  eq(s.pets[0].mon, before, '1997 tick did not mutate Pen20 mon');
 }
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

@@ -179,7 +179,9 @@
     { id: 'egg_pen_4_5', dataEgg: 'pen_4_5', label: '超代 4.5 風之守護者數碼蛋' },
     { id: 'egg_pen_5_0', dataEgg: 'pen_5_0', label: '超五 5.0 金屬帝國數碼蛋' },
     { id: 'egg_pen_5_5', dataEgg: 'pen_5_5', label: '超五 5.5 金屬帝國數碼蛋' },
-    { id: 'egg_pen_zero', dataEgg: 'pen_zero', label: '超0 病毒剋星數碼蛋' }
+    { id: 'egg_pen_zero', dataEgg: 'pen_zero', label: '超0 病毒剋星數碼蛋' },
+    { id: 'egg_pen_20th_sk', dataEgg: 'pen_20th_sk', label: '新超代 銀黑數碼蛋' },
+    { id: 'egg_pen_20th_sb', dataEgg: 'pen_20th_sb', label: '新超代 銀藍數碼蛋' }
   ];
 
   var api = {

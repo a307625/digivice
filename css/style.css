@@ -251,8 +251,54 @@ body {
 }
 
 #icon-CONNECT { display: none; }
+#icon-COLOSSEUM { display: none; }
+#icon-ALBUM { display: none; }
 .device[data-model="pendulum"] #icon-BATTLE { display: none; }
 .device[data-model="pendulum"] #icon-CONNECT { display: block; }
+
+/* Pendulum Ver.20th: 5+5 printed icons, visible metal caps in painted wells. */
+.device[data-model="pen20"] #icon-BATTLE { display: none; }
+.device[data-model="pen20"] #icon-CONNECT,
+.device[data-model="pen20"] #icon-COLOSSEUM,
+.device[data-model="pen20"] #icon-ALBUM { display: block; }
+
+.device[data-shell="pen-20th-sk"] .pad {
+  background: radial-gradient(circle at 35% 28%, #6a7080 0%, #2a2e38 55%, #14161c 100%);
+  box-shadow: 0 4px 0 #0e1014,
+              0 6px 8px rgba(0, 0, 0, 0.4),
+              inset 0 2px 2px rgba(255, 255, 255, 0.22),
+              inset 0 -2px 3px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(10, 12, 16, 0.55);
+}
+.device[data-shell="pen-20th-sk"] .pad:active,
+.device[data-shell="pen-20th-sk"] .pad.is-pressed {
+  transform: translate(-50%, calc(-50% + 4px)) scale(0.94);
+  background: radial-gradient(circle at 42% 42%, #4a5060 0%, #1a1e26 70%, #0a0c10 100%);
+  box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.65),
+              inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+              0 1px 0 #0e1014;
+}
+.device[data-shell="pen-20th-sb"] .pad {
+  background: radial-gradient(circle at 35% 28%, #5aa0e8 0%, #1560b8 52%, #0a3878 100%);
+  box-shadow: 0 4px 0 #082850,
+              0 6px 8px rgba(0, 0, 0, 0.35),
+              inset 0 2px 2px rgba(200, 230, 255, 0.45),
+              inset 0 -2px 3px rgba(0, 0, 40, 0.35);
+  border: 1px solid rgba(8, 30, 80, 0.5);
+}
+.device[data-shell="pen-20th-sb"] .pad:active,
+.device[data-shell="pen-20th-sb"] .pad.is-pressed {
+  transform: translate(-50%, calc(-50% + 4px)) scale(0.94);
+  background: radial-gradient(circle at 42% 42%, #3a80c8 0%, #0e4888 70%, #072040 100%);
+  box-shadow: inset 0 5px 10px rgba(0, 20, 50, 0.65),
+              inset 0 -1px 0 rgba(200, 230, 255, 0.1),
+              0 1px 0 #082850;
+}
+.device[data-model="pen20"] .pad-reset {
+  background: radial-gradient(circle at 40% 35%, #6a7480, #2a3038);
+  box-shadow: 0 2px 0 #1a1e24, inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  border-width: 0;
+}
 
 /* Overlays for extra functions only */
 .banner {

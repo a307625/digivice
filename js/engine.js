@@ -683,6 +683,9 @@
   function tick(state, realNow) {
     // Pendulum (and later lines) have their own engine. Never run 1997
     // care / evo / battle formulas against those saves.
+    if (state && state.family === 'pen20' && root.Pen20Engine) {
+      return root.Pen20Engine.tick(state, realNow);
+    }
     if (state && state.family === 'pendulum' && root.PendulumEngine) {
       return root.PendulumEngine.tick(state, realNow);
     }
@@ -1223,6 +1226,9 @@
    */
   function migrateState(state) {
     if (!state) return state;
+    if (state.family === 'pen20' && root.Pen20Engine && root.Pen20Engine.migrateState) {
+      return root.Pen20Engine.migrateState(state);
+    }
     if (state.family === 'pendulum' && root.PendulumEngine && root.PendulumEngine.migrateState) {
       return root.PendulumEngine.migrateState(state);
     }

@@ -1,0 +1,758 @@
+/**
+ * Pendulum Ver.20th (新超代) device UI.
+ * Own menus, buttons, clock-SET, lights (freeze/sleep/fridge), dual-pet,
+ * training COUNT, Colosseum, album, connect — not PenOG, not DM20-brick.
+ * Animation is official 2 Hz (host.ANIM_MS = 500) unless a source says otherwise.
+ */
+(function (root) {
+  'use strict';
+
+  var Eng = function () { return root.Pen20Engine; };
+  var Data = function () { return root.Pen20Data; };
+  var Spr = function () { return root.Pen20Sprites; };
+  var Prof = function () { return root.Pen20Profiles; };
+
+  var STATUS_PAGES = ['name', 'age', 'weight', 'hunger', 'strength', 'effort', 'dp', 'attr', 'bj', 'record'];
+  var SELECTABLE = ['STATUS', 'FEED', 'TRAIN', 'COLOSSEUM', 'FLUSH', 'LIGHT', 'MEDIC', 'ALBUM', 'CONNECT'];
+
+  var subSel = 0;          // food / light / heal / connect / colo — keep-last for food
+  var statusPage = 0;
+  var albumTab = 0;        // 0 Digimon, 1 Copymon, 2 Record, 3 Pass
+  var albumIdx = 0;
+  var passDigits = [0, 0, 0, 0, 0, 0];
+  var passPos = 0;
+  var eggPickIdx = 0;
+  var train = { on: false, shakes: 0, startedAt: 0, phase: 'idle', result: null, tag: false };
+  var battle = { on: false, phase: 'idle', won: false, foe: '', startedAt: 0, injured: false };
+  var lastInputAt = 0;
+  var eatKind = null;
+  var eatUntil = 0;
+
+  function E() { return Eng(); }
+  function D() { return Data(); }
+
+  function lcdPaper(host) {
+    var ctx = host.ctx;
+    ctx.fillStyle = host.PAPER;
+    ctx.fillRect(0, 0, host.LCD_W, host.LCD_H);
+  }
+
+  function text(host, s, x, y, sc) {
+    if (root.VpetItems && root.VpetItems.drawText) {
+      root.VpetItems.drawText(host.ctx, String(s), x, y, sc || 1, host.INK);
+    }
+  }
+  function num(host, n, x, y, sc, pad) {
+    var s = String(n);
+    if (pad) while (s.length < pad) s = '0' + s;
+    if (root.VpetItems && root.VpetItems.drawNumber) {
+      root.VpetItems.drawNumber(host.ctx, s, x, y, sc || 1, host.INK);
+    } else text(host, s, x, y, sc);
+  }
+  function hearts(host, filled, x, y) {
+    if (root.VpetItems && root.VpetItems.drawHearts) {
+      root.VpetItems.drawHearts(host.ctx, filled, 4, x, y, 1, host.INK);
+    } else {
+      var i, s = '';
+      for (i = 0; i < 4; i++) s += i < filled ? '*' : '-';
+      text(host, s, x, y, 1);
+    }
+  }
+
+  function monFrame(host) {
+    return (host.animTick() % 2 === 0) ? 'idle0' : 'idle1';
+  }
+
+  function blitPet(host, pet, x, y, pose, flip) {
+    var Sp = Spr();
+    if (!Sp || !pet) return;
+    var id = pet.mon;
+    if (pet.frozen) { Sp.blit(host.ctx, 'fridge', x, y, 'idle0', false, host.INK, 4); return; }
+    if (pet.dead || id === 'computer') { Sp.blit(host.ctx, 'computer', x, y, 'idle0', false, host.INK, 4); return; }
+    if (id === 'egg') {
+      Sp.blit(host.ctx, pet.eggId || 'digitama_nsp', x, y, pose || 'idle0', flip, host.INK, 4);
+      return;
+    }
+    if (pet.dying) { Sp.blit(host.ctx, 'skull', x, y, 'idle0', false, host.INK, 4); return; }
+    if (pet.sleeping || (pet.tired && (host.animTick() % 2))) {
+      Sp.blit(host.ctx, id, x, y, 'sleep', flip, host.INK, 4);
+      return;
+    }
+    if (!Sp.has(id)) {
+      // missing official sprite: empty cell, do not fall back to 1997 color
+      return;
+    }
+    Sp.blit(host.ctx, id, x, y, pose || monFrame(host), flip, host.INK, 4);
+  }
+
+  function visibleList(host) {
+    var s = host.state, Eapi = E();
+    if (!s || !Eapi) return [];
+    var idxs = Eapi.visiblePets(s) || [];
+    return idxs.map(function (i) { return s.pets[i]; }).filter(Boolean);
+  }
+
+  function drawPlay(host) {
+    var s = host.state;
+    var Eapi = E();
+    var now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    // Screen-off after ~1 min idle (Humulos). Distinct from the Light menu.
+    var idle = D() && D().IDLE_OFF_SEC ? D().IDLE_OFF_SEC : 60;
+    if (!host.shotMode && lastInputAt && (now - lastInputAt) > idle * 1000) {
+      s.screenOff = true;
+    }
+    if (s.screenOff && !host.shotMode) {
+      host.ctx.fillStyle = '#000000';
+      host.ctx.fillRect(0, 0, host.LCD_W, host.LCD_H);
+      return;
+    }
+
+    lcdPaper(host);
+
+    if (s.display === 'computer' || (s.deadComputer && s.display === 'computer')) {
+      blitPet(host, { mon: 'computer', dead: true }, host.fx(8), host.fy(0));
+      text(host, 'COMPUTER', host.fx(2), host.fy(14), 1);
+      return;
+    }
+    if (s.display === 'egg' && s.pendingEgg) {
+      var eId = (s.unlockedEggs && s.unlockedEggs[0]) || 'digitama_nsp';
+      blitPet(host, { mon: 'egg', eggId: eId }, host.fx(8), host.fy(0));
+      text(host, 'EGG', host.fx(10), host.fy(14), 1);
+      return;
+    }
+
+    var pets = visibleList(host);
+    if (!pets.length) {
+      var ap = Eapi && Eapi.activePet(s);
+      if (ap) pets = [ap];
+    }
+    if (!pets.length) return;
+
+    // Dual: two 16-dot cells side by side on the 32-dot field (64+64=128 px).
+    if (pets.length >= 2) {
+      blitPet(host, pets[0], host.fx(0), host.fy(0), null, false);
+      blitPet(host, pets[1], host.fx(16), host.fy(0), null, true);
+    } else {
+      var walkX = (host.walk && host.walk.x != null) ? host.walk.x : 8;
+      var flip = host.walk && host.walk.dir > 0;
+      var pose = monFrame(host);
+      if (eatKind && now < eatUntil) pose = 'idle0';
+      blitPet(host, pets[0], host.fx(walkX), host.fy(0), pose, flip);
+    }
+
+    // Shared poop piles (4 → sick). Draw small squares on the right.
+    var piles = s.trash || 0;
+    if (piles > 0) {
+      var i;
+      host.ctx.fillStyle = host.INK;
+      for (i = 0; i < Math.min(piles, 8); i++) {
+        var px = host.fx(28 - (i % 2) * 3);
+        var py = host.fy(12 - Math.floor(i / 2) * 3);
+        host.ctx.fillRect(px, py, 8, 8);
+      }
+    }
+  }
+
+  function menuRow(host, selected, y, label) {
+    if (root.VpetItems && root.VpetItems.blit) {
+      try { root.VpetItems.blit(host.ctx, selected ? 'triangle' : 'empty_triangle', host.fx(1), y, host.ITEM || 4); } catch (e) {}
+    }
+    text(host, label, host.fx(5), y, 1);
+  }
+
+  function drawStatus(host) {
+    lcdPaper(host);
+    var Eapi = E();
+    var pet = Eapi && Eapi.activePet(host.state);
+    if (!pet) { text(host, 'NO DATA', host.fx(2), host.fy(6), 1); return; }
+    var m = D() && D().monster(pet.mon);
+    var page = STATUS_PAGES[statusPage] || 'name';
+    if (page === 'name') {
+      text(host, (m && m.name) ? m.name.toUpperCase() : (pet.mon || '?'), host.fx(1), host.fy(6), 1);
+    } else if (page === 'age') {
+      text(host, 'AGE', host.fx(2), host.fy(3), 1);
+      num(host, pet.ageDays || 0, host.fx(2), host.fy(9), 1);
+      text(host, 'Y', host.fx(16), host.fy(9), 1);
+    } else if (page === 'weight') {
+      text(host, 'WEIGHT', host.fx(2), host.fy(3), 1);
+      num(host, pet.weight || 0, host.fx(2), host.fy(9), 1);
+      text(host, 'G', host.fx(16), host.fy(9), 1);
+    } else if (page === 'hunger') {
+      text(host, 'HUNGER', host.fx(2), host.fy(3), 1);
+      hearts(host, pet.hunger || 0, host.fx(2), host.fy(9));
+    } else if (page === 'strength') {
+      text(host, 'STRENGTH', host.fx(2), host.fy(3), 1);
+      hearts(host, pet.strength || 0, host.fx(2), host.fy(9));
+    } else if (page === 'effort') {
+      text(host, 'EFFORT', host.fx(2), host.fy(3), 1);
+      hearts(host, Eapi.effortHearts(pet), host.fx(2), host.fy(9));
+    } else if (page === 'dp') {
+      text(host, 'DP', host.fx(2), host.fy(3), 1);
+      var cur = Math.floor((pet.dpQ || 0) / 4);
+      var mx = Math.floor((pet.dpMaxQ || 0) / 4);
+      num(host, cur, host.fx(2), host.fy(9), 1);
+      text(host, '/', host.fx(12), host.fy(9), 1);
+      num(host, mx, host.fx(16), host.fy(9), 1);
+    } else if (page === 'attr') {
+      text(host, 'ATTR', host.fx(2), host.fy(3), 1);
+      var a = (m && m.attr) || 'free';
+      // Free: "there will be nothing listed"
+      if (a !== 'free') text(host, String(a).toUpperCase(), host.fx(2), host.fy(9), 1);
+    } else if (page === 'bj') {
+      // B = Battle, J = Jogress; O can, X cannot.
+      var canB = !!(m && m.canBattle) && (pet.dpQ || 0) > 0;
+      var canJ = !!(m && m.canJogress) && (pet.dpQ || 0) >= (pet.dpMaxQ || 0) && (pet.dpMaxQ || 0) > 0;
+      text(host, 'B ' + (canB ? 'O' : 'X'), host.fx(2), host.fy(4), 1);
+      text(host, 'J ' + (canJ ? 'O' : 'X'), host.fx(2), host.fy(10), 1);
+    } else if (page === 'record') {
+      text(host, 'W', host.fx(2), host.fy(4), 1);
+      num(host, pet.wins || 0, host.fx(10), host.fy(4), 1);
+      text(host, 'L', host.fx(2), host.fy(10), 1);
+      num(host, pet.losses || 0, host.fx(10), host.fy(10), 1);
+    }
+  }
+
+  function drawFood(host) {
+    lcdPaper(host);
+    menuRow(host, subSel === 0, host.fy(2), 'MEAT');
+    menuRow(host, subSel === 1, host.fy(10), 'PROT');
+  }
+  function drawLight(host) {
+    lcdPaper(host);
+    menuRow(host, subSel === 0, host.fy(2), 'ON');
+    menuRow(host, subSel === 1, host.fy(10), 'OFF');
+  }
+  function drawHeal(host) {
+    lcdPaper(host);
+    menuRow(host, subSel === 0, host.fy(2), 'SICK');
+    menuRow(host, subSel === 1, host.fy(10), 'INJURY');
+  }
+  function drawConnect(host) {
+    lcdPaper(host);
+    var rows = ['BATTLE', 'JOGRESS', 'COPYMON'];
+    rows.forEach(function (r, i) {
+      menuRow(host, subSel === i, host.fy(2 + i * 5), r);
+    });
+  }
+  function drawColoMenu(host) {
+    lcdPaper(host);
+    var s = host.state;
+    if (battle.on && battle.phase === 'pick-div') {
+      menuRow(host, subSel === 0, host.fy(2), 'SINGLE');
+      menuRow(host, subSel === 1, host.fy(10), 'TAG');
+    } else if (battle.on && battle.phase === 'pick-act') {
+      menuRow(host, subSel === 0, host.fy(2), 'START');
+      menuRow(host, subSel === 1, host.fy(10), 'CONTINUE');
+    } else {
+      menuRow(host, subSel === 0, host.fy(2), 'SINGLE');
+      menuRow(host, subSel === 1, host.fy(10), 'TAG');
+    }
+    var rnd = (subSel === 1) ? s.coloTag : s.coloSingle;
+    if (rnd > 100) text(host, 'CLEAR', host.fx(20), host.fy(14), 1);
+  }
+  function drawColo(host) {
+    lcdPaper(host);
+    var pet = E() && E().activePet(host.state);
+    if (battle.phase === 'fight') {
+      if (pet) blitPet(host, pet, host.fx(0), host.fy(0));
+      text(host, 'VS', host.fx(14), host.fy(6), 1);
+      text(host, (battle.foe || '?').slice(0, 8), host.fx(18), host.fy(6), 1);
+    } else if (battle.phase === 'result') {
+      text(host, battle.won ? 'WIN' : 'LOSE', host.fx(8), host.fy(4), 1);
+      if (battle.injured) text(host, 'INJURY', host.fx(6), host.fy(10), 1);
+    }
+  }
+  function drawTrain(host) {
+    lcdPaper(host);
+    var pet = E() && E().activePet(host.state);
+    if (train.phase === 'count') {
+      text(host, 'COUNT', host.fx(6), host.fy(2), 1);
+      if (pet) blitPet(host, pet, host.fx(8), host.fy(4), monFrame(host));
+      num(host, train.shakes || 0, host.fx(12), host.fy(14), 1);
+    } else if (train.phase === 'result') {
+      var lab = train.result === 'gigahit' ? 'GIGAHIT' : train.result === 'megahit' ? 'MEGAHIT' : train.result === 'success' ? 'GREAT' : 'FAIL';
+      text(host, lab, host.fx(4), host.fy(6), 1);
+    }
+  }
+  function drawAlbum(host) {
+    lcdPaper(host);
+    var tabs = ['DIGIMON', 'COPYMON', 'RECORD', 'PASS'];
+    text(host, tabs[albumTab], host.fx(1), host.fy(1), 1);
+    var s = host.state;
+    if (albumTab === 0) {
+      var list = s.album || [];
+      var id = list[albumIdx] || '';
+      var m = id && D() && D().monster(id);
+      text(host, (m && m.name) ? m.name.slice(0, 10).toUpperCase() : (id || '----'), host.fx(1), host.fy(7), 1);
+      num(host, list.length, host.fx(1), host.fy(13), 1);
+    } else if (albumTab === 1) {
+      var cm = (s.copymon || [])[albumIdx];
+      text(host, cm ? String(cm.id).toUpperCase() : '----', host.fx(1), host.fy(7), 1);
+    } else if (albumTab === 2) {
+      text(host, 'W', host.fx(2), host.fy(5), 1);
+      num(host, Math.min(999, s.recordWins || 0), host.fx(10), host.fy(5), 1);
+      text(host, 'B', host.fx(2), host.fy(11), 1);
+      num(host, Math.min(999, s.recordBattles || 0), host.fx(10), host.fy(11), 1);
+      if (s.champion) text(host, 'CHAMPION', host.fx(1), host.fy(14), 1);
+    } else {
+      var i, xs = '';
+      for (i = 0; i < 6; i++) xs += String(passDigits[i]);
+      text(host, xs, host.fx(4), host.fy(7), 1);
+      // caret under passPos
+      host.ctx.fillStyle = host.INK;
+      host.ctx.fillRect(host.fx(4 + passPos * 4), host.fy(11), 12, 2);
+    }
+  }
+  function drawEggPick(host) {
+    lcdPaper(host);
+    var eggs = (host.state.unlockedEggs || []);
+    var id = eggs[eggPickIdx] || '';
+    var e = D() && D().EGGS && D().EGGS[id];
+    text(host, 'EGG', host.fx(2), host.fy(2), 1);
+    text(host, (e && e.name) ? e.name.slice(0, 12).toUpperCase() : id.slice(0, 12), host.fx(1), host.fy(8), 1);
+    if (Spr() && Spr().has(id)) Spr().blit(host.ctx, id, host.fx(20), host.fy(0), 'idle0', false, host.INK, 4);
+  }
+  function drawClock(host) {
+    lcdPaper(host);
+    var s = host.state;
+    var set = s.clockSet && s.clockSet.on;
+    var h24, min;
+    if (set) {
+      h24 = s.clockSet.h24; min = s.clockSet.min;
+    } else {
+      var t = ((s.clockOffset || 0) + (s.gameTime || 0)) % 86400;
+      if (t < 0) t += 86400;
+      h24 = Math.floor(t / 3600);
+      min = Math.floor((t % 3600) / 60);
+    }
+    var show24 = !!s.clock24h;
+    var h = h24;
+    var ap = '';
+    if (!show24) {
+      ap = h24 >= 12 ? 'PM' : 'AM';
+      h = h24 % 12;
+      if (h === 0) h = 12;
+    }
+    var hh = (h < 10 ? '0' : '') + h;
+    var mm = (min < 10 ? '0' : '') + min;
+    text(host, hh + ':' + mm, host.fx(4), host.fy(5), 2);
+    if (ap) text(host, ap, host.fx(22), host.fy(12), 1);
+    if (set) text(host, 'SET', host.fx(2), host.fy(1), 1);
+  }
+  function drawDying(host) {
+    lcdPaper(host);
+    var pet = E() && E().activePet(host.state);
+    if (pet && pet.dying) {
+      blitPet(host, pet, host.fx(8), host.fy(0));
+      if (host.animTick() % 2 === 0) text(host, '!!!!', host.fx(10), host.fy(14), 1);
+    }
+  }
+
+  function draw(host) {
+    if (!host || !host.ctx) return;
+    host.ctx.imageSmoothingEnabled = false;
+    var v = host.view;
+    var s = host.state;
+    var pet = E() && E().activePet(s);
+    if (v === 'clock') drawClock(host);
+    else if (v === 'status') drawStatus(host);
+    else if (v === 'food') drawFood(host);
+    else if (v === 'lightMenu') drawLight(host);
+    else if (v === 'healMenu') drawHeal(host);
+    else if (v === 'connect') drawConnect(host);
+    else if (v === 'coloMenu') drawColoMenu(host);
+    else if (v === 'colo') drawColo(host);
+    else if (v === 'train') drawTrain(host);
+    else if (v === 'album') drawAlbum(host);
+    else if (v === 'eggPick') drawEggPick(host);
+    else if (pet && pet.dying) drawDying(host);
+    else drawPlay(host);
+  }
+
+  function noteInput(host) {
+    lastInputAt = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    if (host.state && host.state.screenOff) {
+      host.state.screenOff = false;
+      return 'wake';
+    }
+    return '';
+  }
+
+  function attrMatch(attrs, attr) {
+    if (!attrs || !attr) return false;
+    var a = String(attr).toLowerCase();
+    var map = { vaccine: 'Va', virus: 'Vi', data: 'Da', free: 'Fr' };
+    var code = map[a] || '';
+    return code && String(attrs).indexOf(code) >= 0;
+  }
+
+  function resolveTrain(host) {
+    var s = host.state;
+    var pet = E().activePet(s);
+    if (!pet) { train.phase = 'idle'; host.setView('play'); return; }
+    var m = D().monster(pet.mon);
+    var parsed = D().parseShakes(m && m.shakes);
+    var n = train.shakes || 0;
+    var result = 'fail';
+    if (n > 0) result = 'success';
+    var gigaList = parsed.gigahit || [];
+    if (!Array.isArray(gigaList)) gigaList = gigaList ? [gigaList] : [];
+    var i, g, copymonAttr = null;
+    if (s.copymon && s.copymon.length) {
+      var cm = D().monster(s.copymon[0].id);
+      copymonAttr = cm && cm.attr;
+    }
+    for (i = 0; i < gigaList.length; i++) {
+      g = gigaList[i];
+      if (g && g.count === n && attrMatch(g.attrs, copymonAttr)) { result = 'gigahit'; break; }
+    }
+    if (result !== 'gigahit' && parsed.megahit && parsed.megahit.indexOf(n) >= 0) result = 'megahit';
+    E().train(s, result);
+    train.result = result;
+    train.phase = 'result';
+    if (host.persist) host.persist();
+  }
+
+  function startTrain(host) {
+    train = { on: true, shakes: 0, startedAt: (typeof performance !== 'undefined' ? performance.now() : Date.now()), phase: 'count', result: null, tag: false };
+    host.setView('train');
+    if (root.PendulumShake && root.PendulumShake.requestPermission) {
+      root.PendulumShake.requestPermission(function () {});
+    }
+  }
+
+  function pressA(host) {
+    if (noteInput(host) === 'wake') return true;
+    var v = host.view;
+    var s = host.state;
+    if (v === 'clock') {
+      if (s.clockSet && s.clockSet.on) { E().bumpClockHour(s); return true; }
+      return true;
+    }
+    if (v === 'food' || v === 'lightMenu' || v === 'healMenu') {
+      subSel = subSel ? 0 : 1;
+      return true;
+    }
+    if (v === 'connect') { subSel = (subSel + 1) % 3; return true; }
+    if (v === 'coloMenu') { subSel = subSel ? 0 : 1; return true; }
+    if (v === 'album') {
+      if (albumTab === 3) {
+        passDigits[passPos] = (passDigits[passPos] + 1) % 10;
+        return true;
+      }
+      if (albumTab === 0) {
+        var n = (s.album || []).length;
+        if (n) albumIdx = (albumIdx + 1) % n;
+      } else if (albumTab === 1) {
+        var c = (s.copymon || []).length;
+        if (c) albumIdx = (albumIdx + 1) % c;
+      }
+      return true;
+    }
+    if (v === 'eggPick') {
+      var eggs = s.unlockedEggs || [];
+      if (eggs.length) eggPickIdx = (eggPickIdx + 1) % eggs.length;
+      return true;
+    }
+    if (v === 'status') {
+      statusPage = (statusPage + 1) % STATUS_PAGES.length;
+      return true;
+    }
+    if (v === 'train' || v === 'colo') return true;
+    // Play: cycle icons (9 selectables; Call is an indicator).
+    var sel = host.getSel();
+    sel = sel < 0 ? 0 : (sel + 1) % SELECTABLE.length;
+    host.setSel(sel);
+    return true;
+  }
+
+  function pressB(host) {
+    if (noteInput(host) === 'wake') return true;
+    var v = host.view;
+    var s = host.state;
+    var Eapi = E();
+    if (v === 'clock') {
+      if (s.clockSet && s.clockSet.on) { Eapi.bumpClockMin(s); return true; }
+      return true; // B does not close the clock
+    }
+    if (v === 'food') {
+      var kind = subSel === 1 ? 'protein' : 'meat';
+      Eapi.feed(s, kind);
+      eatKind = kind;
+      eatUntil = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1100;
+      host.setView('play');
+      if (host.returnToFoodSoon) host.returnToFoodSoon(1100);
+      if (host.persist) host.persist();
+      // keep-last: do not reset subSel
+      return true;
+    }
+    if (v === 'lightMenu') {
+      var on = subSel === 0;
+      Eapi.confirmLight(s, on);
+      host.setView('play');
+      if (host.persist) host.persist();
+      return true;
+    }
+    if (v === 'healMenu') {
+      Eapi.heal(s, subSel === 1 ? 'skull' : 'dots');
+      host.setView('play');
+      if (host.persist) host.persist();
+      return true;
+    }
+    if (v === 'connect') {
+      if (subSel === 1) {
+        // Jogress on-device: left = active, right = the other pet
+        var left = s.active || 0;
+        var right = left === 0 ? 1 : 0;
+        var r = Eapi.jogressOnDevice(s, left, 'pet', right);
+        if (host.toast) host.toast(r.ok ? ('JOGRESS ' + (r.to || '')) : (r.error || 'NO'));
+        host.setView('play');
+        if (host.persist) host.persist();
+      } else if (subSel === 2) {
+        albumTab = 1; albumIdx = 0; host.setView('album');
+      } else {
+        // Battle: practice vs a Stage-appropriate colo opponent (single-device).
+        host.setView('coloMenu');
+        battle = { on: true, phase: 'pick-div', won: false, foe: '', startedAt: 0, injured: false };
+        subSel = 0;
+      }
+      return true;
+    }
+    if (v === 'coloMenu') {
+      if (battle.phase === 'pick-div' || !battle.phase || battle.phase === 'idle') {
+        battle.division = subSel === 1 ? 'tag' : 'single';
+        battle.phase = 'pick-act';
+        subSel = 1; // default Continue
+        return true;
+      }
+      if (battle.phase === 'pick-act') {
+        var div = battle.division || 'single';
+        if (subSel === 0) {
+          if (div === 'tag') s.coloTag = 1; else s.coloSingle = 1;
+        }
+        var res = Eapi.coloBattle(s, div, Math.random);
+        if (!res.ok) {
+          if (host.toast) host.toast(res.error === 'no-dp' ? 'NO DP' : (res.error || 'NO'));
+          host.setView('play');
+          battle.on = false;
+          return true;
+        }
+        battle.phase = 'result';
+        battle.won = !!res.won;
+        battle.injured = !!res.injured;
+        battle.foe = (res.foe && (res.foe.name || res.foe.id)) || '';
+        host.setView('colo');
+        if (host.persist) host.persist();
+        return true;
+      }
+      return true;
+    }
+    if (v === 'colo') {
+      host.setView('play');
+      battle.on = false;
+      return true;
+    }
+    if (v === 'album') {
+      if (albumTab === 3) {
+        passPos = (passPos + 1) % 6;
+        if (passPos === 0) {
+          // completed a pass entry cycle: try submit on wrapping? Submit via holding... use when user presses B on last digit after incrementing pos past 5 we already wrapped. Better: C cancels, a long... We'll submit when B on a "OK" — enter when passPos goes past 5, try password then reset pos.
+        }
+        return true;
+      }
+      albumTab = (albumTab + 1) % 4;
+      albumIdx = 0;
+      return true;
+    }
+    if (v === 'eggPick') {
+      var eggs = s.unlockedEggs || [];
+      var pick = eggs[eggPickIdx];
+      if (pick) {
+        var r = Eapi.pickEgg(s, pick);
+        if (host.toast && !r.ok) host.toast(r.error || 'NO');
+      }
+      host.setView('play');
+      if (host.persist) host.persist();
+      return true;
+    }
+    if (v === 'status') {
+      statusPage = (statusPage + 1) % STATUS_PAGES.length;
+      return true;
+    }
+    if (v === 'train') {
+      if (train.phase === 'result') { host.setView('play'); train.phase = 'idle'; }
+      return true;
+    }
+    // Play: confirm selection or open clock.
+    var sel = host.getSel();
+    if (sel < 0) { host.setView('clock'); return true; }
+    var id = SELECTABLE[sel];
+    if (id === 'STATUS') { statusPage = 0; host.setView('status'); return true; }
+    if (id === 'FEED') { host.setView('food'); return true; } // keep-last subSel
+    if (id === 'TRAIN') { startTrain(host); return true; }
+    if (id === 'COLOSSEUM') {
+      battle = { on: true, phase: 'pick-div', won: false, foe: '', startedAt: 0, injured: false };
+      subSel = 0;
+      host.setView('coloMenu');
+      return true;
+    }
+    if (id === 'FLUSH') {
+      var n = s.trash || 0;
+      Eapi.clean(s);
+      if (host.startFlush) host.startFlush(n);
+      if (host.persist) host.persist();
+      return true;
+    }
+    if (id === 'LIGHT') { subSel = 0; host.setView('lightMenu'); return true; }
+    if (id === 'MEDIC') { subSel = 0; host.setView('healMenu'); return true; }
+    if (id === 'ALBUM') { albumTab = 0; albumIdx = 0; host.setView('album'); return true; }
+    if (id === 'CONNECT') { subSel = 0; host.setView('connect'); return true; }
+    return true;
+  }
+
+  function pressC(host) {
+    if (noteInput(host) === 'wake') return true;
+    var v = host.view;
+    var s = host.state;
+    var Eapi = E();
+    if (v === 'clock') {
+      if (s.clockSet && s.clockSet.on) {
+        Eapi.confirmClock(s);
+        if (host.persist) host.persist();
+        host.setView('play');
+        return true;
+      }
+      host.setView('play');
+      return true;
+    }
+    if (v === 'album' && albumTab === 3) {
+      // Submit password on C? Official C is cancel. Submit with a full 6 + B wrap.
+      var code = passDigits.map(function (d) { return String(d); }).join('');
+      // only try if user has set something — always try, passwords are reusable
+      var r = Eapi.enterPassword(s, code);
+      if (host.toast) host.toast(r.ok ? ('OK ' + (r.mon || '')) : 'NO');
+      if (r.ok && host.persist) host.persist();
+      host.setView('play');
+      return true;
+    }
+    if (v !== 'play') {
+      if (v === 'train' && train.phase === 'count') {
+        // cancel without awarding? official C cancel — no effort if aborted? Unpublished.
+        // Safer: do not call train() so no effort from a cancelled session. User left.
+      }
+      host.setView('play');
+      train.phase = 'idle';
+      battle.on = false;
+      return true;
+    }
+    // Play: C cycles the shown Digimon (two-pet after first Stage III),
+    // including both / egg / computer.
+    Eapi.switchDisplay(s);
+    if (host.persist) host.persist();
+    return true;
+  }
+
+  function maybeChord(host, keyA, keyC) {
+    var v = host.view;
+    var s = host.state;
+    if (keyA && keyC) {
+      if (v === 'clock') {
+        E().beginClockSet(s);
+        return true;
+      }
+      if (v === 'play') {
+        // A+C home = mute
+        if (host.setSoundOn && host.isSoundOn) {
+          host.setSoundOn(!host.isSoundOn());
+        } else {
+          s.muted = !s.muted;
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function maybeAB(host, keyA, keyB) {
+    if (!(keyA && keyB)) return false;
+    var s = host.state;
+    if (s.display === 'egg' || s.display === 'computer') {
+      eggPickIdx = 0;
+      host.setView('eggPick');
+      return true;
+    }
+    return false;
+  }
+
+  function onShake(n) {
+    if (train.phase === 'count') {
+      train.shakes += n || 1;
+    }
+    // Dying shake-save
+    return train.shakes;
+  }
+
+  function noteShakeOnState(host, n) {
+    noteInput(host);
+    var s = host.state;
+    var Eapi = E();
+    var pet = Eapi && Eapi.activePet(s);
+    if (pet && pet.dying) {
+      Eapi.shakeSave(s);
+      if (host.persist) host.persist();
+      return;
+    }
+    onShake(n);
+  }
+
+  function tickMinigame(host) {
+    if (train.phase === 'count') {
+      var now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      // ~4 s window (labelled: exact COUNT window unpublished). 8 frames at 500 ms.
+      if (now - train.startedAt >= 8 * (host.ANIM_MS || 500)) {
+        resolveTrain(host);
+      }
+    }
+  }
+
+  function onCanvasPointerDown() {}
+  function onCanvasPointerMove() {}
+  function onCanvasPointerUp() {}
+
+  function setStatusPage(n) { statusPage = n || 0; }
+  function setTrainForShot(phase, extra) {
+    train.phase = phase || 'count';
+    if (extra) {
+      if (extra.shakes != null) train.shakes = extra.shakes;
+      if (extra.startedAt != null) train.startedAt = extra.startedAt;
+    }
+  }
+
+  var api = {
+    draw: draw,
+    pressA: pressA,
+    pressB: pressB,
+    pressC: pressC,
+    maybeChord: maybeChord,
+    maybeAB: maybeAB,
+    tickMinigame: tickMinigame,
+    noteShakeOnState: noteShakeOnState,
+    onShake: onShake,
+    onCanvasPointerDown: onCanvasPointerDown,
+    onCanvasPointerMove: onCanvasPointerMove,
+    onCanvasPointerUp: onCanvasPointerUp,
+    setStatusPage: setStatusPage,
+    setTrainForShot: setTrainForShot,
+    getSubSel: function () { return subSel; },
+    setSubSel: function (n) { subSel = n || 0; },
+    SELECTABLE: SELECTABLE,
+    STATUS_PAGES: STATUS_PAGES,
+    noteInput: noteInput
+  };
+  if (root.PendulumShake && typeof root.PendulumShake.onShake === 'function') {
+    root.PendulumShake.onShake(function (n) { onShake(n || 1); });
+  }
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.Pen20UI = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);

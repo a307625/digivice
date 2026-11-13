@@ -17,7 +17,11 @@
  *           solid black when awake and off (including Baby I, who has
  *           no bedtime). Egg with lamp off is black.
  *
- * Returns one of: 'paper' | 'blank-dark' | 'black' | 'black-z' | 'paper-sleep'
+ *   Pendulum Ver.20th — Off freezes (refrigerator sprite on paper) or
+ *           puts a tired pet to sleep (sleep pose on paper). Never blank-dark
+ *           or black-z. A 1-minute idle screen-off is a separate UI dim.
+ *
+ * Returns one of: 'paper' | 'blank-dark' | 'black' | 'black-z' | 'paper-sleep' | 'paper-fridge'
  */
 (function (root) {
   'use strict';
@@ -25,7 +29,8 @@
   var MENU_VIEWS = {
     clock: 1, status: 1, food: 1, battleMenu: 1, lightMenu: 1,
     album: 1, albumView: 1, albumRecord: 1, connect: 1,
-    healMenu: 1, soundMenu: 1, train: 1, battle: 1, evo: 1
+    healMenu: 1, soundMenu: 1, train: 1, battle: 1, evo: 1,
+    coloMenu: 1, colo: 1, eggPick: 1
   };
 
   function familyOf(state, family) {
@@ -48,6 +53,20 @@
     // Grave / dying paint their own art on paper.
     if (state.dead && view !== 'play') return 'paper';
     var fam = familyOf(state, family);
+    // Pen20: Off is freeze or sleep, not a lamp. Frozen/sleeping pets
+    // show fridge / sleep on paper regardless of a lights flag.
+    if (fam === 'pen20') {
+      var pet = null;
+      if (state.pets && state.pets.length) {
+        var ai = state.active || 0;
+        pet = state.pets[ai] || state.pets[0];
+      }
+      if (pet && pet.frozen) return 'paper-fridge';
+      if (pet && pet.sleeping) return 'paper-sleep';
+      if (state.frozen) return 'paper-fridge';
+      if (state.sleeping) return 'paper-sleep';
+      return 'paper';
+    }
     if (state.lights !== false && state.lights !== 0) return 'paper';
     // Lamp is off.
     if (fam === 'dm20') {
