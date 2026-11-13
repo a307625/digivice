@@ -169,7 +169,17 @@
     { id: 'egg_corona', dataEgg: 'corona', label: '日冕數碼蛋' },
     { id: 'egg_luna', dataEgg: 'luna', label: '露娜數碼蛋' },
     { id: 'egg_meicoo', dataEgg: 'meicoo', label: '梅可可數碼蛋' },
-    { id: 'egg_pen_1_0', dataEgg: 'pen_1_0', label: '超代 1.0 自然靈魂數碼蛋' }
+    { id: 'egg_pen_1_0', dataEgg: 'pen_1_0', label: '超代 1.0 自然靈魂數碼蛋' },
+    { id: 'egg_pen_1_5', dataEgg: 'pen_1_5', label: '超代 1.5 自然靈魂數碼蛋' },
+    { id: 'egg_pen_2_0', dataEgg: 'pen_2_0', label: '超代 2.0 深海拯救者數碼蛋' },
+    { id: 'egg_pen_2_5', dataEgg: 'pen_2_5', label: '超代 2.5 深海拯救者數碼蛋' },
+    { id: 'egg_pen_3_0', dataEgg: 'pen_3_0', label: '超代 3.0 夢魘士兵數碼蛋' },
+    { id: 'egg_pen_3_5', dataEgg: 'pen_3_5', label: '超代 3.5 夢魘士兵數碼蛋' },
+    { id: 'egg_pen_4_0', dataEgg: 'pen_4_0', label: '超代 4.0 風之守護者數碼蛋' },
+    { id: 'egg_pen_4_5', dataEgg: 'pen_4_5', label: '超代 4.5 風之守護者數碼蛋' },
+    { id: 'egg_pen_5_0', dataEgg: 'pen_5_0', label: '超五 5.0 金屬帝國數碼蛋' },
+    { id: 'egg_pen_5_5', dataEgg: 'pen_5_5', label: '超五 5.5 金屬帝國數碼蛋' },
+    { id: 'egg_pen_zero', dataEgg: 'pen_zero', label: '超0 病毒剋星數碼蛋' }
   ];
 
   var api = {

@@ -1,5 +1,5 @@
 /**
- * Original Pendulum Ver.1.0 rules engine.
+ * Original Pendulum OG rules engine (Ver.1.0–5.5 + ZERO).
  * Isolated from the 1997 Engine — does not call 1997 care / battle /
  * evolution formulas. Shared infrastructure only: save format conventions,
  * clock second arithmetic, and the step-counter ledger (ungated).
@@ -19,22 +19,29 @@
 
   function mon(state) {
     var D = data();
-    return (D && D.monster(state && state.mon)) || null;
+    return (D && D.monster(state && state.mon, state && state.version)) || null;
   }
 
   function rules() { return data().RULES; }
 
   function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
 
+  function verMeta(eggKind) {
+    var D = data();
+    if (D && D.versionForEgg) return D.versionForEgg(eggKind || 'pen_1_0');
+    return { key: '1.0', id: 'pen-1-0', eggKind: eggKind || 'pen_1_0', baby1: 'babumon', baby2: 'motimon' };
+  }
+
   function defaultState(eggKind) {
     var clock = new Date();
     var D = data();
-    var egg = (D && D.MONSTERS.pen_egg) || {};
+    var meta = verMeta(eggKind);
+    var egg = (D && D.monster && D.monster('pen_egg', meta.key)) || (D && D.MONSTERS && D.MONSTERS.pen_egg) || {};
     return {
       family: 'pendulum',
-      deviceId: 'pen-1-0',
-      version: '1.0',
-      eggKind: eggKind || 'pen_1_0',
+      deviceId: meta.id || 'pen-1-0',
+      version: meta.key || '1.0',
+      eggKind: meta.eggKind || eggKind || 'pen_1_0',
       mon: 'pen_egg',
       bornAt: now(),
       stageEnteredAt: now(),
@@ -110,6 +117,11 @@
     if (state.dpMaxQ == null) {
       var m = mon(state);
       state.dpMaxQ = m ? Math.round((m.dpMax || 0) * 4) : 0;
+    }
+    if (!state.version || !state.deviceId) {
+      var meta = verMeta(state.eggKind || 'pen_1_0');
+      if (!state.version) state.version = meta.key;
+      if (!state.deviceId) state.deviceId = meta.id;
     }
     return state;
   }
@@ -487,7 +499,8 @@
 
   function doJogress(state, otherMonId) {
     if (!canJogress(state)) return { ok: false, error: 'dp-or-stage' };
-    var r = data().jogressResult(state.mon, otherMonId);
+    var otherVer = (typeof arguments[2] === 'string' ? arguments[2] : (arguments[2] && arguments[2].otherVersion)) || state.version;
+    var r = data().jogressResult(state.mon, otherMonId, state.version, otherVer);
     if (!r.ok) return r;
     spendDp(state, dp(state)); // consume all
     evolveTo(state, r.to, { jogress: true });
@@ -555,7 +568,7 @@
 
   function evolveTo(state, toId, opts) {
     opts = opts || {};
-    var next = data().monster(toId);
+    var next = data().monster(toId, state.version);
     if (!next) return false;
     state.mon = toId;
     state.stageEnteredAt = now();
@@ -607,8 +620,9 @@
     var hours = timeInStage(state) / 3600;
     if (m.stage === 'egg') {
       if (hours >= rules().hatchMinutes / 60 && state.clockInitialized) {
-        evolveTo(state, 'babumon');
-        return { from: 'pen_egg', to: 'babumon' };
+        var baby1 = (data().verData(state.version) || {}).baby1 || 'babumon';
+        evolveTo(state, baby1);
+        return { from: 'pen_egg', to: baby1 };
       }
       return null;
     }
@@ -623,13 +637,13 @@
     var to = null, info = null;
 
     if (m.stage === 'baby1') {
-      to = 'motimon';
+      to = (data().verData(state.version) || {}).baby2 || 'motimon';
     } else if (m.stage === 'baby2') {
-      to = data().naturalChild(cm);
+      to = data().naturalChild(cm, state.version);
     } else if (m.stage === 'child') {
-      to = data().naturalAdult(state.mon, cm, tr);
+      to = data().naturalAdult(state.mon, cm, tr, state.version);
     } else if (m.stage === 'adult') {
-      info = data().naturalPerfect(state.mon, cm, tr, state.battles || 0, wr, state.wrFlag);
+      info = data().naturalPerfect(state.mon, cm, tr, state.battles || 0, wr, state.wrFlag, state.version);
       if (info && info.to) {
         var bonus = state.traitedEgg ? rules().eggShakeBonus : 0;
         var odds = (info.odds || 0) + bonus;
@@ -640,7 +654,7 @@
         state.windowMissed = true;
       }
     } else if (m.stage === 'perfect') {
-      info = data().naturalUltimate(state.mon, cm, wr);
+      info = data().naturalUltimate(state.mon, cm, wr, state.version);
       if (info && info.to) to = info.to;
       else state.windowMissed = true;
     }

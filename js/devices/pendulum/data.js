@@ -1,5 +1,6 @@
 /**
- * Original Pendulum Ver.1.0 Nature Spirits — roster, evos, Jogress,
+ * Original Pendulum Ver.1.0–5.5 + ZERO — shared rules, 1.0 roster,
+ * plus registerVersion() for later versions (see versions.js).
  * species care stats, and the device profile (shell / icons / menus).
  *
  * Sources (see also /workspace/ui-research/device-lines.md §4, §13):
@@ -249,7 +250,122 @@
     // Heracles is natural, not listed as Jogress-only on FI for 1.0.
   ];
 
-  function monster(id) { return MONSTERS[id] || null; }
+
+  var EGG_TO_VER = { pen_1_0: '1.0' };
+
+  var VERSIONS = {
+    '1.0': {
+      key: '1.0',
+      id: 'pen-1-0',
+      eggKind: 'pen_1_0',
+      shell: 'pen-1-0',
+      themeTw: '自然靈魂',
+      labelTw: '超代 Ver.1.0 自然靈魂',
+      eggLabelTw: '超代 1.0 自然靈魂數碼蛋',
+      hasMegahitScreen: false,
+      baby1: 'babumon',
+      baby2: 'motimon',
+      idleMon: 'tentomon',
+      childEvo: CHILD_EVO,
+      adultEvo: ADULT_EVO,
+      perfectEvo: PERFECT_EVO,
+      ultimateEvo: ULTIMATE_EVO,
+      jogressPerfect: JOGRESS_PERFECT,
+      jogressUltimate: JOGRESS_ULTIMATE,
+      specialJogress: [],
+      overrides: null
+    }
+  };
+
+  function resolveVer(v) {
+    if (!v) return '1.0';
+    if (VERSIONS[v]) return v;
+    if (EGG_TO_VER[v]) return EGG_TO_VER[v];
+    // deviceId 'pen-1-5' / 'pen-zero'
+    if (typeof v === 'string' && v.indexOf('pen-') === 0) {
+      var rest = v.slice(4);
+      if (rest === 'zero') return VERSIONS.zero ? 'zero' : '1.0';
+      var k = rest.replace(/-/g, '.');
+      if (VERSIONS[k]) return k;
+    }
+    if (typeof v === 'string' && v.indexOf('pen_') === 0) {
+      var r2 = v.slice(4);
+      if (r2 === 'zero') return VERSIONS.zero ? 'zero' : '1.0';
+      var k2 = r2.replace(/_/g, '.');
+      if (VERSIONS[k2]) return k2;
+    }
+    return '1.0';
+  }
+
+  function verData(v) {
+    return VERSIONS[resolveVer(v)] || VERSIONS['1.0'];
+  }
+
+  function versionForEgg(eggKind) {
+    return verData(eggKind);
+  }
+
+  function makeProfile(key) {
+    var def = verData(key);
+    return {
+      id: def.id,
+      family: 'pendulum',
+      line: 'pen-og',
+      versionKey: def.key,
+      shell: def.shell,
+      orient: 'landscape',
+      version: def.key,
+      layout: LAYOUT,
+      iconsTop: LAYOUT.names_top,
+      iconsBot: LAYOUT.names_bot,
+      selectable: ['STATUS', 'FEED', 'TRAIN', 'CONNECT', 'FLUSH', 'LIGHT', 'MEDIC'],
+      statusPages: ['age', 'hunger', 'strength', 'win', 'dp', 'type', 'bj'],
+      buttonStyle: 'pendulum-metal',
+      lightsOff: 'black-z',
+      clockSet: 'pendulum',
+      clock12_24: true,
+      setPausesGrowth: true,
+      hatchMinutes: 1,
+      engine: 'PendulumEngine',
+      steps: true,
+      eggs: [def.eggKind],
+      labelTw: def.labelTw,
+      hasMegahitScreen: !!def.hasMegahitScreen,
+      wakeHour: 8
+    };
+  }
+
+  function registerVersion(key, def) {
+    if (!def || !key) return null;
+    def.key = key;
+    VERSIONS[key] = def;
+    if (def.eggKind) EGG_TO_VER[def.eggKind] = key;
+    if (def.monsters) {
+      var id;
+      for (id in def.monsters) {
+        if (def.monsters.hasOwnProperty(id) && !MONSTERS[id]) MONSTERS[id] = def.monsters[id];
+      }
+    }
+    if (root.Devices && typeof root.Devices.register === 'function') {
+      root.Devices.register(makeProfile(key));
+    }
+    return def;
+  }
+
+  function monster(id, version) {
+    var base = MONSTERS[id] || null;
+    if (!base) return null;
+    var V = version != null && version !== '' ? verData(version) : null;
+    if (V && V.overrides && V.overrides[id]) {
+      var o = {}, k, ov = V.overrides[id];
+      for (k in base) if (base.hasOwnProperty(k)) o[k] = base[k];
+      for (k in ov) if (ov.hasOwnProperty(k)) o[k] = ov[k];
+      return o;
+    }
+    return base;
+  }
+
+
 
   function winRate(state) {
     var b = (state && state.battles) || 0;
@@ -272,28 +388,31 @@
     return true;
   }
 
-  function naturalChild(cm) {
+  function naturalChild(cm, version) {
+    var evos = verData(version).childEvo || CHILD_EVO;
     var i, r;
-    for (i = 0; i < CHILD_EVO.length; i++) {
-      r = CHILD_EVO[i];
+    for (i = 0; i < evos.length; i++) {
+      r = evos[i];
       if (matchRule(r, cm, 0)) return r.to;
     }
-    return 'otamamon';
+    return evos.length ? evos[evos.length - 1].to : 'otamamon';
   }
 
-  function naturalAdult(from, cm, train) {
+  function naturalAdult(from, cm, train, version) {
+    var evos = verData(version).adultEvo || ADULT_EVO;
     var i, r;
-    for (i = 0; i < ADULT_EVO.length; i++) {
-      r = ADULT_EVO[i];
+    for (i = 0; i < evos.length; i++) {
+      r = evos[i];
       if (r.from === from && matchRule(r, cm, train)) return r.to;
     }
     return null;
   }
 
-  function naturalPerfect(from, cm, train, battles, wr, wrFlag) {
+  function naturalPerfect(from, cm, train, battles, wr, wrFlag, version) {
+    var evos = verData(version).perfectEvo || PERFECT_EVO;
     var i, r;
-    for (i = 0; i < PERFECT_EVO.length; i++) {
-      r = PERFECT_EVO[i];
+    for (i = 0; i < evos.length; i++) {
+      r = evos[i];
       if (r.from.indexOf(from) < 0) continue;
       if (!wrFlag) return { to: null, reason: 'no-wr-flag' };
       if (battles < (r.battlesMin || 30)) return { to: null, reason: 'battles' };
@@ -305,10 +424,11 @@
     return { to: null, reason: 'no-path' };
   }
 
-  function naturalUltimate(from, cm, wr) {
+  function naturalUltimate(from, cm, wr, version) {
+    var evos = verData(version).ultimateEvo || ULTIMATE_EVO;
     var i, r;
-    for (i = 0; i < ULTIMATE_EVO.length; i++) {
-      r = ULTIMATE_EVO[i];
+    for (i = 0; i < evos.length; i++) {
+      r = evos[i];
       if (r.from.indexOf(from) < 0) continue;
       if (r.cmMax != null && cm > r.cmMax) return { to: null, reason: 'cm' };
       if (r.wrMin != null && wr < r.wrMin) return { to: null, reason: 'wr' };
@@ -317,21 +437,30 @@
     return { to: null, reason: 'no-path' };
   }
 
-  function samePosition(a, b) {
-    var ma = MONSTERS[a], mb = MONSTERS[b];
+  function samePosition(a, b, verA, verB) {
+    var ma = monster(a, verA), mb = monster(b, verB);
     if (!ma || !mb || !ma.position || !mb.position) return false;
     return ma.position === mb.position;
   }
 
-  function jogressResult(selfId, otherId) {
-    var a = MONSTERS[selfId], b = MONSTERS[otherId];
+  function jogressResult(selfId, otherId, selfVer, otherVer) {
+    var V = verData(selfVer);
+    var a = monster(selfId, selfVer), b = monster(otherId, otherVer != null ? otherVer : selfVer);
     if (!a || !b) return { ok: false, error: 'unknown' };
     if (!a.canJogress || !b.canJogress) return { ok: false, error: 'stage' };
-    if (samePosition(selfId, otherId)) return { ok: false, error: 'position' };
-    // Ultimate pair
-    var i, u;
-    for (i = 0; i < JOGRESS_ULTIMATE.length; i++) {
-      u = JOGRESS_ULTIMATE[i];
+    if (samePosition(selfId, otherId, selfVer, otherVer != null ? otherVer : selfVer)) {
+      return { ok: false, error: 'position' };
+    }
+    var i, u, special = V.specialJogress || [];
+    for (i = 0; i < special.length; i++) {
+      u = special[i];
+      if ((u.a === selfId && u.b === otherId) || (u.a === otherId && u.b === selfId)) {
+        return { ok: true, to: u.result, kind: 'ultimate-special' };
+      }
+    }
+    var ult = V.jogressUltimate || JOGRESS_ULTIMATE;
+    for (i = 0; i < ult.length; i++) {
+      u = ult[i];
       if ((u.a === selfId && u.b === otherId) || (u.a === otherId && u.b === selfId)) {
         return { ok: true, to: u.result, kind: 'ultimate' };
       }
@@ -343,10 +472,10 @@
     if (a.stage === 'adult' && b.stage === 'perfect' && a.attribute === b.attribute) {
       return { ok: true, to: otherId, kind: 'adult-to-perfect' };
     }
-    // Adult + Adult → product Perfect
+    // Adult + Adult → product Perfect from THIS device's roster (NHOKO).
     if (a.stage === 'adult' && b.stage === 'adult') {
       var prod = (JOGRESS_ATTR[a.attribute] || {})[b.attribute];
-      var dest = prod && JOGRESS_PERFECT[prod];
+      var dest = prod && (V.jogressPerfect || JOGRESS_PERFECT)[prod];
       if (dest) return { ok: true, to: dest, kind: 'adult-jogress', product: prod };
     }
     return { ok: false, error: 'miss-match' };
@@ -393,6 +522,14 @@
     PERFECT_EVO: PERFECT_EVO,
     ULTIMATE_EVO: ULTIMATE_EVO,
     PROFILE: PROFILE,
+    VERSIONS: VERSIONS,
+    EGG_TO_VER: EGG_TO_VER,
+    src: src,
+    resolveVer: resolveVer,
+    verData: verData,
+    versionForEgg: versionForEgg,
+    makeProfile: makeProfile,
+    registerVersion: registerVersion,
     monster: monster,
     attrAdvantage: attrAdvantage,
     winRate: winRate,

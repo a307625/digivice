@@ -55,7 +55,7 @@
     if (!A || !id) return;
     var c = null;
     try {
-      var sp = (root.PendulumSprites && root.PendulumSprites.SPRITES[id]) || (A.SPRITES && A.SPRITES[id]);
+      var sp = (root.PendulumSprites && root.PendulumSprites.SPRITES[id]) || (root.PendulumSpritesExtra && root.PendulumSpritesExtra.SPRITES[id]) || (A.SPRITES && A.SPRITES[id]);
       if (!sp) return;
       var img = A.renderToImageData(sp, frame || 'idle0', host.MON || 2);
       if (!img) return;
@@ -126,7 +126,14 @@
   function drawPlay(host) {
     var s = host.state;
     var EngE = Eng();
-    var screen = EngE && EngE.lightsOffScreen(s);
+    var screen;
+    var LO = root.LightsOff;
+    if (LO && LO.playfieldMode) {
+      var mode = LO.playfieldMode(s, 'play', 'pendulum');
+      screen = (mode === 'black-z' || mode === 'black') ? mode : 'paper';
+    } else {
+      screen = EngE && EngE.lightsOffScreen(s);
+    }
     if (screen === 'black-z') {
       lcdPaper(host, true);
       drawFloatingZ(host, true);
@@ -577,12 +584,16 @@
       var r = subSel === 1 ? EngE.feedProtein(s) : EngE.feedMeat(s);
       if (host.persist) host.persist();
       host.setView('play');
-      if (!r.ok || r.refused) host.playPose('refuse', 1100);
-      else {
+      if (!r.ok || r.refused) {
+        host.playPose('refuse', 1100);
+        // Host loop will not auto-return on refuse; come back with cursor kept.
+        if (host.returnToFoodSoon) host.returnToFoodSoon(1100);
+      } else {
         host.eatAnim.on = true;
         host.eatAnim.t = 0;
         host.eatAnim.kind = subSel === 1 ? 'protein' : 'meat';
         host.eatAnim.refused = false;
+        host.eatAnim.returnToFood = true;
       }
       return true;
     }
@@ -630,7 +641,8 @@
       if (id === 'FEED') {
         if (s.mon === 'pen_egg') { host.playPose('refuse', 900); return true; }
         EngE.disturbSleep(s, 'food');
-        subSel = 0; host.setView('food'); return true;
+        // Keep last-chosen item (meat / protein). Do not reset to meat.
+        host.setView('food'); return true;
       }
       if (id === 'TRAIN') return startTrain(host) || true;
       if (id === 'CONNECT') { subSel = 0; host.setView('connect'); return true; }
@@ -757,7 +769,9 @@
     getBattle: getBattle,
     setTrainForShot: setTrainForShot,
     resetTrain: resetTrain,
-    resetBattle: resetBattle
+    resetBattle: resetBattle,
+    getSubSel: function () { return subSel; },
+    setSubSel: function (n) { subSel = n ? 1 : 0; }
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.PendulumUI = api;

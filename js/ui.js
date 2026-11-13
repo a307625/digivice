@@ -427,8 +427,13 @@
   // DM20 does not go dark (Pendulum 20th / DM20-class: "the screen doesn't
   // go dark like the old ones"); the sleep cell and a Z stay visible.
   function is1997PlayDark() {
-    return !!(state && !state.lights && view === 'play' &&
-      currentDevice().family === 'dm1997');
+    var d = currentDevice();
+    var fam = d && d.family;
+    var LO = (typeof window !== 'undefined' && window.LightsOff) || (typeof globalThis !== 'undefined' && globalThis.LightsOff);
+    if (LO && LO.playfieldMode) {
+      return LO.playfieldMode(state, view, fam) === 'blank-dark';
+    }
+    return !!(state && !state.lights && view === 'play' && fam === 'dm1997');
   }
   function isClockSetView() {
     var E = engine();
@@ -834,6 +839,15 @@
       startFlush: function (n) {
         flushAnim = { on: true, t: 0, n: n || 1, off: 0 };
         flushLastAt = 0;
+      },
+      returnToFoodSoon: function (ms) {
+        setTimeout(function () {
+          if (view === 'play' || view === 'food') {
+            view = 'food';
+            var fi = selectable().indexOf('FEED');
+            if (fi >= 0) sel = fi;
+          }
+        }, ms || 1100);
       }
     };
   }
@@ -999,7 +1013,9 @@
     var m = mon();
     if (!m || m.stage === 'egg') { playPose('refuse', 900); return; }
     disturb('food');
-    foodSel = 0;
+    // Keep the last-chosen item (meat or protein). Official manuals we
+    // found do not spell the cursor out; the original-device pattern and
+    // the v27 fallback is to keep it so several pills can be fed in a row.
     view = 'food';
   }
 
@@ -1012,9 +1028,16 @@
     if (!r.ok || r.refused) {
       eatAnim.on = false;
       playPose('refuse', 1100);
+      setTimeout(function () {
+        if (view === 'play' || view === 'food') {
+          view = 'food';
+          var fi = selectable().indexOf('FEED');
+          if (fi >= 0) sel = fi;
+        }
+      }, 1100);
       return;
     }
-    eatAnim = { on: true, t: 0, kind: kind, refused: false };
+    eatAnim = { on: true, t: 0, kind: kind, refused: false, returnToFood: true };
   }
 
   function startTrain() {
@@ -1254,24 +1277,36 @@
     return false;
   }
 
-  var clockHold = { timer: null, interval: null, part: null, fromPad: false };
-  function stopClockHold() {
-    if (clockHold.timer) { clearTimeout(clockHold.timer); clockHold.timer = null; }
-    if (clockHold.interval) { clearInterval(clockHold.interval); clockHold.interval = null; }
-    clockHold.part = null;
+  // Clock-SET hold. See js/clock-hold.js. One tap = exactly +1;
+  // auto-repeat only after the family\'s hold delay, and never on a ghost click.
+  var clockHoldCtl = null;
+  function getClockHold() {
+    if (clockHoldCtl) return clockHoldCtl;
+    var CH = (typeof window !== 'undefined' && window.ClockHold) || (typeof globalThis !== 'undefined' && globalThis.ClockHold);
+    if (!CH) {
+      clockHoldCtl = {
+        onPointerDown: function (part) { clockSetAdjust(part); },
+        onPointerUp: function () {},
+        onKeyDown: function (part) { clockSetAdjust(part); },
+        onKeyUp: function () {},
+        shouldIgnoreClick: function () { return false; },
+        stop: function () {}
+      };
+      return clockHoldCtl;
+    }
+    clockHoldCtl = CH.create({
+      adjust: function (part) { clockSetAdjust(part); },
+      family: function () {
+        var d = currentDevice();
+        return (d && d.family) || 'dm1997';
+      }
+    });
+    return clockHoldCtl;
   }
   function clockSetAdjust(part) {
     if (!state || !engine() || !engine().adjustClockSet) return;
     engine().adjustClockSet(state, part, 1);
     persist();
-  }
-  function startClockHold(part) {
-    stopClockHold();
-    clockHold.part = part;
-    clockHold.timer = setTimeout(function () {
-      clockSetAdjust(part);
-      clockHold.interval = setInterval(function () { clockSetAdjust(part); }, 100);
-    }, 400);
   }
 
   function pressA() {
@@ -1282,9 +1317,11 @@
     if (maybeNewEggCombo()) return;
     if (maybeClockSetCombo()) return;
     if (isClockSetView()) {
-      if (clockHold.fromPad) { clockHold.fromPad = false; return; }
+      // Ghost click after pointerdown (iOS 15): already counted, do nothing.
+      // A real click with no pointer (shouldn't happen on the pads) is +1
+      // and does NOT start a hold — there is no pointerup to stop it.
+      if (getClockHold().shouldIgnoreClick()) return;
       clockSetAdjust('h');
-      startClockHold('h');
       return;
     }
     if (isPendulum() && window.PendulumUI) {
@@ -1300,9 +1337,8 @@
     if (anyOverlay()) return;
     if (maybeNewEggCombo()) return;
     if (isClockSetView()) {
-      if (clockHold.fromPad) { clockHold.fromPad = false; return; }
+      if (getClockHold().shouldIgnoreClick()) return;
       clockSetAdjust('m');
-      startClockHold('m');
       return;
     }
     if (isPendulum() && window.PendulumUI) {
@@ -1358,7 +1394,16 @@
         var maxT = eatAnim.kind === 'protein' ? 4 : 5;
         if (eatAnim.t >= maxT) {
           eatAnim.on = false;
-          playPose('happy', 2000);
+          // Return to the food menu with the cursor still on the item
+          // just fed, so the next B feeds another pill. No 2 s happy
+          // pose that would leave the menu.
+          if (eatAnim.returnToFood) {
+            view = 'food';
+            var fi = selectable().indexOf('FEED');
+            if (fi >= 0) sel = fi;
+          } else {
+            playPose('happy', 2000);
+          }
         }
       }
       if (view === 'evo') {
@@ -1758,16 +1803,23 @@
       var ep = new URLSearchParams(location.search).get('egg');
       if (ep && DM20_EGGS[ep]) { state.eggKind = ep; state.version = 'special'; }
       else if (ep && /^[1-5]$/.test(ep)) { state.eggKind = 'ver' + ep; state.version = parseInt(ep, 10); }
-      else if (ep === 'pen_1_0' || (name && name.indexOf('pen-') === 0)) {
+      else if ((ep && /^pen_/.test(String(ep))) || (name && String(name).indexOf('pen-') === 0)) {
         if (window.PendulumEngine) {
-          state = window.PendulumEngine.defaultState('pen_1_0');
+          var eggKind = 'pen_1_0';
+          if (ep && /^pen_/.test(ep)) eggKind = ep;
+          else if (name) {
+            var mm = String(name).match(/^pen-(zero|[0-9]+-[0-9]+)/);
+            if (mm) eggKind = mm[1] === 'zero' ? 'pen_zero' : 'pen_' + mm[1].replace(/-/g, '_');
+          }
+          state = window.PendulumEngine.defaultState(eggKind);
           state.clockInitialized = true;
           state.clockSet = { on: false, h24: 10, min: 34 };
           state.gameTime = 0;
-          // 10:34:05 AM, matching the v25 clock screenshots.
           state.clockOffset = 10 * 3600 + 34 * 60 + 5;
-          state.mon = 'tentomon';
-          state.weight = 15;
+          var V = window.PendulumData && window.PendulumData.versionForEgg(eggKind);
+          state.mon = (V && V.idleMon) || 'tentomon';
+          var pm = window.PendulumData && window.PendulumData.monster(state.mon, state.version);
+          state.weight = (pm && pm.minWeight) || 15;
           state.hunger = 4;
           state.strength = 3;
           state.dpQ = 12;
@@ -1779,7 +1831,7 @@
           state.effort = 16;
           state.lights = true;
           state.sleeping = false;
-          state.gameTime = 0;
+          state.tired = false;
         }
       }
     } catch (eEgg) {}
@@ -1877,7 +1929,8 @@
       view = 'clock';
     } else if (name === 'food') {
       view = 'food'; foodSel = 0;
-    } else if (name === 'pen-idle' || name === 'pen-shell') {
+    } else if (name === 'pen-idle' || name === 'pen-shell' ||
+               /^pen-(zero|[0-9]+-[0-9]+)(-idle|-shell)?$/.test(name)) {
       view = 'play';
     } else if (name === 'pen-status') {
       view = 'status';
@@ -1894,6 +1947,34 @@
       state.tired = true;
       state.sleeping = true;
       state.lights = false;
+      view = 'play';
+    } else if (name === 'pen-night-awake' || name === 'night-pen-baby') {
+      // Baby I, lamp off, awake: solid black (no Z).
+      if (window.PendulumEngine && (!state || state.family !== 'pendulum')) {
+        // defaultState already applied if egg=pen_*
+      }
+      state.tired = false;
+      state.sleeping = false;
+      state.lights = false;
+      if (!state.mon || state.mon === 'pen_egg') state.mon = 'babumon';
+      view = 'play';
+    } else if (name === 'night-dm20-babydmon') {
+      state = window.Engine.defaultState('special', 'dra_blue');
+      state.mon = 'babydmon';
+      state.clockInitialized = true;
+      state.sleeping = true;
+      state.lights = false;
+      state.napUntil = 10800;
+      applyShell();
+      view = 'play';
+    } else if (name === 'night-1997-baby') {
+      state = agumonState();
+      state.eggKind = 'ver1';
+      state.version = 1;
+      state.mon = 'botamon';
+      state.sleeping = false;
+      state.lights = false;
+      applyShell();
       view = 'play';
     } else if (name === 'pen-food') {
       view = 'food';
@@ -1958,22 +2039,18 @@
       keyA = true; mark('A');
       if (tryChord()) return;
       if (isClockSetView()) {
-        clockHold.fromPad = true;
-        clockSetAdjust('h');
-        startClockHold('h');
+        getClockHold().onPointerDown('h');
       }
     }
-    function upA() { keyA = false; clockHold.fromPad = false; stopClockHold(); }
+    function upA() { keyA = false; getClockHold().onPointerUp(); }
     function downB(e) {
       keyB = true; mark('B');
       if (tryChord()) return;
       if (isClockSetView()) {
-        clockHold.fromPad = true;
-        clockSetAdjust('m');
-        startClockHold('m');
+        getClockHold().onPointerDown('m');
       }
     }
-    function upB() { keyB = false; clockHold.fromPad = false; stopClockHold(); }
+    function upB() { keyB = false; getClockHold().onPointerUp(); }
     function downC(e) { keyC = true; mark('C'); tryChord(); }
     function upC() { keyC = false; }
     function resetTap(e) {
@@ -2026,14 +2103,22 @@
       if (e.repeat) return;
       var k = e.key;
       unlockAudio();
-      if (k === 'a' || k === 'A' || k === 'ArrowLeft') { keyA = true; keyPressVisual('btn-a', true); pressA(); e.preventDefault(); }
-      else if (k === 'b' || k === 'B' || k === 'Enter' || k === 'ArrowRight') { keyB = true; keyPressVisual('btn-b', true); pressB(); e.preventDefault(); }
-      else if (k === 'c' || k === 'C' || k === 'Escape') { keyC = true; keyPressVisual('btn-c', true); pressC(); e.preventDefault(); }
+      if (k === 'a' || k === 'A' || k === 'ArrowLeft') {
+        keyA = true; keyPressVisual('btn-a', true);
+        if (isClockSetView()) { getClockHold().onKeyDown('h'); }
+        else pressA();
+        e.preventDefault();
+      } else if (k === 'b' || k === 'B' || k === 'Enter' || k === 'ArrowRight') {
+        keyB = true; keyPressVisual('btn-b', true);
+        if (isClockSetView()) { getClockHold().onKeyDown('m'); }
+        else pressB();
+        e.preventDefault();
+      } else if (k === 'c' || k === 'C' || k === 'Escape') { keyC = true; keyPressVisual('btn-c', true); pressC(); e.preventDefault(); }
     });
     document.addEventListener('keyup', function (e) {
       var k = e.key;
-      if (k === 'a' || k === 'A' || k === 'ArrowLeft') { keyA = false; keyPressVisual('btn-a', false); }
-      else if (k === 'b' || k === 'B' || k === 'Enter' || k === 'ArrowRight') { keyB = false; keyPressVisual('btn-b', false); }
+      if (k === 'a' || k === 'A' || k === 'ArrowLeft') { keyA = false; keyPressVisual('btn-a', false); getClockHold().onKeyUp(); }
+      else if (k === 'b' || k === 'B' || k === 'Enter' || k === 'ArrowRight') { keyB = false; keyPressVisual('btn-b', false); getClockHold().onKeyUp(); }
       else if (k === 'c' || k === 'C' || k === 'Escape') { keyC = false; keyPressVisual('btn-c', false); }
     });
     // COUNT-screen swipe fallback for shake (used when DeviceMotion is denied).
@@ -2235,6 +2320,9 @@
 
   window.DigiviceUI = {
     applyShot: applyShot,
-    SELECTABLE: SELECTABLE
+    SELECTABLE: SELECTABLE,
+    getFoodSel: function () { return foodSel; },
+    setFoodSel: function (n) { foodSel = n ? 1 : 0; },
+    is1997PlayDark: is1997PlayDark
   };
 })();

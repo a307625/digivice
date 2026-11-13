@@ -12,7 +12,8 @@ global.Engine = require('../js/engine.js');
 const Devices = require('../js/devices/registry.js');
 global.Devices = Devices;
 global.PendulumData = require('../js/devices/pendulum/data.js');
-// data.js registers the profile
+require('../js/devices/pendulum/versions.js');
+// data.js registers 1.0; versions.js registers 1.5–ZERO
 const PendulumEngine = require('../js/devices/pendulum/engine.js');
 global.PendulumEngine = PendulumEngine;
 
@@ -126,12 +127,56 @@ console.log('5) 1997 Engine.tick ignores (delegates) a pendulum save');
 console.log('6) Egg picker is still one flat list with no spoilers (items)');
 {
   const items = require('../js/items.js');
-  ok(items.EGG_PICKER.length === 16, '16 eggs');
+  ok(items.EGG_PICKER.length === 26, '26 eggs');
   const last = items.EGG_PICKER[items.EGG_PICKER.length - 1];
-  eq(last.dataEgg, 'pen_1_0', 'pendulum egg at the end');
+  eq(last.dataEgg, 'pen_zero', 'Pendulum ZERO egg is last');
+  ok(items.EGG_PICKER.some((e) => e.dataEgg === 'pen_1_0'), '1.0 egg still present');
+  ok(items.EGG_PICKER.some((e) => e.dataEgg === 'pen_1_5'), '1.5 egg present');
   ok(last.label.indexOf('→') < 0, 'no arrow spoilers');
   ok(!/甲蟲|比多|大力神|炸薯|三角龍|Heracles|Atlur/.test(last.label), 'no roster spoilers in the label');
   ok(items.EGG_PICKER.every((e) => e.label && e.id && e.dataEgg), 'every egg has sprite id + name');
+}
+
+
+console.log('7) All Pendulum OG versions 1.0–5.5 + ZERO are registered');
+{
+  const expect = [
+    ['pen_1_0', 'pen-1-0', false],
+    ['pen_1_5', 'pen-1-5', false],
+    ['pen_2_0', 'pen-2-0', true],
+    ['pen_2_5', 'pen-2-5', true],
+    ['pen_3_0', 'pen-3-0', true],
+    ['pen_3_5', 'pen-3-5', true],
+    ['pen_4_0', 'pen-4-0', true],
+    ['pen_4_5', 'pen-4-5', true],
+    ['pen_5_0', 'pen-5-0', true],
+    ['pen_5_5', 'pen-5-5', true],
+    ['pen_zero', 'pen-zero', true]
+  ];
+  expect.forEach(([egg, id, mega]) => {
+    const p = Devices.profileByEgg(egg);
+    ok(p && p.family === 'pendulum', egg + ' is a Pendulum profile');
+    eq(p && p.id, id, egg + ' device id');
+    eq(p && p.shell, id, egg + ' own shell');
+    eq(!!(p && p.hasMegahitScreen), mega, egg + ' hasMegahitScreen=' + mega);
+    eqArr(p.selectable, ['STATUS', 'FEED', 'TRAIN', 'CONNECT', 'FLUSH', 'LIGHT', 'MEDIC'], egg + ' shared PenOG menus');
+    ok(Devices.isPendulumEgg(egg), egg + ' isPendulumEgg');
+    const s = PendulumEngine.defaultState(egg);
+    eq(s.family, 'pendulum', egg + ' default family');
+    eq(s.deviceId, id, egg + ' default deviceId');
+    const V = global.PendulumData.versionForEgg(egg);
+    eq(s.version, V.key, egg + ' default version');
+    const hatched = (function () {
+      s.clockInitialized = true;
+      s.clockSet.on = false;
+      s.evoDueAt = 1 / 60;
+      s.gameTime = 0;
+      s.lastReal = Date.now() - 70 * 1000;
+      PendulumEngine.tick(s, Date.now());
+      return s.mon;
+    })();
+    eq(hatched, V.baby1, egg + ' hatches to ' + V.baby1);
+  });
 }
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
