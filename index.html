@@ -41,6 +41,10 @@
       <div class="face-icon" data-icon="FEED" id="icon-FEED"></div>
       <div class="face-icon" data-icon="TRAIN" id="icon-TRAIN"></div>
       <div class="face-icon" data-icon="BATTLE" id="icon-BATTLE"></div>
+      <div class="face-icon" data-icon="CONNECT" id="icon-CONNECT"></div>
+      <div class="pendulum-chamber" id="pendulum-chamber" hidden>
+        <div class="pendulum-ball" id="pendulum-ball"></div>
+      </div>
       <div class="lcd-window" id="lcd-window">
         <canvas id="screen" width="160" height="96" aria-label="對打機畫面"></canvas>
       </div>
@@ -70,6 +74,7 @@
         <button type="button" class="btn js-sync-steps">同步步數</button>
         <button type="button" class="btn js-motion-steps">開啟走路計步</button>
         <button type="button" class="btn js-steps-help">步數捷徑說明</button>
+        <button type="button" class="btn" id="btn-shake-fallback" hidden>模擬搖動（搖擺機）</button>
         <button type="button" class="btn" id="btn-pvp">線上對戰連線</button>
       </div>
       <div id="steps-settings" class="steps-note" style="margin-top:10px"></div>
@@ -258,6 +263,14 @@
   <script src="./js/save.js"></script>
   <script src="./js/battle.js"></script>
   <script src="./js/steps.js"></script>
+  <script src="./js/audio.js"></script>
+  <script src="./js/buttons.js"></script>
+  <script src="./js/devices/registry.js"></script>
+  <script src="./js/devices/pendulum/data.js"></script>
+  <script src="./js/devices/pendulum/sprites.js"></script>
+  <script src="./js/devices/pendulum/shake.js"></script>
+  <script src="./js/devices/pendulum/engine.js"></script>
+  <script src="./js/devices/pendulum/ui.js"></script>
   <script src="./js/engine.js"></script>
   <script src="./js/ui.js"></script>
 </body>

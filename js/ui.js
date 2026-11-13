@@ -61,6 +61,7 @@
   var healthAppliedThisSession = false;
   var soundOn = false;
   var audioCtx = null;
+  var suppressClickBeep = false;
   var keyA = false, keyB = false, keyC = false;
   var chordAt = 0;
 
@@ -102,6 +103,9 @@
   };
 
   function currentDevice() {
+    if (window.Devices && window.Devices.profileFor) {
+      return window.Devices.profileFor(state);
+    }
     var kind = (state && state.eggKind) || '';
     var ver = parseInt((state && state.version), 10);
     if (kind && DM20_EGGS[kind]) {
@@ -112,22 +116,74 @@
     return { family: 'dm1997', shell: 'dm1997-v' + ver, orient: 'landscape', version: ver };
   }
 
+  function isPendulum() {
+    var d = currentDevice();
+    return !!(d && d.family === 'pendulum');
+  }
+
+  function engine() {
+    if (window.Devices && window.Devices.engineFor) return window.Devices.engineFor(state);
+    return window.Engine;
+  }
+
   function selectable() {
-    if (currentDevice().family === 'dm20') {
+    var d = currentDevice();
+    if (d && d.selectable) return d.selectable;
+    if (d && d.family === 'dm20') {
       return ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC', 'ALBUM', 'CONNECT'];
     }
     return ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC'];
   }
 
   function statusPages() {
-    if (currentDevice().family === 'dm20') {
+    var d = currentDevice();
+    if (d && d.statusPages) return d.statusPages;
+    if (d && d.family === 'dm20') {
       return ['name', 'age', 'hunger', 'strength', 'effort', 'dp', 'win'];
     }
     return ['age', 'hunger', 'strength', 'dp', 'win'];
   }
 
   function applyShellLayout() {
-    var L = SHELL_LAYOUT;
+    var d = currentDevice();
+    var L = (d && d.layout) ? d.layout : SHELL_LAYOUT;
+    var rootEl = document.documentElement;
+    if (rootEl && L.lcd) {
+      rootEl.style.setProperty('--lcd-l', L.lcd.left + '%');
+      rootEl.style.setProperty('--lcd-t', L.lcd.top + '%');
+      rootEl.style.setProperty('--lcd-w', L.lcd.width + '%');
+      rootEl.style.setProperty('--lcd-h', L.lcd.height + '%');
+    }
+    if (rootEl && L.aspectW && L.aspectH) {
+      rootEl.style.setProperty('--shell-aw', String(L.aspectW));
+      rootEl.style.setProperty('--shell-ah', String(L.aspectH));
+    }
+    // Show only this model's printed-icon highlights. CONNECT is Pendulum's
+    // 4th top icon; 1997/DM20 keep BATTLE in that slot.
+    var shown = {};
+    (L.names_top || []).concat(L.names_bot || []).forEach(function (n) { shown[n] = true; });
+    document.querySelectorAll('.face-icon').forEach(function (el) {
+      var id = el.getAttribute('data-icon');
+      el.style.display = shown[id] ? '' : 'none';
+    });
+    var chamber = document.getElementById('pendulum-chamber');
+    if (chamber) {
+      if (L.chamber) {
+        chamber.hidden = false;
+        chamber.style.left = L.chamber.cx + '%';
+        chamber.style.top = L.chamber.cy + '%';
+        chamber.style.width = (L.chamber.r * 2) + '%';
+        chamber.style.height = (L.chamber.r * 2 * (L.aspectW || 1600) / (L.aspectH || 1024)) + '%';
+        // keep a circle: width in % of shell width; height must match in px — use aspect-ratio
+        chamber.style.aspectRatio = '1 / 1';
+        chamber.style.height = 'auto';
+        chamber.style.width = (L.chamber.r * 2) + '%';
+      } else {
+        chamber.hidden = true;
+      }
+    }
+    var fake = document.getElementById('btn-shake-fallback');
+    if (fake) fake.hidden = !(d && d.family === 'pendulum');
     function placeIcon(id, box) {
       var el = document.getElementById('icon-' + id);
       if (!el || !box) return;
@@ -192,7 +248,9 @@
       dev.setAttribute('data-model', d.family);
       dev.setAttribute('data-shell', d.shell);
       dev.setAttribute('data-orient', d.orient);
+      dev.setAttribute('data-buttons', d.buttonStyle || '');
     }
+    applyShellLayout();
     tryLockOrient(d.orient);
     updateRotateHint(d.orient);
     sizeLcd();
@@ -233,8 +291,19 @@
     return !!document.querySelector('.overlay.show');
   }
 
+  function soundEnabled() {
+    // The original device mute (Pendulum A+C sound Off, or the settings
+    // toggle which shares this flag) is authoritative. Never beep over it.
+    if (state && state.soundMuted) return false;
+    return !!soundOn;
+  }
+  function unlockAudio() {
+    if (window.DeviceAudio) window.DeviceAudio.unlock();
+  }
   function beep() {
-    if (!soundOn) return;
+    if (suppressClickBeep) { suppressClickBeep = false; return; }
+    if (!soundEnabled()) return;
+    if (window.DeviceAudio) { window.DeviceAudio.beep(true); return; }
     try {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return;
@@ -335,7 +404,8 @@
   }
 
   function isCalling() {
-    if (window.Engine && window.Engine.isCallLit) return window.Engine.isCallLit(state);
+    var E = engine();
+    if (E && E.isCallLit) return E.isCallLit(state);
     if (!state || state.dead) return false;
     if (state.hunger <= 0 || state.strength <= 0) return true;
     if (state.sleeping && state.lights && state.callLightsAt != null) return true;
@@ -361,7 +431,8 @@
       currentDevice().family === 'dm1997');
   }
   function isClockSetView() {
-    return !!(state && window.Engine && window.Engine.isClockSet && window.Engine.isClockSet(state));
+    var E = engine();
+    return !!(state && E && E.isClockSet && E.isClockSet(state));
   }
   function lcdBg() {
     var blank = is1997PlayDark();
@@ -730,9 +801,51 @@
     blitItem('grave', fx(8), fy(0), ITEM);
   }
 
+  function penHost() {
+    return {
+      ctx: ctx,
+      state: state,
+      view: view,
+      profile: currentDevice(),
+      setView: function (v) { view = v; },
+      getSel: function () { return sel; },
+      setSel: function (v) { sel = v; },
+      fx: fx, fy: fy, blitItem: blitItem, blitMon: blitMon,
+      items: items, animTick: animTick,
+      PAPER: PAPER, NIGHT: NIGHT, INK: INK,
+      DOT: DOT, ITEM: ITEM, OX: OX, OY: OY, FW: FW, FH: FH,
+      LCD_W: LCD_W, LCD_H: LCD_H, MON: MON, ANIM_MS: ANIM_MS,
+      walk: walk, eatAnim: eatAnim, poseFx: poseFx, evoFx: evoFx,
+      shotMode: shotMode,
+      persist: persist,
+      playPose: playPose,
+      toast: toast,
+      isSoundOn: function () { return soundEnabled(); },
+      setSoundOn: function (on) {
+        soundOn = !!on;
+        if (state) state.soundMuted = !on;
+        try { localStorage.setItem('digivice-sound', soundOn ? '1' : '0'); } catch (e) {}
+        updateSoundBtn();
+      },
+      openJogressOverlay: function () {
+        if (typeof fillJogress === 'function') fillJogress();
+        showOverlay('overlay-battle', true);
+      },
+      startFlush: function (n) {
+        flushAnim = { on: true, t: 0, n: n || 1, off: 0 };
+        flushLastAt = 0;
+      }
+    };
+  }
+
   function draw() {
     if (!ctx) return;
     ctx.imageSmoothingEnabled = false;
+    if (isPendulum() && window.PendulumUI) {
+      window.PendulumUI.draw(penHost());
+      updateIcons();
+      return;
+    }
     if (view === 'clock') drawClock();
     else if (view === 'status') drawStatus();
     else if (view === 'food') drawFoodMenu();
@@ -795,14 +908,16 @@
 
   function openFirstClockSetIfNeeded() {
     if (!state || state.dead || state.clockInitialized) return;
-    if (!window.Engine || !window.Engine.beginClockSet) return;
-    window.Engine.beginClockSet(state);
+    var E = engine();
+    if (!E || !E.beginClockSet) return;
+    E.beginClockSet(state);
     view = 'clock';
     sel = -1;
   }
 
   function loadGame(s) {
-    state = (window.Engine && window.Engine.migrateState) ? window.Engine.migrateState(s) : s;
+    state = (window.Devices && window.Devices.migrate) ? window.Devices.migrate(s)
+      : ((window.Engine && window.Engine.migrateState) ? window.Engine.migrateState(s) : s);
     settlePendingSteps(state);
     state.lastReal = Date.now();
     view = state.dead ? 'grave' : 'play';
@@ -814,7 +929,11 @@
   }
 
   function newEgg(version, special, randomize) {
-    state = window.Engine.hatchIfEggSelect(state, version, !!randomize, special || null);
+    if (window.Devices && window.Devices.hatchEgg) {
+      state = window.Devices.hatchEgg(state, version, !!randomize, special || null);
+    } else {
+      state = window.Engine.hatchIfEggSelect(state, version, !!randomize, special || null);
+    }
     view = 'play';
     sel = -1;
     hideAllOverlays();
@@ -1124,10 +1243,10 @@
   // on the original; we do not enter SET from play.)
   function maybeClockSetCombo() {
     if (view !== 'clock') return false;
-    if (!state || !window.Engine || !window.Engine.beginClockSet) return false;
+    if (!state || !engine() || !engine().beginClockSet) return false;
     if (isClockSetView()) return false;
     if (keyA && keyC) {
-      window.Engine.beginClockSet(state);
+      engine().beginClockSet(state);
       chordAt = Date.now();
       persist();
       return true;
@@ -1142,8 +1261,8 @@
     clockHold.part = null;
   }
   function clockSetAdjust(part) {
-    if (!state || !window.Engine || !window.Engine.adjustClockSet) return;
-    window.Engine.adjustClockSet(state, part, 1);
+    if (!state || !engine() || !engine().adjustClockSet) return;
+    engine().adjustClockSet(state, part, 1);
     persist();
   }
   function startClockHold(part) {
@@ -1168,6 +1287,9 @@
       startClockHold('h');
       return;
     }
+    if (isPendulum() && window.PendulumUI) {
+      if (window.PendulumUI.pressA(penHost())) return;
+    }
     if (view === 'train') { trainInput('A'); return; }
     cycleSel();
   }
@@ -1183,6 +1305,9 @@
       startClockHold('m');
       return;
     }
+    if (isPendulum() && window.PendulumUI) {
+      if (window.PendulumUI.pressB(penHost())) return;
+    }
     confirmSel();
   }
   function pressC() {
@@ -1193,11 +1318,14 @@
     if (maybeNewEggCombo()) return;
     if (maybeClockSetCombo()) return;
     if (isClockSetView()) {
-      window.Engine.confirmClockSet(state);
+      engine().confirmClockSet(state);
       persist();
       view = 'play';
       sel = -1;
       return;
+    }
+    if (isPendulum() && window.PendulumUI) {
+      if (window.PendulumUI.pressC(penHost())) return;
     }
     if (view === 'train') {
       if (window.Engine && window.Engine.cancelTraining) window.Engine.cancelTraining(state);
@@ -1255,9 +1383,9 @@
         if (flushAnim.off > 24) flushAnim.on = false;
       }
     }
-    if (state && (view === 'play' || view === 'train' || view === 'clock' || view === 'status' || view === 'food' || view === 'battleMenu' || view === 'lightMenu' || view === 'album' || view === 'albumView' || view === 'albumRecord' || view === 'connect')) {
+    if (state && (view === 'play' || view === 'train' || view === 'clock' || view === 'status' || view === 'food' || view === 'battleMenu' || view === 'lightMenu' || view === 'album' || view === 'albumView' || view === 'albumRecord' || view === 'connect' || view === 'healMenu' || view === 'soundMenu')) {
       var prevMon = state.mon;
-      var r = window.Engine.tick(state, Date.now());
+      var r = (window.Devices && window.Devices.tick) ? window.Devices.tick(state, Date.now()) : window.Engine.tick(state, Date.now());
       if (r.evolved) {
         evoFx = { t: 0, from: prevMon, to: state.mon };
         view = 'evo';
@@ -1269,7 +1397,9 @@
       }
       if (Date.now() - lastSave > 2500) persist();
     }
-    if (view === 'train' && !train.done) {
+    if (isPendulum() && window.PendulumUI) {
+      window.PendulumUI.tickMinigame(penHost());
+    } else if (view === 'train' && !train.done) {
       train.t = (train.t || 0) + 1;
       var mode = train.mode || 'meter';
       var step = (mode === 'meter_slow') ? 0.009 : 0.018;
@@ -1628,6 +1758,30 @@
       var ep = new URLSearchParams(location.search).get('egg');
       if (ep && DM20_EGGS[ep]) { state.eggKind = ep; state.version = 'special'; }
       else if (ep && /^[1-5]$/.test(ep)) { state.eggKind = 'ver' + ep; state.version = parseInt(ep, 10); }
+      else if (ep === 'pen_1_0' || (name && name.indexOf('pen-') === 0)) {
+        if (window.PendulumEngine) {
+          state = window.PendulumEngine.defaultState('pen_1_0');
+          state.clockInitialized = true;
+          state.clockSet = { on: false, h24: 10, min: 34 };
+          state.gameTime = 0;
+          // 10:34:05 AM, matching the v25 clock screenshots.
+          state.clockOffset = 10 * 3600 + 34 * 60 + 5;
+          state.mon = 'tentomon';
+          state.weight = 15;
+          state.hunger = 4;
+          state.strength = 3;
+          state.dpQ = 12;
+          state.dpMaxQ = 16;
+          state.ageDays = 3;
+          state.battles = 12;
+          state.wins = 8;
+          state.losses = 4;
+          state.effort = 16;
+          state.lights = true;
+          state.sleeping = false;
+          state.gameTime = 0;
+        }
+      }
     } catch (eEgg) {}
     applyShell();
     walk.x = 8; walk.dir = -1;
@@ -1703,7 +1857,7 @@
       view = 'clock';
     } else if (name === 'clockset') {
       view = 'clock';
-      if (window.Engine && window.Engine.beginClockSet) window.Engine.beginClockSet(state);
+      if (engine() && engine().beginClockSet) engine().beginClockSet(state);
     } else if (name === 'sick') {
       state.injured = true;
     } else if (name === 'train') {
@@ -1723,6 +1877,38 @@
       view = 'clock';
     } else if (name === 'food') {
       view = 'food'; foodSel = 0;
+    } else if (name === 'pen-idle' || name === 'pen-shell') {
+      view = 'play';
+    } else if (name === 'pen-status') {
+      view = 'status';
+      if (window.PendulumUI) window.PendulumUI.setStatusPage(0);
+    } else if (name === 'pen-clock') {
+      view = 'clock';
+    } else if (name === 'pen-clockset') {
+      view = 'clock';
+      if (engine() && engine().beginClockSet) engine().beginClockSet(state);
+    } else if (name === 'pen-train' || name === 'pen-train-count') {
+      view = 'train';
+      if (window.PendulumUI) window.PendulumUI.setTrainForShot('count', { shakes: 5, startedAt: 0 });
+    } else if (name === 'pen-night' || name === 'night-pen') {
+      state.tired = true;
+      state.sleeping = true;
+      state.lights = false;
+      view = 'play';
+    } else if (name === 'pen-food') {
+      view = 'food';
+    } else if (name === 'pen-connect') {
+      view = 'connect';
+    } else if (name === 'pen-grave') {
+      state.dead = true;
+      view = 'grave';
+    } else if (name === 'pen-buttons' || name === 'buttons-pressed') {
+      view = 'play';
+      if (window.DeviceButtons) {
+        ['btn-a', 'btn-b', 'btn-c'].forEach(function (id) {
+          window.DeviceButtons.setPressed($(id), true);
+        });
+      }
     }
   }
 
@@ -1762,6 +1948,9 @@
     function tryChord() {
       if (recentChord()) { keyA = true; keyC = true; }
       var r = maybeNewEggCombo() || maybeClockSetCombo();
+      if (!r && isPendulum() && window.PendulumUI && window.PendulumUI.maybeChord(penHost(), keyA, keyC)) {
+        r = true;
+      }
       if (r) { keyA = keyB = keyC = false; }
       return r;
     }
@@ -1795,34 +1984,74 @@
       }
     }
 
+    // Physical-feel buttons: pointer events (iOS 15 :active is not enough).
+    // Visual class is instant. Beep on pointerdown; click must not double-beep.
+    // NEVER vibrate.
+    function bindPad(el, onDown, onUp) {
+      if (!el) return;
+      if (window.DeviceButtons && window.DeviceButtons.attach) {
+        window.DeviceButtons.attach(el, {
+          unlock: unlockAudio,
+          shouldBeep: soundEnabled,
+          beep: function () {
+            suppressClickBeep = true;
+            if (window.DeviceAudio) window.DeviceAudio.beep(true);
+          },
+          onDown: onDown,
+          onUp: function (ev) {
+            if (onUp) onUp(ev);
+            setTimeout(function () { suppressClickBeep = false; }, 400);
+          }
+        });
+      } else {
+        el.addEventListener('pointerdown', function (ev) { unlockAudio(); onDown && onDown(ev); });
+        el.addEventListener('pointerup', onUp);
+        ['pointercancel', 'pointerleave'].forEach(function (evn) {
+          el.addEventListener(evn, onUp);
+        });
+      }
+    }
     $('btn-a').addEventListener('click', pressA);
     $('btn-b').addEventListener('click', pressB);
     $('btn-c').addEventListener('click', pressC);
-    $('btn-a').addEventListener('pointerdown', downA);
-    $('btn-a').addEventListener('pointerup', upA);
-    $('btn-b').addEventListener('pointerdown', downB);
-    $('btn-b').addEventListener('pointerup', upB);
-    $('btn-c').addEventListener('pointerdown', downC);
-    $('btn-c').addEventListener('pointerup', upC);
+    bindPad($('btn-a'), downA, upA);
+    bindPad($('btn-b'), downB, upB);
+    bindPad($('btn-c'), downC, upC);
+    bindPad($('btn-reset'), function (ev) {}, function (ev) {});
     $('btn-reset').addEventListener('click', resetTap);
-    ['pointercancel', 'pointerleave'].forEach(function (ev) {
-      $('btn-a').addEventListener(ev, upA);
-      $('btn-b').addEventListener(ev, upB);
-      $('btn-c').addEventListener(ev, upC);
-    });
+    function keyPressVisual(id, on) {
+      if (window.DeviceButtons) window.DeviceButtons.setPressed($(id), on);
+    }
     document.addEventListener('keydown', function (e) {
       if (e.repeat) return;
       var k = e.key;
-      if (k === 'a' || k === 'A' || k === 'ArrowLeft') { keyA = true; pressA(); e.preventDefault(); }
-      else if (k === 'b' || k === 'B' || k === 'Enter' || k === 'ArrowRight') { keyB = true; pressB(); e.preventDefault(); }
-      else if (k === 'c' || k === 'C' || k === 'Escape') { keyC = true; pressC(); e.preventDefault(); }
+      unlockAudio();
+      if (k === 'a' || k === 'A' || k === 'ArrowLeft') { keyA = true; keyPressVisual('btn-a', true); pressA(); e.preventDefault(); }
+      else if (k === 'b' || k === 'B' || k === 'Enter' || k === 'ArrowRight') { keyB = true; keyPressVisual('btn-b', true); pressB(); e.preventDefault(); }
+      else if (k === 'c' || k === 'C' || k === 'Escape') { keyC = true; keyPressVisual('btn-c', true); pressC(); e.preventDefault(); }
     });
     document.addEventListener('keyup', function (e) {
       var k = e.key;
-      if (k === 'a' || k === 'A' || k === 'ArrowLeft') keyA = false;
-      else if (k === 'b' || k === 'B' || k === 'Enter' || k === 'ArrowRight') keyB = false;
-      else if (k === 'c' || k === 'C' || k === 'Escape') keyC = false;
+      if (k === 'a' || k === 'A' || k === 'ArrowLeft') { keyA = false; keyPressVisual('btn-a', false); }
+      else if (k === 'b' || k === 'B' || k === 'Enter' || k === 'ArrowRight') { keyB = false; keyPressVisual('btn-b', false); }
+      else if (k === 'c' || k === 'C' || k === 'Escape') { keyC = false; keyPressVisual('btn-c', false); }
     });
+    // COUNT-screen swipe fallback for shake (used when DeviceMotion is denied).
+    if (canvas) {
+      canvas.style.touchAction = 'manipulation';
+      canvas.addEventListener('pointerdown', function (ev) {
+        if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerDown(penHost(), ev);
+      });
+      canvas.addEventListener('pointermove', function (ev) {
+        if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerMove(penHost(), ev);
+      });
+      canvas.addEventListener('pointerup', function (ev) {
+        if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerUp(ev);
+      });
+      canvas.addEventListener('pointercancel', function (ev) {
+        if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerUp(ev);
+      });
+    }
 
     document.querySelectorAll('.face-icon').forEach(function (el) {
       el.addEventListener('click', function () {
@@ -1890,6 +2119,7 @@
     });
     $('btn-sound').addEventListener('click', function () {
       soundOn = !soundOn;
+      if (state) state.soundMuted = !soundOn;
       try { localStorage.setItem('digivice-sound', soundOn ? '1' : '0'); } catch (e) {}
       updateSoundBtn();
       if (soundOn) beep();
@@ -1921,6 +2151,14 @@
     document.querySelectorAll('.js-motion-steps').forEach(function (btn) {
       btn.addEventListener('click', function () { requestMotion(); });
     });
+    var shakeBtn = $('btn-shake-fallback');
+    if (shakeBtn) {
+      shakeBtn.addEventListener('click', function () {
+        if (window.PendulumShake) window.PendulumShake.simulate(1);
+        if (isPendulum() && window.PendulumUI) window.PendulumUI.noteShakeOnState(penHost(), 1);
+        toast('模擬搖動 +1');
+      });
+    }
     document.querySelectorAll('.js-steps-help').forEach(function (btn) {
       btn.addEventListener('click', function () {
         hideAllOverlays();

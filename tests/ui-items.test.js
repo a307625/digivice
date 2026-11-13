@@ -61,7 +61,7 @@ ok(items.ITEMS.skull && items.ITEMS.skull.src === 'reconstructed', 'skull marked
 ok(items.ITEMS.grave && items.ITEMS.grave.w === 16 && items.ITEMS.grave.src === 'reconstructed', 'grave 16x16 reconstructed');
 
 console.log('5) Egg picker: one flat list, names only, no targets, no random');
-ok(items.EGG_PICKER.length === 15, '15 eggs');
+ok(items.EGG_PICKER.length === 16, '16 eggs (15 prior + Pendulum Ver.1.0)');
 ok(items.EGG_PICKER.every((e) => e.label && e.id && e.dataEgg && e.label.indexOf('→') < 0), 'labels have no arrows');
 ok(items.EGG_PICKER.every((e) => !/斬龍|破壞龍|杜蘭達|阿爾法|拉結爾|戰鬥暴龍|傑斯|阿波羅|狄安娜/.test(e.label)), 'labels have no mega targets');
 ok(items.EGG_PICKER.every((e) => e.dataEgg !== 'random'), 'no random pool');

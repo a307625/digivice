@@ -681,6 +681,11 @@
   }
 
   function tick(state, realNow) {
+    // Pendulum (and later lines) have their own engine. Never run 1997
+    // care / evo / battle formulas against those saves.
+    if (state && state.family === 'pendulum' && root.PendulumEngine) {
+      return root.PendulumEngine.tick(state, realNow);
+    }
     if (state.dead) return { died: false, evolved: false };
     migrateState(state);
     var dtReal = Math.max(0, (realNow - state.lastReal) / 1000);
@@ -1218,6 +1223,9 @@
    */
   function migrateState(state) {
     if (!state) return state;
+    if (state.family === 'pendulum' && root.PendulumEngine && root.PendulumEngine.migrateState) {
+      return root.PendulumEngine.migrateState(state);
+    }
     if (state.winScore == null) {
       state.winScore = Math.min(WIN_SCORE_MAX, Math.max(0, (state.wins || 0) - (state.losses || 0)));
     }

@@ -15,6 +15,8 @@
   --lcd-t: 39.634%;
   --lcd-w: 33.4%;
   --lcd-h: 23.819%;
+  --shell-aw: 1494;
+  --shell-ah: 1037;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -90,8 +92,8 @@ body {
 /* Official 1997 brick (1494×1037 art), contained in the viewport, never overflow. */
 .device {
   position: relative;
-  aspect-ratio: 1494 / 1037;
-  width: min(calc(100vw - 8px), calc((var(--app-h) - 8px) * 1494 / 1037));
+  aspect-ratio: var(--shell-aw, 1494) / var(--shell-ah, 1037);
+  width: min(calc(100vw - 8px), calc((var(--app-h) - 8px) * var(--shell-aw, 1494) / var(--shell-ah, 1037)));
   height: auto;
   flex: 0 0 auto;
 }
@@ -159,17 +161,98 @@ body {
   appearance: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
   padding: 0;
   color: transparent;
   font-size: 0;
+  /* Instant on iOS 15: :active is not reliable; JS toggles .is-pressed
+     from pointerdown and clears it on pointerup / cancel / leave.
+     touch-action: manipulation avoids the 300 ms click delay. */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: none;
 }
-.pad:active {
-  background: rgba(255, 255, 255, 0.14);
+/* :active alone is not enough on iOS 15 — keep it as a tiny fallback. */
+.pad:active,
+.pad.is-pressed {
+  transform: translate(-50%, calc(-50% + 3px)) scale(0.93);
+  background: rgba(20, 16, 12, 0.38);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.55),
+              inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+.device[data-model="dm1997"] .pad:active,
+.device[data-model="dm1997"] .pad.is-pressed {
+  background: rgba(80, 20, 16, 0.45);
+  box-shadow: inset 0 4px 10px rgba(40, 8, 6, 0.72),
+              inset 0 0 0 1px rgba(0, 0, 0, 0.28);
+}
+.device[data-model="dm20"] .pad:active,
+.device[data-model="dm20"] .pad.is-pressed {
+  background: rgba(90, 60, 10, 0.42);
+  box-shadow: inset 0 4px 10px rgba(50, 30, 4, 0.7),
+              inset 0 0 0 1px rgba(80, 50, 0, 0.3);
+}
+/* Pendulum: visible metal caps sitting in the painted wells, so a press
+   actually moves the button the user sees. */
+.device[data-model="pendulum"] .pad {
+  background: radial-gradient(circle at 35% 28%, #e8eef4 0%, #9aa8b6 48%, #5a6774 100%);
+  box-shadow: 0 4px 0 #3a4450,
+              0 6px 8px rgba(0, 0, 0, 0.35),
+              inset 0 2px 2px rgba(255, 255, 255, 0.5),
+              inset 0 -2px 3px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(30, 36, 44, 0.4);
+}
+.device[data-model="pendulum"] .pad:active,
+.device[data-model="pendulum"] .pad.is-pressed {
+  transform: translate(-50%, calc(-50% + 4px)) scale(0.94);
+  background: radial-gradient(circle at 42% 42%, #b0bcc8 0%, #6a7682 70%, #3e464e 100%);
+  box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.55),
+              inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+              0 1px 0 #3a4450;
+}
+.device[data-model="pendulum"] .pad-reset {
+  background: radial-gradient(circle at 40% 35%, #6a7480, #2a3038);
+  box-shadow: 0 2px 0 #1a1e24, inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  border-width: 0;
 }
 .pad-reset {
   pointer-events: auto;
   border-radius: 50%;
 }
+
+/* Pendulum chamber + swinging ball (HTML overlay in the circular window). */
+.pendulum-chamber {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 1 / 1;
+}
+.pendulum-chamber[hidden] { display: none !important; }
+.pendulum-ball {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 34%;
+  height: 34%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 35% 30%, #f4f7fb 0%, #c5ced8 45%, #6a7684 100%);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.45), inset 0 2px 3px rgba(255, 255, 255, 0.7);
+}
+.pendulum-ball.swing {
+  animation: pen-swing 0.28s steps(2, end) 2;
+}
+@keyframes pen-swing {
+  0%   { transform: translate(-50%, -50%) translate(0, 0); }
+  50%  { transform: translate(-50%, -50%) translate(18%, 28%); }
+  100% { transform: translate(-50%, -50%) translate(-12%, 22%); }
+}
+
+#icon-CONNECT { display: none; }
+.device[data-model="pendulum"] #icon-BATTLE { display: none; }
+.device[data-model="pendulum"] #icon-CONNECT { display: block; }
 
 /* Overlays for extra functions only */
 .banner {

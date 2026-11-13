@@ -168,7 +168,8 @@
     { id: 'egg_anime_gabumon', dataEgg: 'anime_gabumon', label: '動畫加布獸數碼蛋' },
     { id: 'egg_corona', dataEgg: 'corona', label: '日冕數碼蛋' },
     { id: 'egg_luna', dataEgg: 'luna', label: '露娜數碼蛋' },
-    { id: 'egg_meicoo', dataEgg: 'meicoo', label: '梅可可數碼蛋' }
+    { id: 'egg_meicoo', dataEgg: 'meicoo', label: '梅可可數碼蛋' },
+    { id: 'egg_pen_1_0', dataEgg: 'pen_1_0', label: '超代 1.0 自然靈魂數碼蛋' }
   ];
 
   var api = {
