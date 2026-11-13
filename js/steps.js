@@ -546,6 +546,23 @@
     };
   }
 
+
+  /**
+   * The Health-sync launch prompt is only for a cold open on iOS.
+   * Resume, visibilitychange, pageshow, a shortcut return, or an already
+   * dismissed / already-applied session must not show it again.
+   */
+  function shouldShowLaunchPrompt(opts) {
+    opts = opts || {};
+    if (opts.shotMode) return false;
+    if (!opts.coldLaunch) return false;
+    if (opts.alreadyDismissed) return false;
+    if (opts.healthApplied) return false;
+    if (opts.fromShortcut) return false;
+    if (opts.isIOS === false) return false;
+    return true;
+  }
+
   var api = {
     LEDGER_KEY: LEDGER_KEY,
     SHORTCUT_NAME: SHORTCUT_NAME,
@@ -580,7 +597,8 @@
     stripSearchAndHash: stripSearchAndHash,
     stripWindowHistory: stripWindowHistory,
     createPedometer: createPedometer,
-    getDay: getDay
+    getDay: getDay,
+    shouldShowLaunchPrompt: shouldShowLaunchPrompt
   };
 
   if (typeof module !== 'undefined' && module.exports) {

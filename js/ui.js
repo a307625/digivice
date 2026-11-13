@@ -352,19 +352,37 @@
     canvas.style.height = (LCD_H * s) + 'px';
   }
 
+  // 1997 lights-off play screen: a blank dark LCD — no monster, poop, or Z.
+  // Menus and the clock still paint on paper (a button can open them).
+  // DM20 does not go dark (Pendulum 20th / DM20-class: "the screen doesn't
+  // go dark like the old ones"); the sleep cell and a Z stay visible.
+  function is1997PlayDark() {
+    return !!(state && !state.lights && view === 'play' &&
+      currentDevice().family === 'dm1997');
+  }
+  function isClockSetView() {
+    return !!(state && window.Engine && window.Engine.isClockSet && window.Engine.isClockSet(state));
+  }
   function lcdBg() {
-    var night = state && !state.lights;
-    ctx.fillStyle = night ? NIGHT : PAPER;
+    var blank = is1997PlayDark();
+    ctx.fillStyle = blank ? NIGHT : PAPER;
     ctx.fillRect(0, 0, LCD_W, LCD_H);
-    if (!night) {
+    if (!blank) {
       ctx.fillStyle = 'rgba(80, 86, 70, 0.07)';
       for (var y = 0; y < LCD_H; y += 2) ctx.fillRect(0, y, LCD_W, 1);
       ctx.fillStyle = 'rgba(70, 80, 55, 0.18)';
       ctx.fillRect(0, LCD_H - 3, LCD_W, 3);
-    } else {
-      ctx.fillStyle = 'rgba(8, 10, 16, 0.35)';
-      ctx.fillRect(0, 0, LCD_W, LCD_H);
     }
+  }
+  function drawSleepZ() {
+    if (!state || !state.sleeping) return;
+    if (currentDevice().family !== 'dm20') return;
+    var I = items();
+    if (!I || !I.drawText) return;
+    // "A big Z will appear over the Digimon's head" (WTW / Humulos Z's).
+    var mx = fx(Math.floor((FW - 16) / 2));
+    I.drawText(ctx, 'Z', mx + 14 * DOT, fy(0), ITEM);
+    I.drawText(ctx, 'Z', mx + 20 * DOT, fy(2), 2);
   }
 
   function poopCount() {
@@ -424,6 +442,7 @@
   function drawPlay() {
     lcdBg();
     if (!state) return;
+    if (is1997PlayDark()) return; // blank dark LCD: no mon, poop, or Z
     if (state.dead && view !== 'dying') {
       drawGrave();
       return;
@@ -471,11 +490,13 @@
       blitItem(food, fx(24), fyFood, ITEM, false);
     }
     drawPoop();
+    drawSleepZ();
   }
 
   function drawClock() {
     lcdBg();
     if (!state) return;
+    var setting = isClockSetView();
     var sec = window.Engine.clockSeconds(state);
     var h24 = Math.floor(sec / 3600);
     var min = Math.floor((sec % 3600) / 60);
@@ -484,18 +505,22 @@
     var h = h24 % 12;
     if (h === 0) h = 12;
     var I = items();
-    // 1997 clock: HH:MM, AM/PM, five 1 Hz seconds-indicator triangles.
-    // No seconds digits, no milliseconds. Colon is static (berational ClockScreen).
-    blitItem(isAM ? 'am' : 'pm', fx(0), fy(8), ITEM);
+    // Official SET: the word SET is solid; hour, minute, and AM/PM blink
+    // at 2 Hz (ANIM_MS). Triangles (running seconds) are hidden. Colon stays.
+    // Screenshots force the digits visible so the frame is readable.
+    var blinkOn = !setting || shotMode || (animTick() % 2) === 0;
+    if (setting) I.drawText(ctx, 'SET', fx(14), fy(10), ITEM);
+    if (blinkOn) blitItem(isAM ? 'am' : 'pm', fx(0), fy(8), ITEM);
     var dx = fx(8);
     var dy = fy(2);
-    I.drawNumber(ctx, h, dx, dy, ITEM, 2);
+    if (blinkOn) I.drawNumber(ctx, h, dx, dy, ITEM, 2);
     dx += 5 * ITEM * 2;
     ctx.fillStyle = INK;
     ctx.fillRect(dx, dy + 1 * ITEM, DOT, DOT);
     ctx.fillRect(dx, dy + 5 * ITEM, DOT, DOT);
     dx += 2 * ITEM;
-    I.drawNumber(ctx, min, dx, dy, ITEM, 2);
+    if (blinkOn) I.drawNumber(ctx, min, dx, dy, ITEM, 2);
+    if (setting) return;
     var triY = fy(12);
     var triX0 = fx(14);
     var i, j, k;
@@ -768,12 +793,21 @@
     return total;
   }
 
+  function openFirstClockSetIfNeeded() {
+    if (!state || state.dead || state.clockInitialized) return;
+    if (!window.Engine || !window.Engine.beginClockSet) return;
+    window.Engine.beginClockSet(state);
+    view = 'clock';
+    sel = -1;
+  }
+
   function loadGame(s) {
     state = (window.Engine && window.Engine.migrateState) ? window.Engine.migrateState(s) : s;
     settlePendingSteps(state);
     state.lastReal = Date.now();
     view = state.dead ? 'grave' : 'play';
     sel = -1;
+    openFirstClockSetIfNeeded();
     persist();
     fillStepsPanels();
     applyShell();
@@ -784,6 +818,7 @@
     view = 'play';
     sel = -1;
     hideAllOverlays();
+    openFirstClockSetIfNeeded();
     persist();
     fillStepsPanels();
     applyShell();
@@ -812,6 +847,7 @@
 
   function cycleSel() {
     if (view === 'train') return;
+    if (view === 'clock') return;
     if (view === 'evo' || view === 'battle' || view === 'dying' || view === 'grave') return;
     if (view === 'food') { foodSel = (foodSel + 1) % 2; return; }
     if (view === 'battleMenu') { battleSel = (battleSel + 1) % battleMenuItems().length; return; }
@@ -1083,12 +1119,55 @@
     return false;
   }
 
+  // Official (1997 Ver.1 and DM20, same CLOCK SETTING): on the clock,
+  // press A and C together to enter SET. (A+C on the main screen is mute
+  // on the original; we do not enter SET from play.)
+  function maybeClockSetCombo() {
+    if (view !== 'clock') return false;
+    if (!state || !window.Engine || !window.Engine.beginClockSet) return false;
+    if (isClockSetView()) return false;
+    if (keyA && keyC) {
+      window.Engine.beginClockSet(state);
+      chordAt = Date.now();
+      persist();
+      return true;
+    }
+    return false;
+  }
+
+  var clockHold = { timer: null, interval: null, part: null, fromPad: false };
+  function stopClockHold() {
+    if (clockHold.timer) { clearTimeout(clockHold.timer); clockHold.timer = null; }
+    if (clockHold.interval) { clearInterval(clockHold.interval); clockHold.interval = null; }
+    clockHold.part = null;
+  }
+  function clockSetAdjust(part) {
+    if (!state || !window.Engine || !window.Engine.adjustClockSet) return;
+    window.Engine.adjustClockSet(state, part, 1);
+    persist();
+  }
+  function startClockHold(part) {
+    stopClockHold();
+    clockHold.part = part;
+    clockHold.timer = setTimeout(function () {
+      clockSetAdjust(part);
+      clockHold.interval = setInterval(function () { clockSetAdjust(part); }, 100);
+    }, 400);
+  }
+
   function pressA() {
     if (Date.now() - chordAt < 900) return;
     lastKeyAt = Date.now();
     beep();
     if (anyOverlay()) return;
     if (maybeNewEggCombo()) return;
+    if (maybeClockSetCombo()) return;
+    if (isClockSetView()) {
+      if (clockHold.fromPad) { clockHold.fromPad = false; return; }
+      clockSetAdjust('h');
+      startClockHold('h');
+      return;
+    }
     if (view === 'train') { trainInput('A'); return; }
     cycleSel();
   }
@@ -1098,6 +1177,12 @@
     beep();
     if (anyOverlay()) return;
     if (maybeNewEggCombo()) return;
+    if (isClockSetView()) {
+      if (clockHold.fromPad) { clockHold.fromPad = false; return; }
+      clockSetAdjust('m');
+      startClockHold('m');
+      return;
+    }
     confirmSel();
   }
   function pressC() {
@@ -1106,6 +1191,14 @@
     beep();
     if (anyOverlay()) { hideAllOverlays(); return; }
     if (maybeNewEggCombo()) return;
+    if (maybeClockSetCombo()) return;
+    if (isClockSetView()) {
+      window.Engine.confirmClockSet(state);
+      persist();
+      view = 'play';
+      sel = -1;
+      return;
+    }
     if (view === 'train') {
       if (window.Engine && window.Engine.cancelTraining) window.Engine.cancelTraining(state);
       persist();
@@ -1265,12 +1358,36 @@
     }
   }
 
+  function isIOSDevice() {
+    var ua = navigator.userAgent || '';
+    return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  // Session-only: after the cold-launch prompt is shown or skipped, never
+  // reopen it on resume / visibility / pageshow / returning from Shortcuts.
+  var stepsPromptDismissed = false;
+
+  function maybeShowStepsPrompt() {
+    if (!window.Steps || !window.Steps.shouldShowLaunchPrompt) return;
+    if (anyOverlay()) return;
+    if (isClockSetView()) return;
+    var parsed = window.Steps.parseParams(location.search || '', location.hash || '');
+    if (!window.Steps.shouldShowLaunchPrompt({
+      coldLaunch: true,
+      shotMode: shotMode,
+      healthApplied: healthAppliedThisSession,
+      alreadyDismissed: stepsPromptDismissed,
+      fromShortcut: !!(parsed && parsed.present),
+      isIOS: isIOSDevice()
+    })) return;
+    stepsPromptDismissed = true;
+    showOverlay('overlay-steps-prompt', true);
+  }
+
   function runShortcut() {
     if (!window.Steps) return;
     var url = window.Steps.shortcutRunURL();
-    var ua = navigator.userAgent || '';
-    var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (!isIOS) {
+    if (!isIOSDevice()) {
       toast('請在 iPhone 的「捷徑」App 執行「數碼寶貝步數」');
       showOverlay('overlay-steps-help', true);
       return;
@@ -1560,9 +1677,33 @@
     } else if (name === 'flush') {
       state.poop = 0;
       flushAnim = { on: true, t: 8, n: 2, off: 8 };
-    } else if (name === 'sleep' || name === 'night') {
+    } else if (name === 'sleep' || name === 'night' || name === 'night-1997') {
+      state.eggKind = 'ver1';
+      state.version = 1;
+      applyShell();
       state.sleeping = true;
       state.lights = false;
+      state.poop = 2;
+      view = 'play';
+    } else if (name === 'night-dm20') {
+      state.eggKind = 'zuba';
+      state.version = 'special';
+      applyShell();
+      state.sleeping = true;
+      state.lights = false;
+      state.poop = 2;
+      view = 'play';
+    } else if (name === 'night-press') {
+      // 1997 lights off, then B with no icon: the clock paints on paper.
+      state.eggKind = 'ver1';
+      state.version = 1;
+      applyShell();
+      state.sleeping = true;
+      state.lights = false;
+      view = 'clock';
+    } else if (name === 'clockset') {
+      view = 'clock';
+      if (window.Engine && window.Engine.beginClockSet) window.Engine.beginClockSet(state);
     } else if (name === 'sick') {
       state.injured = true;
     } else if (name === 'train') {
@@ -1618,11 +1759,32 @@
       var n = Date.now(), w = 700;
       return (n - downAt.A < w && (n - downAt.C < w || n - downAt.B < w));
     }
-    function tryChord() { if (recentChord()) { keyA = true; keyC = true; } var r = maybeNewEggCombo(); if (r) { keyA = keyB = keyC = false; } return r; }
-    function downA(e) { keyA = true; mark('A'); tryChord(); }
-    function upA() { keyA = false; }
-    function downB(e) { keyB = true; mark('B'); tryChord(); }
-    function upB() { keyB = false; }
+    function tryChord() {
+      if (recentChord()) { keyA = true; keyC = true; }
+      var r = maybeNewEggCombo() || maybeClockSetCombo();
+      if (r) { keyA = keyB = keyC = false; }
+      return r;
+    }
+    function downA(e) {
+      keyA = true; mark('A');
+      if (tryChord()) return;
+      if (isClockSetView()) {
+        clockHold.fromPad = true;
+        clockSetAdjust('h');
+        startClockHold('h');
+      }
+    }
+    function upA() { keyA = false; clockHold.fromPad = false; stopClockHold(); }
+    function downB(e) {
+      keyB = true; mark('B');
+      if (tryChord()) return;
+      if (isClockSetView()) {
+        clockHold.fromPad = true;
+        clockSetAdjust('m');
+        startClockHold('m');
+      }
+    }
+    function upB() { keyB = false; clockHold.fromPad = false; stopClockHold(); }
     function downC(e) { keyC = true; mark('C'); tryChord(); }
     function upC() { keyC = false; }
     function resetTap(e) {
@@ -1686,7 +1848,22 @@
       else { hideAllOverlays(); fillStepsPanels(); showOverlay('overlay-extra', true); }
     });
     document.querySelectorAll('[data-close]').forEach(function (b) {
-      b.addEventListener('click', function () { hideAllOverlays(); });
+      b.addEventListener('click', function () {
+        stepsPromptDismissed = true;
+        hideAllOverlays();
+      });
+    });
+    // Tapping the dimmed backdrop also dismisses the steps prompt / help
+    // (the device C button is covered by the overlay, so this is an exit).
+    ['overlay-steps-prompt', 'overlay-steps-help'].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      el.addEventListener('click', function (e) {
+        if (e.target === el) {
+          stepsPromptDismissed = true;
+          hideAllOverlays();
+        }
+      });
     });
     $('btn-settings').addEventListener('click', function () {
       hideAllOverlays();
@@ -1785,6 +1962,9 @@
     if (shellArt) shellArt.addEventListener('load', function () { sizeLcd(); });
 
     ingestUrl();
+    // pageshow fires on iOS for the initial load, bfcache restore, coming
+    // back from shortcuts://, and some resumes. Only ingest ?steps= here —
+    // never reopen the launch prompt (that is cold-launch only, below).
     window.addEventListener('pageshow', function () { ingestUrl(); });
     window.addEventListener('hashchange', function () { ingestUrl(); });
     document.addEventListener('visibilitychange', function () {
@@ -1807,6 +1987,8 @@
       if (cancel) cancel.style.display = 'none';
       showOverlay('overlay-egg', true);
     }
+
+    maybeShowStepsPrompt();
 
     requestAnimationFrame(loop);
   }

@@ -352,6 +352,45 @@ console.log('\n12) Pedometer peak detection with debounce');
   eq(pulse(900, 0.3), 0, 'sub-threshold wobble is ignored');
 }
 
+
+console.log('\n13) Launch prompt: cold open only, and the help close button stays reachable');
+{
+  const show = Steps.shouldShowLaunchPrompt;
+  ok(typeof show === 'function', 'shouldShowLaunchPrompt is exported');
+  ok(show({ coldLaunch: true, isIOS: true }), 'cold launch on iOS shows the prompt');
+  ok(!show({ coldLaunch: false, isIOS: true }), 'resume / pageshow / visibility does not show it');
+  ok(!show({ coldLaunch: true, isIOS: true, healthApplied: true }), 'already-synced this session (shortcut return) does not show it');
+  ok(!show({ coldLaunch: true, isIOS: true, fromShortcut: true }), 'arriving with ?steps= does not show it');
+  ok(!show({ coldLaunch: true, isIOS: true, alreadyDismissed: true }), 'already dismissed this session does not show it');
+  ok(!show({ coldLaunch: true, isIOS: true, shotMode: true }), 'screenshot / shot mode does not show it');
+  ok(!show({ coldLaunch: true, isIOS: false }), 'non-iOS does not show the Health prompt');
+  ok(!show({}), 'empty opts (not a cold launch) does not show it');
+
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const ui = fs.readFileSync(path.join(__dirname, '../js/ui.js'), 'utf8');
+
+  ok(/id="overlay-steps-help"[\s\S]*panel-actions[\s\S]*data-close[\s\S]*知道了/.test(html),
+    'steps-help has a data-close「知道了」in a sticky panel-actions bar');
+  ok(/id="overlay-steps-prompt"[\s\S]*panel-actions[\s\S]*data-close[\s\S]*稍後/.test(html),
+    'steps-prompt has a data-close「稍後」in a sticky panel-actions bar');
+  ok(/z-index:\s*120/.test(css), 'overlay z-index is above the extra-btn (80) and banner (90)');
+  ok(/align-items:\s*flex-start/.test(css), 'overlay uses flex-start so a tall panel can scroll');
+  ok(/\.panel-actions/.test(css) && /\.panel-body/.test(css), 'panel-body / panel-actions CSS exists');
+  ok(/min-height:\s*0/.test(css), 'panel min-height:0 lets the flex item shrink and scroll on iOS');
+  ok(/maybeShowStepsPrompt\(\)/.test(ui), 'cold-launch boot calls maybeShowStepsPrompt');
+  // pageshow / visibilitychange / hashchange must only ingest ?steps=, never open the prompt.
+  const handlers = [];
+  const re = /addEventListener\('(pageshow|hashchange|visibilitychange)',\s*function[^{]*\{([^}]*)\}/g;
+  let m;
+  while ((m = re.exec(ui))) handlers.push({ ev: m[1], body: m[2] });
+  ok(handlers.some((h) => h.ev === 'pageshow'), 'pageshow listener exists');
+  ok(handlers.every((h) => /ingestUrl/.test(h.body) && !/maybeShowStepsPrompt/.test(h.body) && !/overlay-steps/.test(h.body)),
+    'pageshow / hashchange / visibilitychange only ingest ?steps=, they do not open the prompt (got ' + handlers.map((h) => h.ev + ':' + h.body.trim()).join(' | ') + ')');
+}
+
 console.log('\n===================');
 console.log('Passed: ' + passed);
 console.log('Failed: ' + failed);

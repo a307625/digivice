@@ -193,9 +193,15 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 70;
+  /* Above .extra-btn (80) and .banner (90) so the modal and its close
+     buttons are actually on top and tappable. */
+  z-index: 120;
   background: rgba(8, 10, 14, 0.62);
-  align-items: center;
+  /* flex-start + margin:auto (on .panel): when the panel is taller than
+     the iPhone 7 landscape viewport, the user can scroll to every edge.
+     align-items:center clips the top and bottom and iOS often cannot
+     scroll a centered flex item, which trapped the close button off-screen. */
+  align-items: flex-start;
   justify-content: center;
   padding: 12px;
   overflow: auto;
@@ -211,8 +217,25 @@ body {
   padding: 14px 16px 12px;
   width: min(560px, 96vw);
   max-height: calc(var(--app-h, 100vh) - 24px);
-  overflow: auto;
+  min-height: 0;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.panel-actions {
+  flex: 0 0 auto;
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid #2a3644;
+  background: var(--panel);
 }
 .panel h2 {
   font-size: 16px;
@@ -332,8 +355,10 @@ select.btn { height: 34px; }
   .panel {
     padding: 8px 10px 8px;
     max-height: calc(var(--app-h, 100vh) - 12px);
+    min-height: 0;
     border-radius: 8px;
   }
+  .panel-actions { margin-top: 6px; padding-top: 6px; }
   .panel h2 { font-size: 14px; margin: 0 0 6px; }
   .btn { font-size: 12px; padding: 5px 10px; }
   .extra-list { gap: 4px; }

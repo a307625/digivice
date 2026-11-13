@@ -58,6 +58,7 @@
   <!-- Extra-functions menu (not an original device control) -->
   <div id="overlay-extra" class="overlay">
     <div class="panel">
+      <div class="panel-body">
       <h2>其他功能</h2>
       <div class="extra-list">
         <button type="button" class="btn" id="btn-settings">設定</button>
@@ -72,12 +73,14 @@
         <button type="button" class="btn" id="btn-pvp">線上對戰連線</button>
       </div>
       <div id="steps-settings" class="steps-note" style="margin-top:10px"></div>
-      <div class="row"><button type="button" class="btn" data-close>關閉</button></div>
+      </div>
+      <div class="row panel-actions"><button type="button" class="btn" data-close>關閉</button></div>
     </div>
   </div>
 
   <div id="overlay-help" class="overlay">
     <div class="panel">
+      <div class="panel-body">
       <h2>說明</h2>
       <h3>按鍵（和原版對打機相同）</h3>
       <p><span class="help-k">A</span> 選擇：依序切換螢幕上下的七個功能圖示。</p>
@@ -93,12 +96,14 @@
       <p>在對戰圖示裡選「連線」，或從這個選單進入。一方發出邀請碼（文字或 QR），對方接受後會得到結果碼，再傳回給發起方套用。對戰結果會計入這隻數碼寶貝的勝率。</p>
       <h3>安裝</h3>
       <p>iPhone 7 請用 Safari 的「加入主畫面」。較新的 iPhone（iOS 16.4 以上）在 Chrome 分享選單裡也可以加入。Android 用 Chrome 的「安裝應用程式」。</p>
-      <div class="row"><button type="button" class="btn primary" data-close>知道了</button></div>
+      </div>
+      <div class="row panel-actions"><button type="button" class="btn primary" data-close>知道了</button></div>
     </div>
   </div>
 
   <div id="overlay-settings" class="overlay">
     <div class="panel">
+      <div class="panel-body">
       <h2>設定</h2>
       <div id="speed-debug" hidden>
         <p>時間速度（除錯用；原機為即時 ×1。僅在網址加上 ?debug=1 時顯示。）</p>
@@ -116,21 +121,25 @@
       <div class="row">
         <button type="button" class="btn" id="btn-sound">音效：關</button>
       </div>
-      <div class="row"><button type="button" class="btn" data-close>關閉</button></div>
+      </div>
+      <div class="row panel-actions"><button type="button" class="btn" data-close>關閉</button></div>
     </div>
   </div>
 
   <div id="overlay-egg" class="overlay">
     <div class="panel">
+      <div class="panel-body">
       <h2>選擇數碼蛋</h2>
       <p>點一顆蛋開始育成。</p>
       <div class="row egg-grid" id="egg-row"></div>
-      <div class="row"><button type="button" class="btn" data-close id="egg-cancel">取消</button></div>
+      </div>
+      <div class="row panel-actions"><button type="button" class="btn" data-close id="egg-cancel">取消</button></div>
     </div>
   </div>
 
   <div id="overlay-battle" class="overlay">
     <div class="panel">
+      <div class="panel-body">
       <h2>連線對戰</h2>
       <p>一方按「發出邀請」把邀請碼給對方；對方貼上後按「接受邀請」會得到結果碼，再傳回給發起方按「套用結果」。</p>
       <div id="jogress-box" class="hidden"></div>
@@ -142,23 +151,27 @@
       </div>
       <textarea class="codebox" id="pvp-out" placeholder="產生的對戰碼會顯示在這裡" readonly></textarea>
       <div id="pvp-qr"></div>
-      <div class="row"><button type="button" class="btn" data-close>關閉</button></div>
+      </div>
+      <div class="row panel-actions"><button type="button" class="btn" data-close>關閉</button></div>
     </div>
   </div>
 
   <div id="overlay-export" class="overlay">
     <div class="panel">
+      <div class="panel-body">
       <h2>匯出存檔</h2>
       <p>把這串存檔碼或 QR 碼拿到另一台裝置匯入。請妥善保管，任何人拿到都能讀取你的進度。</p>
       <textarea class="codebox" id="export-code" readonly></textarea>
       <div class="row"><button class="btn primary" id="copy-export">複製存檔碼</button></div>
       <div id="qrbox"></div>
-      <div class="row"><button class="btn" data-close>關閉</button></div>
+      </div>
+      <div class="row panel-actions"><button class="btn" data-close>關閉</button></div>
     </div>
   </div>
 
   <div id="overlay-import" class="overlay">
     <div class="panel">
+      <div class="panel-body">
       <h2>匯入存檔</h2>
       <p>貼上存檔碼，或用相機掃描 QR。若已有進度，匯入前會再確認一次。</p>
       <textarea class="codebox" id="import-code" placeholder="在此貼上 DM20. 開頭的存檔碼"></textarea>
@@ -168,12 +181,14 @@
         <button class="btn" id="stop-scan">關閉相機</button>
       </div>
       <video id="scan" class="hidden" playsinline muted></video>
-      <div class="row"><button class="btn" data-close>關閉</button></div>
+      </div>
+      <div class="row panel-actions"><button class="btn" data-close>關閉</button></div>
     </div>
   </div>
 
   <div id="overlay-install" class="overlay">
     <div class="panel">
+      <div class="panel-body">
       <h2>安裝到主畫面（像 App 一樣）</h2>
       <h3>iPhone / iPad</h3>
       <ol>
@@ -192,25 +207,29 @@
       <h3>電腦（Chrome / Edge）</h3>
       <p>網址列右側會出現「安裝」圖示，或到瀏覽器選單選擇「安裝數碼怪獸對打機」。</p>
       <p class="steps-muted">需要以 HTTPS（或本機 localhost）開啟，服務工作執行緒才能快取資源並離線遊玩。相機掃描 QR 同樣需要 HTTPS 與權限。</p>
-      <div class="row"><button class="btn primary" data-close>知道了</button></div>
+      </div>
+      <div class="row panel-actions"><button class="btn primary" data-close>知道了</button></div>
     </div>
   </div>
 
   <div id="overlay-steps-prompt" class="overlay">
     <div class="panel">
+      <div class="panel-body">
       <h2>同步今天的步數</h2>
-      <p>從 iPhone「健康」讀取今天的步數。每次打開遊戲都可以再同步，只會計算比上次增加的部分，不會重複計算。</p>
-      <p class="steps-muted">建議把捷徑「數碼寶貝步數」放到主畫面，每次從那個圖示進入遊戲，就會先讀步數再打開。</p>
-      <div class="row">
+      <p>從 iPhone「健康」讀取今天的步數。剛才這次打開時可以同步；之後回到遊戲（從背景喚醒或切換畫面）不會再跳出這個提示。只會計算比上次增加的部分，不會重複計算。</p>
+      <p class="steps-muted">建議把捷徑「數碼寶貝步數」放到主畫面，從那個圖示進入遊戲，就會先讀步數再打開。</p>
+      </div>
+      <div class="row panel-actions">
         <button type="button" class="btn primary js-sync-steps">同步步數</button>
         <button type="button" class="btn js-steps-help">先看設定說明</button>
-        <button type="button" class="btn" data-close>稍後</button>
+        <button type="button" class="btn" data-close id="steps-prompt-later">稍後</button>
       </div>
     </div>
   </div>
 
   <div id="overlay-steps-help" class="overlay">
     <div class="panel">
+      <div class="panel-body">
       <h2>設定「數碼寶貝步數」捷徑</h2>
       <p>iPhone 的網頁不能自己讀「健康」的步數，要靠內建的「捷徑」App 代為讀取，再打開遊戲網址。捷徑名稱必須剛好是「<b>數碼寶貝步數</b>」，遊戲裡的「同步步數」才找得到它。</p>
       <ol>
@@ -224,7 +243,8 @@
       </ol>
       <p>第一次執行會跳出「健康」權限，請允許讀取「步數」。然後到捷徑的詳細資料選「加入主畫面」，之後每次從這個圖示進入就會先同步步數。</p>
       <p class="steps-muted">更完整、對照 iOS 15 繁體中文介面的逐步說明，請看遊戲專案裡的 shortcut-setup.md。</p>
-      <div class="row"><button type="button" class="btn primary" data-close>知道了</button></div>
+      </div>
+      <div class="row panel-actions"><button type="button" class="btn primary" data-close id="steps-help-done">知道了</button></div>
     </div>
   </div>
 

@@ -100,16 +100,16 @@
     wargreymon: { id: "wargreymon", version: "special", stage: "mega", nameZh: "戰鬥暴龍獸", nameEn: "WarGreymon", lifespanMin: 5760, weight: 42, canBattle: true, trainCounts: "success", rank: "M", tribe: "A", egg: "anime_agumon" },
     metalgarurumon: { id: "metalgarurumon", version: "special", stage: "mega", nameZh: "鋼鐵加魯魯獸", nameEn: "MetalGarurumon", lifespanMin: 5760, weight: 42, canBattle: true, trainCounts: "success", rank: "M", tribe: "A", egg: "anime_gabumon" },
     omegamon: { id: "omegamon", version: 0, stage: "super", nameZh: "奧米加獸", nameEn: "Omegamon", lifespanMin: 5760, weight: 50, canBattle: true, trainCounts: "success", rank: "X", tribe: null, egg: "jogress" },
-    egg_zuba: { id: "egg_zuba", version: "special", stage: "egg", nameZh: "茲巴數碼蛋", nameEn: "Zuba Digitama", lifespanMin: 10, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "zuba", hatch: "sakumon" },
-    egg_hack: { id: "egg_hack", version: "special", stage: "egg", nameZh: "哈克數碼蛋", nameEn: "Hack Digitama", lifespanMin: 10, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "hack", hatch: "sakumon" },
-    egg_dra_blue: { id: "egg_dra_blue", version: "special", stage: "egg", nameZh: "龍仔獸藍蛋（斬龍）", nameEn: "Slayerdra Digitama", lifespanMin: 10, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "dra_blue", hatch: "petitmon" },
-    egg_dra_green: { id: "egg_dra_green", version: "special", stage: "egg", nameZh: "龍仔獸綠蛋（破壞龍）", nameEn: "Breakdra Digitama", lifespanMin: 10, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "dra_green", hatch: "petitmon" },
-    egg_doru: { id: "egg_doru", version: "special", stage: "egg", nameZh: "多路數碼蛋", nameEn: "Doru Digitama", lifespanMin: 10, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "doru", hatch: "dodomon" },
-    egg_anime_agumon: { id: "egg_anime_agumon", version: "special", stage: "egg", nameZh: "動畫亞古獸數碼蛋", nameEn: "Anime Agumon Digitama", lifespanMin: 10, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "anime_agumon", hatch: "botamon" },
-    egg_anime_gabumon: { id: "egg_anime_gabumon", version: "special", stage: "egg", nameZh: "動畫加布獸數碼蛋", nameEn: "Anime Gabumon Digitama", lifespanMin: 10, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "anime_gabumon", hatch: "punimon" },
-    egg_corona: { id: "egg_corona", version: "special", stage: "egg", nameZh: "日冕數碼蛋", nameEn: "Corona Digitama", lifespanMin: 10, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "corona", hatch: "pichimon" },
-    egg_luna: { id: "egg_luna", version: "special", stage: "egg", nameZh: "露娜數碼蛋", nameEn: "Luna Digitama", lifespanMin: 10, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "luna", hatch: "pichimon" },
-    egg_meicoo: { id: "egg_meicoo", version: "special", stage: "egg", nameZh: "梅可可數碼蛋", nameEn: "Meicoo Digitama", lifespanMin: 10, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "meicoo", hatch: "yukimibotamon" },
+    egg_zuba: { id: "egg_zuba", version: "special", stage: "egg", nameZh: "茲巴數碼蛋", nameEn: "Zuba Digitama", lifespanMin: 1, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "zuba", hatch: "sakumon" },
+    egg_hack: { id: "egg_hack", version: "special", stage: "egg", nameZh: "哈克數碼蛋", nameEn: "Hack Digitama", lifespanMin: 1, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "hack", hatch: "sakumon" },
+    egg_dra_blue: { id: "egg_dra_blue", version: "special", stage: "egg", nameZh: "龍仔獸藍蛋（斬龍）", nameEn: "Slayerdra Digitama", lifespanMin: 1, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "dra_blue", hatch: "petitmon" },
+    egg_dra_green: { id: "egg_dra_green", version: "special", stage: "egg", nameZh: "龍仔獸綠蛋（破壞龍）", nameEn: "Breakdra Digitama", lifespanMin: 1, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "dra_green", hatch: "petitmon" },
+    egg_doru: { id: "egg_doru", version: "special", stage: "egg", nameZh: "多路數碼蛋", nameEn: "Doru Digitama", lifespanMin: 1, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "doru", hatch: "dodomon" },
+    egg_anime_agumon: { id: "egg_anime_agumon", version: "special", stage: "egg", nameZh: "動畫亞古獸數碼蛋", nameEn: "Anime Agumon Digitama", lifespanMin: 1, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "anime_agumon", hatch: "botamon" },
+    egg_anime_gabumon: { id: "egg_anime_gabumon", version: "special", stage: "egg", nameZh: "動畫加布獸數碼蛋", nameEn: "Anime Gabumon Digitama", lifespanMin: 1, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "anime_gabumon", hatch: "punimon" },
+    egg_corona: { id: "egg_corona", version: "special", stage: "egg", nameZh: "日冕數碼蛋", nameEn: "Corona Digitama", lifespanMin: 1, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "corona", hatch: "pichimon" },
+    egg_luna: { id: "egg_luna", version: "special", stage: "egg", nameZh: "露娜數碼蛋", nameEn: "Luna Digitama", lifespanMin: 1, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "luna", hatch: "pichimon" },
+    egg_meicoo: { id: "egg_meicoo", version: "special", stage: "egg", nameZh: "梅可可數碼蛋", nameEn: "Meicoo Digitama", lifespanMin: 1, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "meicoo", hatch: "yukimibotamon" },
     sakumon: { id: "sakumon", version: "special", stage: "baby1", nameZh: "薩庫獸", nameEn: "Sakumon", lifespanMin: 60, weight: 5, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "zuba", nameUnverified: true },
     sakuttomon: { id: "sakuttomon", version: "special", stage: "baby2", nameZh: "薩庫托獸", nameEn: "Sakuttomon", lifespanMin: 1440, weight: 10, canBattle: false, trainCounts: "success", rank: null, tribe: null, egg: "zuba", nameUnverified: true },
     zubamon: { id: "zubamon", version: "special", stage: "rookie", nameZh: "茲巴獸", nameEn: "Zubamon", lifespanMin: 4320, weight: 15, canBattle: true, trainCounts: "success", rank: "A", tribe: "A", egg: "zuba" },
@@ -759,11 +759,17 @@
       var c = CARE[id], m = MONSTERS[id], k;
       for (k in c) if (Object.prototype.hasOwnProperty.call(c, k) && c[k] !== undefined) m[k] = c[k];
     });
-    /* Eggs: 10 minutes (NHOKO / current). */
+    /* Eggs: 1997 = 10 min after clock SET (CARE / this game).
+       DM20 / special = 1 min (Bandai English manual, Humulos). */
     Object.keys(MONSTERS).forEach(function (id) {
       var m = MONSTERS[id];
       if (m.stage === 'egg') {
-        if (m.lifespanMin == null) m.lifespanMin = 10;
+        var dm20 = m.version === 'special' || (m.egg && SPECIAL_EGGS[m.egg]);
+        if (dm20) {
+          m.lifespanMin = 1;
+          m.lifespanMax = 1;
+          m.lifespanSource = 'DM20-Bandai-Humulos-1min';
+        } else if (m.lifespanMin == null) m.lifespanMin = 10;
         if (m.lifespanMax == null) m.lifespanMax = m.lifespanMin;
         if (m.cycleMin == null) { m.cycleMin = 10; m.cycleSource = 'placeholder'; }
         m.sleepStart = null; m.sleepEnd = null;

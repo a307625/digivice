@@ -74,6 +74,8 @@
       clockOffset: clock.getHours() * 3600 + clock.getMinutes() * 60 + clock.getSeconds(),
       speed: 1,
       speedMigrated: true,
+      clockInitialized: false,
+      clockSet: { on: false, h24: 0, min: 0 },
       hunger: 4,
       hungerCap: 4,
       strength: 4,
@@ -144,18 +146,125 @@
 
   function mon(state) { return data.MONSTERS[state.mon]; }
 
+  function runningClockSeconds(state) {
+    return ((state.clockOffset + state.gameTime) % 86400 + 86400) % 86400;
+  }
+  function isClockSet(state) {
+    return !!(state && state.clockSet && state.clockSet.on);
+  }
+  // While SET is open, time of day is frozen at the edited hour:minute
+  // (FileIsland / Wikimon Pause). Age and evolution keep using gameTime.
   function clockSeconds(state) {
-    return (state.clockOffset + state.gameTime) % 86400;
+    if (isClockSet(state)) {
+      var h = state.clockSet.h24 || 0;
+      var min = state.clockSet.min || 0;
+      return ((h * 3600 + min * 60) % 86400 + 86400) % 86400;
+    }
+    return runningClockSeconds(state);
   }
   function clockHour(state) {
     return Math.floor(clockSeconds(state) / 3600);
   }
-  function isSleepHours(state) {
+  function isSleepHoursAt(state, sec) {
     var start = state.sleepStart != null ? state.sleepStart : 21;
     var end = state.sleepEnd != null ? state.sleepEnd : 8;
-    var h = clockHour(state);
+    var h = Math.floor((((sec % 86400) + 86400) % 86400) / 3600);
     if (start > end) return h >= start || h < end;
     return h >= start && h < end;
+  }
+  function isSleepHours(state) {
+    return isSleepHoursAt(state, clockSeconds(state));
+  }
+  function clockStageMaySleep(state) {
+    var m = mon(state);
+    return !!(m && m.stage !== 'baby1' && m.stage !== 'egg' && !state.dead);
+  }
+  // Official: 1997 egg hatches 10 min after the clock is first set (this
+  // game's CARE / user). DM20 Bandai / Humulos: 1 minute after name+clock.
+  // Some Japanese community pages say 5 min for 1997 — documented, not used.
+  function eggHatchMinutes(state) {
+    return isDm20(state) ? 1 : 10;
+  }
+  function beginClockSet(state) {
+    if (!state) return { ok: false };
+    var sec = runningClockSeconds(state);
+    state.clockSet = {
+      on: true,
+      h24: Math.floor(sec / 3600),
+      min: Math.floor((sec % 3600) / 60)
+    };
+    return { ok: true, h24: state.clockSet.h24, min: state.clockSet.min };
+  }
+  function adjustClockSet(state, part, dir) {
+    if (!isClockSet(state)) return { ok: false };
+    dir = dir == null ? 1 : dir;
+    if (part === 'h' || part === 'hour') {
+      state.clockSet.h24 = (state.clockSet.h24 + dir + 24) % 24;
+    } else {
+      state.clockSet.min = (state.clockSet.min + dir + 60) % 60;
+    }
+    var h24 = state.clockSet.h24;
+    return { ok: true, h24: h24, min: state.clockSet.min, isAM: h24 < 12 };
+  }
+  // Jump to daytime: same effect as turning the lights on — wakes, no
+  // sleep disturbance (Wikimon Ver.1). Jump into night / set-and-restore:
+  // puts a woken pet back to sleep (NHOKO). Does not fake DP, hunger,
+  // poop, evolution, or age (those are gameTime).
+  function applyClockJump(state, oldSec, newSec) {
+    var result = { woke: false, slept: false, sleepDist: state.sleepDist || 0 };
+    if (!clockStageMaySleep(state)) return result;
+    var nowNight = isSleepHoursAt(state, newSec);
+    if (nowNight && !state.sleeping) {
+      state.sleeping = true;
+      state.awakeUntil = 0;
+      state.napUntil = 0;
+      result.slept = true;
+      if (state.lights && !state.sleepCalledTonight) {
+        state.lightsCallResolved = false;
+        markCall(state, 'lights');
+      }
+      state.sleepCalledTonight = true;
+    }
+    if (!nowNight && state.sleeping) {
+      state.sleeping = false;
+      state.napUntil = 0;
+      state.callLightsAt = null;
+      state.lightsCallResolved = false;
+      state.sleepCalledTonight = false;
+      // "Same effects as turning the lights on" (Wikimon). No sleepDist.
+      // Do not refill DP: sleptContinuously is accumulated in gameTime.
+      setLights(state, true);
+      result.woke = true;
+    }
+    result.sleepDist = state.sleepDist || 0;
+    return result;
+  }
+  function confirmClockSet(state) {
+    if (!isClockSet(state)) return { ok: false };
+    var oldSec = runningClockSeconds(state);
+    var newSec = ((state.clockSet.h24 * 3600 + state.clockSet.min * 60) % 86400 + 86400) % 86400;
+    var first = !state.clockInitialized;
+    state.clockOffset = ((newSec - state.gameTime) % 86400 + 86400) % 86400;
+    state.clockSet = { on: false, h24: 0, min: 0 };
+    state.clockInitialized = true;
+    var hatchStarted = false;
+    if (first) {
+      var egg = mon(state);
+      if (egg && egg.stage === 'egg') {
+        state.stageEnteredGame = state.gameTime;
+        state.evoDueAt = eggHatchMinutes(state);
+        hatchStarted = true;
+      }
+    }
+    var jump = applyClockJump(state, oldSec, newSec);
+    return {
+      ok: true,
+      first: first,
+      hatchStarted: hatchStarted,
+      oldSec: oldSec,
+      newSec: newSec,
+      jump: jump
+    };
   }
   function ageDays(state) {
     return Math.floor(state.gameTime / 86400);
@@ -365,6 +474,9 @@
   }
 
   function evolveTo(state, toId, reason) {
+    // FileIsland Pause: if evolution hits while left on SET, unpause,
+    // evolve, and (if still night) stay / go back to sleep.
+    if (isClockSet(state)) confirmClockSet(state);
     var from = state.mon;
     state.mon = toId;
     state.stageEnteredGame = state.gameTime;
@@ -388,6 +500,10 @@
   function evoDueMinutes(state, m) {
     var due = state.evoDueAt;
     var lo = m.lifespanMin || 0;
+    // After the first clock SET, the egg's hatch window is the official
+    // figure we stored (1997: 10 min, DM20: 1 min) and must not be raised
+    // back to a CARE placeholder of 10.
+    if (m.stage === 'egg' && state.clockInitialized && due != null) return due;
     // Stale due from an earlier form (e.g. tests that swap mon after defaultState):
     if (due == null || due < lo) due = lo;
     return due;
@@ -397,6 +513,9 @@
     if (state.dead) return false;
     var m = mon(state);
     if (!m) return false;
+    // Official 1997: the egg does not hatch until the clock has been set.
+    // The hatch timer itself starts on the first confirm (10 min / DM20 1 min).
+    if (m.stage === 'egg' && !state.clockInitialized) return false;
     var rng = rngOf(rngOrOpts);
 
     // Mega: 48 h AWAKE (DM20), independent of the 1997 Perfect lifespan window.
@@ -1130,6 +1249,10 @@
       if (state.speed == null || state.speed === 60) state.speed = 1;
       state.speedMigrated = true;
     }
+    // Existing saves already ran (and could hatch) without a required SET.
+    // Only brand-new eggs (clockInitialized: false in defaultState) wait.
+    if (state.clockInitialized == null) state.clockInitialized = true;
+    if (!state.clockSet) state.clockSet = { on: false, h24: 0, min: 0 };
     applySpeciesCare(state, { migrate: true });
     if (state.evoDueAt == null) {
       var m = mon(state);
@@ -1174,6 +1297,14 @@
     timeInStage: timeInStage,
     clockHour: clockHour,
     clockSeconds: clockSeconds,
+    runningClockSeconds: runningClockSeconds,
+    isClockSet: isClockSet,
+    beginClockSet: beginClockSet,
+    adjustClockSet: adjustClockSet,
+    confirmClockSet: confirmClockSet,
+    applyClockJump: applyClockJump,
+    eggHatchMinutes: eggHatchMinutes,
+    isSleepHoursAt: isSleepHoursAt,
     ageDays: ageDays,
     winRate: winRate,
     mon: mon,
