@@ -145,7 +145,7 @@
     scale = scale || 1;
     max = max || 4;
     for (var i = 0; i < max; i++) {
-      blit(ctx, i < filled ? 'heart' : 'heart_empty', x + i * 9 * scale, y, scale);
+      blit(ctx, i < filled ? 'heart' : 'heart_empty', x + i * 8 * scale, y, scale);
     }
   }
 

@@ -142,7 +142,7 @@ body {
   box-shadow: 0 0 10px 3px rgba(255, 220, 80, 0.7);
 }
 .face-icon.call-blink {
-  animation: callblink 0.7s steps(1) infinite;
+  animation: callblink 1s steps(1) infinite; /* 0.5 s on / 0.5 s off, official 2 Hz */
 }
 @keyframes callblink {
   0%, 49% { background: rgba(255, 230, 110, 0.35); box-shadow: 0 0 10px 3px rgba(255, 220, 80, 0.85); }

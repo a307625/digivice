@@ -184,7 +184,11 @@ console.log('4) Injury / heal / death clocks');
   ok(s.injured, 'injury roll after every battle (die 0, base 2 → 3/16, hits)');
   const t0 = s.injuredAt;
   s.dp = 5;
-  Engine.recordBattle(s, 'loss', () => 0);
+  const refused = Engine.recordBattle(s, 'loss', () => 0);
+  ok(refused && refused.ok === false && refused.reason === 'injured', 'cannot start a new battle while injured');
+  eq(s.injuredAt, t0, 'refused battle does not touch the 6 h clock');
+  // Official set_injured while already injured: injuries increment, clock stays.
+  Engine.injure(s, 'poop');
   eq(s.injuredAt, t0, 'already-injured: 6 h clock is not reset');
   ok(s.injuries >= 2, 'injuries still increment');
   // 6 h untreated

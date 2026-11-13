@@ -29,7 +29,11 @@
   var OVERFEED_LOCK = 3600;
   // Raised past 12 h so a single catch-up can fire the official 6 h / 12 h deaths.
   var MAX_CATCHUP = 13 * 3600;
-  var DP_REFILL_SEC = 8 * 3600;
+  var DP_REFILL_SEC = 8 * 3600;     // 1997: 8 h continuous sleep (NHOKO / Wikimon / DMComm)
+  var DM20_DP_REFILL_SEC = 3 * 3600; // DM20: 3 h sleep / nap recovers stamina (Humulos, Wikimon)
+  var DM20_NAP_SEC = 3 * 3600;       // Humulos DM20: nap lasts 3 hours
+  var DM20_POOP_CAP = 4;             // DM20: injury at 4 piles, then no more poop (Humulos / community)
+  var POOP_CAP = 8;                  // 1997 firmware: 8th pile injures (measured)
   var CALLS_CAP = 15;
   var WIN_SCORE_MAX = 15;
 
@@ -162,6 +166,13 @@
     return battles > 0 ? wins / battles : 0;
   }
 
+  function isDm20(state) {
+    if (!state) return false;
+    var kind = state.eggKind;
+    if (kind && data.SPECIAL_EGGS && data.SPECIAL_EGGS[kind]) return true;
+    return false;
+  }
+
   function cycleSec(state) {
     var m = mon(state);
     if (!m) return 3600;
@@ -169,6 +180,34 @@
     if (m.stage === 'egg') return 600;
     if (m.stage === 'baby1') return 3 * 60;
     return 57 * 60; // placeholder fallback, labelled on the monster when used
+  }
+
+  function dpRefillSec(state) {
+    return isDm20(state) ? DM20_DP_REFILL_SEC : DP_REFILL_SEC;
+  }
+
+  function poopIntervalSec(state) {
+    // 1997: NHOKO 約3時間; Wikimon ~2 h; ROM interval unpublished. Keep 3 h.
+    // DM20: "very frequent" — no official minute figure found; do not invent.
+    // Use the same 3 h community figure until a measured source exists.
+    return POOP_INTERVAL;
+  }
+
+  function poopCapOf(state) {
+    return isDm20(state) ? DM20_POOP_CAP : POOP_CAP;
+  }
+
+  /* Stages that may train, battle, or link-battle (1997 + DM20 Mega).
+     Baby I / Baby II / Egg cannot. Child (rookie) and up, including
+     Perfect, Mega and Super Ultimate, can (battle also needs DP and no injury). */
+  var STAGE_TRAIN_BATTLE = {
+    rookie: 1, champion: 1, ultimate: 1, mega: 1, super: 1
+  };
+
+  function canTrain(state) {
+    if (!state || state.dead) return false;
+    var m = mon(state);
+    return !!(m && STAGE_TRAIN_BATTLE[m.stage]);
   }
 
   function satietyOf(state) {
@@ -557,10 +596,16 @@
             state.lastStrTick = state.gameTime;
             state.strength = Math.max(0, state.strength - 1);
           }
-          if (state.gameTime - (state.lastPoopAt || 0) >= POOP_INTERVAL) {
+          var poopInt = poopIntervalSec(state);
+          var poopCap = poopCapOf(state);
+          if (state.gameTime - (state.lastPoopAt || 0) >= poopInt) {
             state.lastPoopAt = state.gameTime;
-            state.poop = Math.min(8, (state.poop || 0) + 1);
-            if (state.poop >= 8) injure(state, 'poop');
+            // DM20 at 4 piles: will not poop (or injure) again (Humulos / community).
+            // 1997: stack to 8, 8th pile injures (firmware, measured).
+            if ((state.poop || 0) < poopCap) {
+              state.poop = (state.poop || 0) + 1;
+              if (state.poop >= poopCap) injure(state, 'poop');
+            }
           }
         }
 
@@ -592,22 +637,33 @@
             state.sleepCalledTonight = true;
           }
         }
+        // DM20 daytime nap: do not treat "not bedtime" as a morning wake
+        // until napUntil is reached. If the nap overlaps bedtime, they
+        // keep sleeping (Humulos).
+        var napping = !!(state.napUntil && state.sleeping && state.gameTime < state.napUntil);
         if (!shouldSleep) {
-          if (state.sleeping) {
+          if (state.sleeping && !napping) {
             state.sleeping = false;
             state.callLightsAt = null;
             state.lightsCallResolved = false;
-            // Natural morning wake refills DP only after ≥8 h continuous sleep.
+            // Natural morning wake, or a completed 3 h nap, refills DP after
+            // continuous sleep: 1997 = 8 h; DM20 = 3 h (Humulos, Wikimon).
             // A disturbance wake does not (disturbSleep resets sleptContinuously).
             // No hunger / strength gift (that was invented).
-            if ((state.sleptContinuously || 0) >= DP_REFILL_SEC) {
+            if ((state.sleptContinuously || 0) >= dpRefillSec(state)) {
               state.dp = state.dpMax || 0;
             }
+            state.napUntil = 0;
+            // DM20 morning wake / nap end turns the lamp back on.
+            if (isDm20(state)) setLights(state, true);
           }
-          state.sleepCalledTonight = false;
-          state.awakeUntil = 0;
-          state.sleptContinuously = 0;
+          if (!napping) {
+            state.sleepCalledTonight = false;
+            state.awakeUntil = 0;
+            state.sleptContinuously = 0;
+          }
         }
+
         resolveCalls(state);
 
         if (state.injured && state.injuredAt != null && state.gameTime - state.injuredAt >= INJURY_DEATH) {
@@ -805,13 +861,69 @@
     return { ok: true };
   }
 
+  function setLights(state, on) {
+    if (!state) return { lights: true };
+    state.lights = !!on;
+    // Turning the lamp off clears a pending lights-left-on call (1997 / DMC).
+    if (!state.lights) state.callLightsAt = null;
+    return { lights: state.lights };
+  }
+
   function toggleLights(state) {
     // 1997 / DMC: Light only toggles the lamp. It does not wake the pet
     // and does not start a second lights-out call (Humulos DMC: one call per night).
-    // (UI-worker behaviour, kept; lamp-on starting a call is unverified.)
-    state.lights = !state.lights;
-    if (!state.lights) state.callLightsAt = null;
-    return { lights: state.lights };
+    // The user can always toggle back on.
+    return setLights(state, !state.lights);
+  }
+
+  /**
+   * DM20 Sleep (light-bulb) menu.
+   * Official LCD options are On and Off (Humulos DM20 manual: "you are
+   * given an option for On and Off"; Bandai English manual describes the
+   * icon as "LIGHTS (wake up/put to sleep)"). Effects (Humulos):
+   *   Not tired and not sleeping: On = no sleep change; Off = 3-hour nap
+   *     (continues into normal bedtime if it overlaps).
+   *   Tired: On = wake; Off = put to sleep.
+   *   Sleeping: On = wake; Off = nothing (sleep state).
+   * Waking is not a care mistake and not a sleep disturbance (do not
+   * call disturbSleep). On ALWAYS turns the lamp on — including when the
+   * pet is already awake (Humulos "On — Nothing!" is about sleep state,
+   * not leaving the LCD dark). The user can always turn lights back on.
+   * sel 0 = On, sel 1 = Off.
+   */
+  function confirmDm20Light(state, sel) {
+    if (!state || state.dead) return { ok: false };
+    var wantOn = (sel === 0);
+    if (wantOn) {
+      setLights(state, true);
+      var woken = false;
+      if (state.sleeping) {
+        state.sleeping = false;
+        state.napUntil = 0;
+        // Keep a short awake window so tick() does not immediately re-sleep
+        // at night. DISTURB_AWAKE_SEC is an unverified placeholder.
+        state.awakeUntil = (state.gameTime || 0) + DISTURB_AWAKE_SEC;
+        woken = true;
+      }
+      return { ok: true, lights: true, woken: woken };
+    }
+    // Off
+    if (state.sleeping) {
+      // Official: Off does nothing to sleep while already sleeping.
+      // Do not force the lamp back on or off here.
+      return { ok: true, lights: state.lights, noop: true };
+    }
+    setLights(state, false);
+    state.sleeping = true;
+    if (isSleepHours(state)) {
+      // Tired (bedtime, not yet asleep in official terms): put to bed.
+      state.napUntil = 0;
+      return { ok: true, lights: false, sleeping: true, nap: false };
+    }
+    // Awake, not bedtime: 3-hour nap. If it later overlaps bedtime, tick
+    // keeps them asleep (Humulos).
+    state.napUntil = (state.gameTime || 0) + DM20_NAP_SEC;
+    return { ok: true, lights: false, sleeping: true, nap: true };
   }
 
   function heal(state) {
@@ -834,8 +946,9 @@
   function recordBattle(state, result, rng) {
     if (state.dead) return;
     var m = mon(state);
-    if (!m || !m.canBattle) return { ok: false, reason: 'cannot-battle' };
+    if (!m || !m.canBattle || !STAGE_TRAIN_BATTLE[m.stage]) return { ok: false, reason: 'cannot-battle' };
     if (state.dp <= 0) return { ok: false, reason: 'no-dp' };
+    if (state.injured) return { ok: false, reason: 'injured' };
     wakePenalty(state, 'battle');
     state.dp = Math.max(0, state.dp - 1);
     state.weight = Math.max(m.weight || 5, state.weight - (Number(m.version) === 1 ? 2 : 4));
@@ -870,6 +983,9 @@
 
   function tryJogress(state, partnerId) {
     if (state.dead) return { ok: false };
+    var self = mon(state);
+    // 1997 Ver.1–5 has no Jogress (Pendulum / DM20). Babies / Egg cannot.
+    if (!self || !STAGE_TRAIN_BATTLE[self.stage]) return { ok: false, reason: 'too-young' };
     var pairs = data.JOGRESS || [];
     var hit = null;
     for (var i = 0; i < pairs.length; i++) {
@@ -902,7 +1018,11 @@
 
   function canBattle(state) {
     var m = mon(state);
-    return !!(m && m.canBattle && !state.dead && state.dp > 0);
+    // Child (rookie) and up, including DM20 Mega / Super. Need DP, not injured.
+    // Wikimon / Humulos: Baby I and Baby II cannot battle; must heal before
+    // fighting again; cannot fight at 0 Energy.
+    return !!(m && m.canBattle && STAGE_TRAIN_BATTLE[m.stage] &&
+      !state.dead && state.dp > 0 && !state.injured);
   }
 
   function status(state) {
@@ -1025,10 +1145,15 @@
     cancelTraining: cancelTraining,
     flush: flush,
     toggleLights: toggleLights,
+    setLights: setLights,
+    confirmDm20Light: confirmDm20Light,
+    isDm20: isDm20,
     heal: heal,
     recordBattle: recordBattle,
     canBattle: canBattle,
+    canTrain: canTrain,
     tryJogress: tryJogress,
+    injure: injure,
     addTagWin: addTagWin,
     jogressPartners: jogressPartners,
     status: status,
@@ -1049,6 +1174,12 @@
     INJURY_DEATH: INJURY_DEATH,
     OVERFEED_LOCK: OVERFEED_LOCK,
     DP_REFILL_SEC: DP_REFILL_SEC,
+    DM20_DP_REFILL_SEC: DM20_DP_REFILL_SEC,
+    DM20_NAP_SEC: DM20_NAP_SEC,
+    POOP_INTERVAL: POOP_INTERVAL,
+    poopCapOf: poopCapOf,
+    dpRefillSec: dpRefillSec,
+    cycleSec: cycleSec,
     MAX_INJURIES: MAX_INJURIES,
     isCallLit: isCallLit,
     enhancement: enhancement,

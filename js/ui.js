@@ -7,6 +7,26 @@
   'use strict';
 
   var LCD_W = 160, LCD_H = 96, MON = 2;
+  /* Official 1997 playfield is 32×16 dots. A 16-dot-tall monster is a 32×32
+     cell drawn at MON=2, so 1 original dot = 4 canvas px. Items and glyphs
+     use the same scale (ITEM=4). The 128×64 field is centered on 160×96. */
+  var DOT = 4;
+  var FW = 32, FH = 16;
+  var OX = 16, OY = 16;
+  var ITEM = 4;
+  var ANIM_MS = 500;  /* official 2 Hz LCD frame (firmware heartbeat) */
+  var FLUSH_MS = 50;  /* flush is 10× the walk clock (berational) */
+  function fx(d) { return OX + d * DOT; }
+  function fy(d) { return OY + d * DOT; }
+  var shotAnimAt = 0;
+  var lastAnimAt = 0;
+  var flushLastAt = 0;
+  function animNow() {
+    if (shotMode) return shotAnimAt;
+    return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+  }
+  function animTick() { return Math.floor(animNow() / ANIM_MS); }
+
   var SELECTABLE = (window.VpetItems && window.VpetItems.SELECTABLE) ||
     ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC'];
   var SPEEDS = [1, 10, 60, 120, 600];
@@ -34,7 +54,7 @@
   var poseFx = { name: null, until: 0, extra: null };
   var eatAnim = { on: false, t: 0, kind: 'meat', refused: false };
   var flushAnim = { on: false, t: 0, n: 0, off: 0 };
-  var walk = { x: 40, dir: -1 };
+  var walk = { x: 8, dir: -1 };
   var dyingT = 0;
   var motionOn = false;
   var pedometer = null;
@@ -179,8 +199,8 @@
   }
 
   function menuItem(I, selected, y, label) {
-    blitItem(selected ? 'triangle' : 'empty_triangle', 12, y, 2);
-    if (I && I.drawText) I.drawText(ctx, label, 36, y, 2);
+    blitItem(selected ? 'triangle' : 'empty_triangle', fx(1), y, ITEM);
+    if (I && I.drawText) I.drawText(ctx, label, fx(9), y, 2);
   }
 
 
@@ -284,20 +304,20 @@
   }
 
   function blitItem(name, x, y, scale, flip) {
-    if (items()) items().blit(ctx, name, x, y, scale || 2, flip);
+    if (items()) items().blit(ctx, name, x, y, scale != null ? scale : ITEM, flip);
   }
 
   function idleFrame() {
-    return (Math.floor(frame / 16) % 2) ? 'idle1' : 'idle0';
+    return (animTick() % 2) ? 'idle1' : 'idle0';
   }
 
   function monFrame() {
     if (!state) return 'idle0';
     if (state.dead && view !== 'dying') return 'lose';
-    if (state.sleeping) return (Math.floor(frame / 18) % 2) ? 'sleep1' : 'sleep0';
+    if (state.sleeping) return (animTick() % 2) ? 'sleep1' : 'sleep0';
     if (poseFx.name && performance.now() < poseFx.until) {
-      if (poseFx.name === 'sleep') return (Math.floor(frame / 18) % 2) ? 'sleep1' : 'sleep0';
-      if (poseFx.name === 'eat') return (Math.floor(frame / 8) % 2) ? 'eat1' : 'eat0';
+      if (poseFx.name === 'sleep') return (animTick() % 2) ? 'sleep1' : 'sleep0';
+      if (poseFx.name === 'eat') return (animTick() % 2) ? 'eat1' : 'eat0';
       if (poseFx.name === 'happy') return 'happy';
       if (poseFx.name === 'angry') return 'angry';
       if (poseFx.name === 'refuse') return 'refuse';
@@ -305,11 +325,11 @@
       poseFx = { name: null, until: 0, extra: null };
     }
     if (eatAnim.on && !eatAnim.refused) {
-      return (Math.floor(eatAnim.t / 8) % 2) ? 'eat1' : 'eat0';
+      return (eatAnim.t % 2) ? 'eat1' : 'eat0';
     }
     if (state.injured) {
       var sp = window.SpriteAtlas && window.SpriteAtlas.SPRITES[state.mon];
-      if (sp && sp.frames.sick) return (Math.floor(frame / 16) % 2) ? 'sick' : 'idle0';
+      if (sp && sp.frames.sick) return (animTick() % 2) ? 'sick' : 'idle0';
     }
     return idleFrame();
   }
@@ -347,33 +367,36 @@
     }
   }
 
-  function poopRightBound() {
-    var n = Math.min(8, (flushAnim.on ? flushAnim.n : (state && state.poop)) || 0);
-    var cols = Math.ceil(n / 2);
-    return LCD_W - cols * 16;
+  function poopCount() {
+    return flushAnim.on ? flushAnim.n : Math.min(8, (state && state.poop) || 0);
   }
 
+  function poopCols() {
+    return Math.ceil(poopCount() / 2);
+  }
+
+  /* Official berational / 1997 layout on a 32×16 field (dots):
+     even i: lower row y=8, x = 24, 16, 8, 0
+     odd  i: upper row y=0, same x as the previous even pile.
+     Flush: piles and wave slide down 1 dot / 50 ms for 24 dots. */
   function drawPoop() {
     if (!state && !flushAnim.on) return;
-    var n = flushAnim.on ? flushAnim.n : Math.min(8, state.poop || 0);
+    var n = poopCount();
     if (n <= 0) return;
     var off = flushAnim.on ? flushAnim.off : 0;
-    var flip = (Math.floor(frame / 12) % 2) === 1;
-    var maxX = LCD_W;
-    var pw = 16;
+    var flip = (animTick() % 2) === 1;
+    var pw = 8;
     for (var i = 0; i < n; i++) {
       var x, y;
       if (i % 2 === 0) {
-        x = maxX - pw - pw * (i / 2);
-        y = LCD_H - pw - 4 + off;
-        if (flushAnim.on) {
-          blitItem('poopwave', x, y - pw, 2, flip);
-        }
-        blitItem('poop', x, y, 2, flip);
+        x = FW - pw - pw * (i / 2);
+        y = pw + off;
+        if (flushAnim.on) blitItem('poopwave', fx(x), fy(y - pw), ITEM, flip);
+        blitItem('poop', fx(x), fy(y), ITEM, flip);
       } else {
-        x = maxX - pw - pw * ((i - 1) / 2);
-        y = LCD_H - pw * 2 - 4 + off;
-        blitItem('poop', x, y, 2, flip);
+        x = FW - pw - pw * ((i - 1) / 2);
+        y = 0 + off;
+        blitItem('poop', fx(x), fy(y), ITEM, flip);
       }
     }
   }
@@ -381,11 +404,10 @@
   function walkUpdate() {
     if (!state || state.dead || state.sleeping || poseFx.name || eatAnim.on || flushAnim.on) return;
     if (view !== 'play') return;
-    if (frame % 3 !== 0) return;
-    var sw = 32 * MON;
-    var maxX = Math.max(2, poopRightBound() - sw - 2);
-    var minX = 2;
-    walk.x += walk.dir * 1;
+    var monW = 16;
+    var maxX = Math.max(0, FW - monW - poopCols() * 8);
+    var minX = 0;
+    walk.x += walk.dir;
     if (walk.x <= minX) { walk.x = minX; walk.dir = 1; }
     if (walk.x >= maxX) { walk.x = maxX; walk.dir = -1; }
   }
@@ -394,8 +416,8 @@
     if (!state || !state.mon) return;
     blitMon(state.mon, x, y, MON, fr, flip);
     if (state.injured && view !== 'dying' && view !== 'grave' && !state.dead) {
-      var bob = (Math.floor(frame / 10) % 2) ? 2 : 0;
-      blitItem('skull', x + 32 * MON - 6, y + 8 + bob, 2);
+      var bob = (animTick() % 2) ? DOT : 0;
+      blitItem('skull', x + 8 * DOT, y + bob, ITEM);
     }
   }
 
@@ -407,35 +429,35 @@
       return;
     }
     var fr = monFrame();
-    var sw = 32 * MON;
-    var sh = 32 * MON;
-    var my = LCD_H - sh - 4;
-    var mx = walk.x;
+    var monW = 16;
+    var my = fy(0);
+    var mx = fx(walk.x);
     var flip = false;
     if (state.sleeping) {
-      mx = Math.floor((LCD_W - sw) / 2);
+      mx = fx(Math.floor((FW - monW) / 2));
       flip = false;
     } else if (eatAnim.on) {
-      mx = LCD_W - 16 - sw - 4;
+      // Official: Digimon at 32-8-16=8, facing the food at x=24
+      mx = fx(8);
       flip = true;
     } else if (poseFx.name === 'refuse') {
-      flip = (Math.floor(frame / 6) % 2) === 1;
-      mx = Math.floor((LCD_W - sw) / 2);
+      flip = (animTick() % 2) === 1;
+      mx = fx(Math.floor((FW - monW) / 2));
     } else if (poseFx.name) {
-      mx = Math.floor((LCD_W - sw) / 2);
+      mx = fx(Math.floor((FW - monW) / 2));
       flip = false;
     } else {
       flip = walk.dir > 0;
     }
     if (view === 'dying') {
-      mx = Math.floor((LCD_W - sw) / 2);
+      mx = fx(Math.floor((FW - monW) / 2));
       fr = 'lose';
       flip = false;
     }
     drawMonAt(mx, my, fr, flip);
 
     if (eatAnim.on && !eatAnim.refused) {
-      var phase = Math.floor(eatAnim.t / 18);
+      var phase = eatAnim.t;
       var kind = eatAnim.kind;
       var food = 'meat';
       if (kind === 'protein') {
@@ -445,8 +467,8 @@
         else if (phase >= 2) food = 'half_meat';
         else food = 'meat';
       }
-      var fy = (phase === 0) ? my + 8 : my + 24;
-      blitItem(food, LCD_W - 20, fy, 2, false);
+      var fyFood = (phase === 0) ? fy(0) : fy(8);
+      blitItem(food, fx(24), fyFood, ITEM, false);
     }
     drawPoop();
   }
@@ -456,35 +478,34 @@
     if (!state) return;
     var sec = window.Engine.clockSeconds(state);
     var h24 = Math.floor(sec / 3600);
-    var m = Math.floor((sec % 3600) / 60);
+    var min = Math.floor((sec % 3600) / 60);
     var s = Math.floor(sec % 60);
     var isAM = h24 < 12;
     var h = h24 % 12;
     if (h === 0) h = 12;
     var I = items();
-    var sc = 3;
-    var y = 22;
-    var x = 14;
-    blitItem(isAM ? 'am' : 'pm', x, y - 2, 2);
-    x = 40;
-    I.drawNumber(ctx, h, x, y, sc, 2);
-    x += 5 * sc * 2 + 4;
-    // colon
+    // 1997 clock: HH:MM, AM/PM, five 1 Hz seconds-indicator triangles.
+    // No seconds digits, no milliseconds. Colon is static (berational ClockScreen).
+    blitItem(isAM ? 'am' : 'pm', fx(0), fy(8), ITEM);
+    var dx = fx(8);
+    var dy = fy(2);
+    I.drawNumber(ctx, h, dx, dy, ITEM, 2);
+    dx += 5 * ITEM * 2;
     ctx.fillStyle = INK;
-    ctx.fillRect(x, y + 4, 3, 3);
-    ctx.fillRect(x, y + 14, 3, 3);
-    x += 8;
-    I.drawNumber(ctx, m, x, y, sc, 2);
-    I.drawSmallNumber(ctx, s, 118, y + 8, 2, 2);
-    // second triangles, official ClockScreen.cpp
-    var triY = 70;
-    for (var i = 0; i < 5; i++) blitItem('empty_triangle', 50 + i * 14, triY, 2);
+    ctx.fillRect(dx, dy + 1 * ITEM, DOT, DOT);
+    ctx.fillRect(dx, dy + 5 * ITEM, DOT, DOT);
+    dx += 2 * ITEM;
+    I.drawNumber(ctx, min, dx, dy, ITEM, 2);
+    var triY = fy(12);
+    var triX0 = fx(14);
+    var i, j, k;
+    for (i = 0; i < 5; i++) blitItem('empty_triangle', triX0 + i * 3 * DOT, triY, ITEM);
     var rem = s % 10;
     if (rem <= 5) {
-      for (var j = 0; j < rem; j++) blitItem('triangle', 50 + j * 14, triY, 2);
+      for (j = 0; j < rem; j++) blitItem('triangle', triX0 + j * 3 * DOT, triY, ITEM);
     } else {
       var dark = 10 - rem;
-      for (var k = 0; k < dark; k++) blitItem('triangle', 50 + 4 * 14 - k * 14, triY, 2);
+      for (k = 0; k < dark; k++) blitItem('triangle', triX0 + 4 * 3 * DOT - k * 3 * DOT, triY, ITEM);
     }
   }
 
@@ -497,40 +518,39 @@
     var page = pages[statusPage] || pages[0];
     if (page === 'name') {
       var nm = (s.nameEn || s.nameZh || '').toString();
-      I.drawText(ctx, nm, 12, 40, 2);
+      I.drawText(ctx, nm, fx(1), fy(5), 2);
     } else if (page === 'age') {
-      blitItem('age', 16, 16, 3);
-      I.drawNumber(ctx, s.age, 56, 20, 3, 2);
-      blitItem('weight', 16, 56, 3);
-      I.drawNumber(ctx, s.weight, 56, 60, 3, 2);
+      blitItem('age', fx(1), fy(1), ITEM);
+      I.drawNumber(ctx, s.age, fx(10), fy(2), ITEM, 2);
+      blitItem('weight', fx(1), fy(9), ITEM);
+      I.drawNumber(ctx, s.weight, fx(10), fy(10), ITEM, 2);
     } else if (page === 'hunger') {
-      I.drawHearts(ctx, 28, 36, s.hunger, 4, 3);
+      I.drawHearts(ctx, fx(0), fy(4), s.hunger, 4, ITEM);
     } else if (page === 'strength') {
-      I.drawHearts(ctx, 28, 36, s.strength, 4, 3);
+      I.drawHearts(ctx, fx(0), fy(4), s.strength, 4, ITEM);
     } else if (page === 'effort') {
       var effort = Math.min(4, Math.floor((s.train || 0) / 4));
-      I.drawHearts(ctx, 28, 36, effort, 4, 3);
+      I.drawHearts(ctx, fx(0), fy(4), effort, 4, ITEM);
     } else if (page === 'dp') {
-      I.drawText(ctx, 'DP', 16, 28, 3);
-      I.drawNumber(ctx, s.dp || 0, 64, 28, 3, 0);
+      I.drawText(ctx, 'DP', fx(1), fy(3), ITEM);
+      I.drawNumber(ctx, s.dp || 0, fx(12), fy(3), ITEM, 0);
       if (s.dpMax) {
-        I.drawText(ctx, 'MAX', 16, 64, 2);
-        I.drawNumber(ctx, s.dpMax, 72, 62, 3, 0);
+        I.drawText(ctx, 'MAX', fx(1), fy(10), 2);
+        I.drawNumber(ctx, s.dpMax, fx(14), fy(9), ITEM, 0);
       }
     } else {
       var pct = Math.round((s.winRate || 0) * 100);
-      var w = I.drawNumber(ctx, pct, 36, 36, 4, 0);
-      blitItem('percent', 36 + w + 6, 38, 3);
+      var w = I.drawNumber(ctx, pct, fx(6), fy(4), ITEM, 0);
+      blitItem('percent', fx(6) + w + DOT, fy(4), ITEM);
     }
   }
 
   function drawFoodMenu() {
     lcdBg();
-    var y0 = 22, y1 = 56;
-    blitItem(foodSel === 0 ? 'triangle' : 'empty_triangle', 18, y0 + 8, 2);
-    blitItem('meat', 48, y0, 3);
-    blitItem(foodSel === 1 ? 'triangle' : 'empty_triangle', 18, y1 + 8, 2);
-    blitItem('pill', 48, y1, 3);
+    blitItem(foodSel === 0 ? 'triangle' : 'empty_triangle', fx(1), fy(2), ITEM);
+    blitItem('meat', fx(10), fy(1), ITEM);
+    blitItem(foodSel === 1 ? 'triangle' : 'empty_triangle', fx(1), fy(10), ITEM);
+    blitItem('pill', fx(10), fy(9), ITEM);
   }
 
   function battleMenuItems() {
@@ -543,10 +563,10 @@
     var I = items();
     var list = battleMenuItems();
     var n = list.length;
-    var gap = n >= 3 ? 26 : 36;
-    var y0 = n >= 3 ? 14 : 24;
+    var gap = n >= 3 ? 5 : 7;
+    var y0 = n >= 3 ? 1 : 2;
     for (var i = 0; i < n; i++) {
-      var y = y0 + i * gap;
+      var y = fy(y0 + i * gap);
       menuItem(I, battleSel === i, y, list[i]);
     }
   }
@@ -554,8 +574,10 @@
   function drawLightMenu() {
     lcdBg();
     var I = items();
-    menuItem(I, lightSel === 0, 24, 'WAKE');
-    menuItem(I, lightSel === 1, 60, 'SLEEP');
+    // Humulos DM20 manual: "you are given an option for On and Off".
+    // Bandai English: "LIGHTS (wake up/put to sleep)". LCD labels are ON / OFF.
+    menuItem(I, lightSel === 0, fy(2), 'ON');
+    menuItem(I, lightSel === 1, fy(10), 'OFF');
   }
 
   function drawAlbumMenu() {
@@ -565,21 +587,21 @@
       if (!state) return;
       var poses = ['idle0', 'eat0', 'sleep0', 'happy'];
       var fr = poses[albumPose % poses.length];
-      blitMon(state.mon, (LCD_W - 64) / 2, LCD_H - 64 - 4, MON, fr, false);
+      blitMon(state.mon, fx(8), fy(0), MON, fr, false);
       return;
     }
-    menuItem(I, albumSel === 0, 10, 'DIGIMON');
-    menuItem(I, albumSel === 1, 32, 'RECORD');
-    menuItem(I, albumSel === 2, 54, 'TAMER');
-    menuItem(I, albumSel === 3, 76, 'COPYMON');
+    menuItem(I, albumSel === 0, fy(0), 'DIGIMON');
+    menuItem(I, albumSel === 1, fy(4), 'RECORD');
+    menuItem(I, albumSel === 2, fy(8), 'TAMER');
+    menuItem(I, albumSel === 3, fy(12), 'COPYMON');
   }
 
   function drawConnectMenu() {
     lcdBg();
     var I = items();
-    menuItem(I, connectSel === 0, 16, 'BATTLE');
-    menuItem(I, connectSel === 1, 42, 'OTHER');
-    menuItem(I, connectSel === 2, 68, 'COPYMON');
+    menuItem(I, connectSel === 0, fy(2), 'BATTLE');
+    menuItem(I, connectSel === 1, fy(7), 'OTHER');
+    menuItem(I, connectSel === 2, fy(12), 'COPYMON');
   }
 
   function drawAlbumRecord() {
@@ -588,12 +610,12 @@
     var I = items();
     var s = window.Engine.status(state);
     var pct = Math.round((s.winRate || 0) * 100);
-    var w = I.drawNumber(ctx, pct, 36, 36, 4, 0);
-    blitItem('percent', 36 + w + 6, 38, 3);
+    var w = I.drawNumber(ctx, pct, fx(6), fy(4), ITEM, 0);
+    blitItem('percent', fx(6) + w + DOT, fy(4), ITEM);
   }
 
   function drawMeter(by, slow) {
-    var bx = 16, bw = LCD_W - 32, bh = 10;
+    var bx = fx(2), bw = 28 * DOT, bh = 2 * DOT;
     ctx.fillStyle = 'rgba(30, 36, 28, 0.55)';
     ctx.fillRect(bx, by, bw, bh);
     var zone = Math.floor(bw * 0.18);
@@ -601,57 +623,55 @@
     ctx.fillStyle = '#5a8a38';
     ctx.fillRect(zx, by, zone, bh);
     ctx.fillStyle = '#c8b040';
-    ctx.fillRect(zx + 4, by, zone - 8, bh);
-    var px = bx + Math.floor(train.pos * (bw - 3));
+    ctx.fillRect(zx + DOT, by, zone - 2 * DOT, bh);
+    var px = bx + Math.floor(train.pos * (bw - DOT));
     ctx.fillStyle = INK;
-    ctx.fillRect(px, by - 1, 3, bh + 2);
+    ctx.fillRect(px, by - 1, DOT, bh + 2);
   }
 
   function drawTrain() {
     lcdBg();
     if (!state) return;
+    blitItem('wall', fx(16), fy(0), ITEM);
     var I = items();
     var mode = train.mode || 'meter';
-    var fr = train.done ? (train.success ? 'happy' : 'angry') : ((Math.floor(frame / 8) % 2) ? 'train1' : 'train0');
+    var fr = train.done ? (train.success ? 'happy' : 'angry') : ((animTick() % 2) ? 'train1' : 'train0');
     if (mode === 'highlow') {
-      // 1997 Ver.1: A high, B low, 5 rounds, 3/5 to succeed
-      I.drawText(ctx, 'HI', 110, 10, 2);
-      I.drawText(ctx, 'LO', 110, 36, 2);
-      var ty = train.target === 1 ? 8 : 34;
-      blitItem('arrow', 88, ty, 2);
-      I.drawNumber(ctx, (train.round || 0) + 1, 12, 10, 2, 0);
-      I.drawText(ctx, 'HIT', 12, 32, 2);
-      I.drawNumber(ctx, train.hits || 0, 56, 30, 2, 0);
+      I.drawText(ctx, 'HI', fx(24), fy(1), 2);
+      I.drawText(ctx, 'LO', fx(24), fy(7), 2);
+      var ty = train.target === 1 ? fy(1) : fy(7);
+      blitItem('arrow', fx(18), ty, ITEM);
+      I.drawNumber(ctx, (train.round || 0) + 1, fx(1), fy(1), ITEM, 0);
+      I.drawText(ctx, 'HIT', fx(1), fy(7), 2);
+      I.drawNumber(ctx, train.hits || 0, fx(12), fy(6), ITEM, 0);
     } else if (mode === 'mash') {
-      var bx = 16, by = 8, bw = LCD_W - 32, bh = 12;
+      var bx = fx(2), by = fy(1), bw = 28 * DOT, bh = 2 * DOT;
       ctx.fillStyle = 'rgba(30, 36, 28, 0.55)';
       ctx.fillRect(bx, by, bw, bh);
       ctx.fillStyle = '#5a8a38';
       ctx.fillRect(bx, by, Math.floor(bw * Math.min(1, train.pos)), bh);
-      I.drawText(ctx, 'MASH', 16, 26, 2);
+      I.drawText(ctx, 'MASH', fx(2), fy(5), 2);
     } else if (mode === 'number') {
-      var n = train.num || 0;
-      I.drawNumber(ctx, n, 48, 10, 4, 0);
-      I.drawText(ctx, 'STOP', 16, 36, 2);
+      I.drawNumber(ctx, train.num || 0, fx(8), fy(1), ITEM, 0);
+      I.drawText(ctx, 'STOP', fx(2), fy(8), 2);
     } else {
-      drawMeter(8, mode === 'meter_slow');
+      drawMeter(fy(1), mode === 'meter_slow');
     }
-    blitMon(state.mon, 16, LCD_H - 64 - 4, MON, fr, true);
-    blitItem('wall', LCD_W - 40, LCD_H - 40, 2);
+    blitMon(state.mon, fx(0), fy(0), MON, fr, true);
   }
 
   function drawEvo() {
     lcdBg();
     var t = evoFx.t;
-    if (t % 8 < 4) {
+    if (t % 2 === 0) {
       ctx.fillStyle = 'rgba(255, 248, 210, 0.45)';
       ctx.fillRect(0, 0, LCD_W, LCD_H);
     }
-    var id = t < 40 ? evoFx.from : evoFx.to;
+    var id = t < 4 ? evoFx.from : evoFx.to;
     var efr = 'idle0';
-    if (id && id.indexOf && id.indexOf('egg_') === 0 && t < 40) efr = (t > 16) ? 'hatch' : idleFrame();
+    if (id && id.indexOf && id.indexOf('egg_') === 0 && t < 4) efr = (t > 1) ? 'hatch' : idleFrame();
     else efr = idleFrame();
-    if (id) blitMon(id, (LCD_W - 64) / 2, LCD_H - 64 - 4, MON, efr, false);
+    if (id) blitMon(id, fx(8), fy(0), MON, efr, false);
   }
 
   function drawBattleFx() {
@@ -659,30 +679,30 @@
     var self = state && state.mon;
     var t = battleFx.t;
     var selfFr = 'idle0', foeFr = 'idle0';
-    if (t < 40) { selfFr = idleFrame(); foeFr = idleFrame(); }
-    else if (t < 80) {
+    if (t < 2) { selfFr = idleFrame(); foeFr = idleFrame(); }
+    else if (t < 5) {
       if (battleFx.result === 'win') { selfFr = 'attack'; foeFr = 'hurt'; }
       else { selfFr = 'hurt'; foeFr = 'attack'; }
     } else {
       if (battleFx.result === 'win') { selfFr = 'happy'; foeFr = 'angry'; }
       else { selfFr = 'angry'; foeFr = 'happy'; }
     }
-    blitMon(self, 0, LCD_H - 64 - 4, MON, selfFr, true);
-    blitMon(battleFx.foe, LCD_W - 64, LCD_H - 64 - 4, MON, foeFr, false);
-    if (t >= 40 && t < 80) {
+    blitMon(self, fx(0), fy(0), MON, selfFr, true);
+    blitMon(battleFx.foe, fx(16), fy(0), MON, foeFr, false);
+    if (t >= 2 && t < 5) {
       var goingRight = battleFx.result === 'win';
-      var u = (t - 40) / 40;
-      var sx = goingRight ? 64 : LCD_W - 64;
-      var ex = goingRight ? LCD_W - 64 : 64;
-      var px = sx + (ex - sx) * u;
-      blitItem('shot', px - 8, 40, 2, !goingRight);
-      if (u > 0.7) blitItem('hit', ex - 16, 28, 2);
+      var u = (t - 2) / 3;
+      var start = goingRight ? fx(12) : fx(20);
+      var end = goingRight ? fx(24) : fx(8);
+      var px = start + (end - start) * u;
+      blitItem('shot', px, fy(4), ITEM, !goingRight);
+      if (u > 0.6) blitItem('hit', end - 4 * DOT, fy(2), ITEM);
     }
   }
 
   function drawGrave() {
     lcdBg();
-    blitItem('grave', (LCD_W - 32) / 2, (LCD_H - 32) / 2 - 4, 2);
+    blitItem('grave', fx(8), fy(0), ITEM);
   }
 
   function draw() {
@@ -847,8 +867,10 @@
   function startTrain() {
     var m = mon();
     disturb('train');
-    if (!m || m.stage === 'egg' || m.stage === 'baby1' || m.stage === 'baby2') {
-      playPose('refuse', 1100);
+    // Official: Egg / Baby I / Baby II cannot train — refuse animation.
+    // Child and up, including DM20 Mega, can (Engine.canTrain).
+    if (!window.Engine.canTrain(state)) {
+      playPose('refuse', 2000);
       view = 'play';
       return;
     }
@@ -878,7 +900,7 @@
     persist();
     setTimeout(function () {
       if (view === 'train') view = 'play';
-      playPose(train.success ? 'happy' : 'angry', 1400);
+      playPose(train.success ? 'happy' : 'angry', 2000);
     }, 700);
   }
 
@@ -942,21 +964,11 @@
 
   function confirmLight() {
     if (!state) return;
-    if (lightSel === 0) {
-      // DM20 Wake: official wake is not a care mistake and is not a sleep
-      // disturbance. Use the existing awakeUntil window; do not call disturbSleep.
-      if (state.sleeping) {
-        state.sleeping = false;
-        state.awakeUntil = (state.gameTime || 0) + 600;
-        persist();
-      }
-    } else {
-      // Sleep: official 3-hour nap is engine-owned and not started here.
-      // If the pet is already in a sleep-call / lights-on situation, turn lights off.
-      if (state.lights) {
-        window.Engine.toggleLights(state);
-        persist();
-      }
+    // Humulos DM20: On (sel 0) / Off (sel 1). Engine always turns the lamp
+    // on for On, so lights can never get stuck off. 1997 uses doLights toggle.
+    if (window.Engine && window.Engine.confirmDm20Light) {
+      window.Engine.confirmDm20Light(state, lightSel);
+      persist();
     }
     view = 'play';
   }
@@ -980,15 +992,16 @@
     if (!state) return;
     var r = window.Engine.heal(state);
     persist();
-    if (r && r.ok && !r.remaining) playPose('happy', 1200);
-    else if (r && r.ok && r.remaining) playPose('refuse', 900);
+    if (r && r.ok && !r.remaining) playPose('happy', 2000);
+    else if (r && r.ok && r.remaining) playPose('refuse', 2000);
   }
 
   function openBattleMenu() {
     if (!state || state.dead) return;
     disturb('battle');
-    var m = mon();
-    if (!m || !m.canBattle) { playPose('refuse', 1100); return; }
+    // Official: Baby I/II/Egg cannot; need DP; must not be injured.
+    // Engine.canBattle covers stage, DP, injury, and species.canBattle.
+    if (!window.Engine.canBattle(state)) { playPose('refuse', 2000); return; }
     battleSel = 0;
     view = 'battleMenu';
   }
@@ -1008,7 +1021,7 @@
   }
 
   function cpuBattle(isTag) {
-    if (!window.Engine.canBattle(state)) { playPose('refuse', 1100); view = 'play'; return; }
+    if (!window.Engine.canBattle(state)) { playPose('refuse', 2000); view = 'play'; return; }
     var foe = window.Battle.pickCpuFoe(state.mon);
     var selfSnap = window.Battle.snapshot(state);
     selfSnap.initiator = window.Engine.nextCpuInitiator ? window.Engine.nextCpuInitiator(state) : true;
@@ -1024,7 +1037,7 @@
   function finishBattleFx() {
     view = 'play';
     battleFx.active = false;
-    playPose(battleFx.result === 'win' ? 'happy' : 'angry', 1400);
+    playPose(battleFx.result === 'win' ? 'happy' : 'angry', 2000);
   }
 
   function confirmSel() {
@@ -1115,18 +1128,41 @@
       return;
     }
     frame++;
-    walkUpdate();
-    if (eatAnim.on) {
-      eatAnim.t++;
-      var maxT = eatAnim.kind === 'protein' ? 18 * 4 : 18 * 5;
-      if (eatAnim.t > maxT) {
-        eatAnim.on = false;
-        playPose('happy', 1200);
+    var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    if (!lastAnimAt) lastAnimAt = now;
+    if (now - lastAnimAt >= ANIM_MS) {
+      lastAnimAt += ANIM_MS;
+      if (now - lastAnimAt >= ANIM_MS * 4) lastAnimAt = now;
+      walkUpdate();
+      if (eatAnim.on) {
+        eatAnim.t++;
+        var maxT = eatAnim.kind === 'protein' ? 4 : 5;
+        if (eatAnim.t >= maxT) {
+          eatAnim.on = false;
+          playPose('happy', 2000);
+        }
+      }
+      if (view === 'evo') {
+        evoFx.t++;
+        if (evoFx.t > 8) view = 'play';
+      }
+      if (view === 'battle') {
+        battleFx.t++;
+        if (battleFx.t > 8) finishBattleFx();
+      }
+      if (view === 'dying') {
+        dyingT++;
+        if (dyingT > 6) view = 'grave';
       }
     }
     if (flushAnim.on) {
-      flushAnim.off += 1;
-      if (flushAnim.off > 28) flushAnim.on = false;
+      if (!flushLastAt) flushLastAt = now;
+      if (now - flushLastAt >= FLUSH_MS) {
+        flushLastAt += FLUSH_MS;
+        if (now - flushLastAt >= FLUSH_MS * 8) flushLastAt = now;
+        flushAnim.off += 1;
+        if (flushAnim.off > 24) flushAnim.on = false;
+      }
     }
     if (state && (view === 'play' || view === 'train' || view === 'clock' || view === 'status' || view === 'food' || view === 'battleMenu' || view === 'lightMenu' || view === 'album' || view === 'albumView' || view === 'albumRecord' || view === 'connect')) {
       var prevMon = state.mon;
@@ -1156,18 +1192,7 @@
         if (train.t > 200) resolveTrain();
       }
     }
-    if (view === 'evo') {
-      evoFx.t++;
-      if (evoFx.t > 90) view = 'play';
-    }
-    if (view === 'battle') {
-      battleFx.t++;
-      if (battleFx.t > 110) finishBattleFx();
-    }
-    if (view === 'dying') {
-      dyingT++;
-      if (dyingT > 50) view = 'grave';
-    }
+    /* evo / battle / dying advance on the 2 Hz ANIM_MS clock above */
     // Official idle timeout: 60s returns menus 2–8 to home (disassembly 0x0866)
     if (!anyOverlay() && sel >= 0 && view === 'play' && Date.now() - lastKeyAt > 60000) sel = -1;
 
@@ -1490,7 +1515,7 @@
       else if (ep && /^[1-5]$/.test(ep)) { state.eggKind = 'ver' + ep; state.version = parseInt(ep, 10); }
     } catch (eEgg) {}
     applyShell();
-    walk.x = 36; walk.dir = -1;
+    walk.x = 8; walk.dir = -1;
     if (name === 'idle' || name === 'idle1280') {
       view = 'play';
     } else if (name === 'menuicon') {
@@ -1514,20 +1539,29 @@
       var wp = statusPages().indexOf('win');
       statusPage = wp >= 0 ? wp : statusPages().length - 1;
     } else if (name === 'light') {
-      doLights();
+      // Always show the DM20 On/Off menu for this shot (Humulos labels).
+      state.eggKind = 'zuba';
+      state.version = 'special';
+      applyShell();
+      lightSel = 0;
+      view = 'lightMenu';
     } else if (name === 'album') {
       albumSel = 0; view = 'album';
     } else if (name === 'eat') {
       view = 'play';
-      eatAnim = { on: true, t: 40, kind: 'meat', refused: false };
+      eatAnim = { on: true, t: 2, kind: 'meat', refused: false };
     } else if (name === 'protein') {
       view = 'play';
-      eatAnim = { on: true, t: 56, kind: 'protein', refused: false };
-    } else if (name === 'poop') {
-      state.poop = 2;
+      eatAnim = { on: true, t: 3, kind: 'protein', refused: false };
+    } else if (name === 'poop' || /^poop[1-4]$/.test(name)) {
+      var pn = name === 'poop' ? 2 : parseInt(name.charAt(4), 10);
+      state.poop = pn;
+      // Shift the monster left of the piles, as the real device does.
+      walk.x = Math.max(0, FW - 16 - Math.ceil(pn / 2) * 8);
+      walk.dir = 1;
     } else if (name === 'flush') {
       state.poop = 0;
-      flushAnim = { on: true, t: 8, n: 2, off: 14 };
+      flushAnim = { on: true, t: 8, n: 2, off: 8 };
     } else if (name === 'sleep' || name === 'night') {
       state.sleeping = true;
       state.lights = false;
@@ -1539,7 +1573,7 @@
       train.done = false;
       view = 'train';
     } else if (name === 'battle' || name === 'battle-hit') {
-      battleFx = { t: 72, foe: 'gabumon', result: 'win', active: true };
+      battleFx = { t: 4, foe: 'gabumon', result: 'win', active: true };
       view = 'battle';
     } else if (name === 'grave') {
       state.dead = true;

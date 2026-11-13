@@ -1,5 +1,5 @@
 /* Offline cache for 數碼怪獸對打機 */
-var CACHE = 'digivice-v22';
+var CACHE = 'digivice-v23';
 var ASSETS = [
   './',
   './index.html',
