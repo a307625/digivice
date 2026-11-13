@@ -75,9 +75,9 @@
     } catch (e) {}
   }
 
-  function text(host, s, x, y, sc) {
+  function text(host, s, x, y, sc, tracking) {
     var I = host.items();
-    if (I && I.drawText) I.drawText(host.ctx, s, x, y, sc || host.ITEM);
+    if (I && I.drawText) I.drawText(host.ctx, s, x, y, sc || host.ITEM, tracking);
   }
   function num(host, n, x, y, sc, pad) {
     var I = host.items();
@@ -89,16 +89,24 @@
 
   function monFrame(host) {
     var s = host.state, tick = host.animTick();
+    var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
     if (!s) return 'idle0';
     if (s.dead) return 'lose';
     if (s.sleeping || s.tired) return (tick % 2) ? 'sleep1' : 'sleep0';
     if (s.sick) return (tick % 2) ? 'sick' : 'idle0';
-    if (host.eatAnim && host.eatAnim.on) return (host.eatAnim.t % 2) ? 'eat1' : 'eat0';
+    if (host.eatAnim && host.eatAnim.on && !host.eatAnim.refused) {
+      return (host.eatAnim.t % 2) ? 'eat1' : 'eat0';
+    }
     if (host.poseFx && host.poseFx.name) {
-      var n = host.poseFx.name;
-      if (n === 'happy') return 'happy';
-      if (n === 'refuse') return 'refuse';
-      if (n === 'angry') return 'angry';
+      if (host.poseFx.until && now >= host.poseFx.until) {
+        host.poseFx.name = null;
+        host.poseFx.until = 0;
+      } else {
+        var n = host.poseFx.name;
+        if (n === 'happy') return 'happy';
+        if (n === 'refuse') return 'refuse';
+        if (n === 'angry') return 'angry';
+      }
     }
     return (tick % 2) ? 'idle1' : 'idle0';
   }
@@ -150,11 +158,29 @@
     var mx = host.fx(host.walk ? host.walk.x : 8);
     var my = host.fy(0);
     var flip = host.walk && host.walk.dir > 0;
+    var eating = host.eatAnim && host.eatAnim.on && !host.eatAnim.refused;
+    var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    var poseLive = host.poseFx && host.poseFx.name && (!host.poseFx.until || now < host.poseFx.until);
     if (s.sleeping || s.tired) {
+      mx = host.fx(8);
+      flip = false;
+    } else if (eating) {
+      // Official: Digimon at x=8, facing the food at x=24 (same as 1997).
+      mx = host.fx(8);
+      flip = true;
+    } else if (poseLive && host.poseFx.name === 'refuse') {
+      // Head-shake: refuse cell mirrored on the 2 Hz clock.
+      flip = (host.animTick() % 2) === 1;
+      mx = host.fx(8);
+    } else if (poseLive) {
       mx = host.fx(8);
       flip = false;
     }
     blitMon(host, s.mon, mx, my, fr, flip);
+    if (eating && host.eatFoodSprite) {
+      var food = host.eatFoodSprite();
+      if (food) host.blitItem(food.food, host.fx(food.xDots), host.fy(food.yDots), host.ITEM, false);
+    }
     // Poop piles — same 8-cap field as official, 8×8 items at ITEM=4.
     var n = s.poop || 0;
     var i;
@@ -202,16 +228,16 @@
     var page = pages[statusPage % pages.length];
     var I = host.items();
     if (page === 'age') {
-      text(host, 'AGE', host.fx(0), host.fy(0), 3);
+      text(host, 'AGE', host.fx(0), host.fy(0), host.ITEM);
       num(host, s.ageDays || 0, host.fx(14), host.fy(0), host.ITEM, 2);
-      text(host, 'WT', host.fx(0), host.fy(8), 3);
+      text(host, 'WT', host.fx(0), host.fy(8), host.ITEM);
       num(host, s.weight || 0, host.fx(12), host.fy(8), host.ITEM, 2);
-      text(host, 'G', host.fx(24), host.fy(8), 3);
+      text(host, 'G', host.fx(24), host.fy(8), host.ITEM);
     } else if (page === 'hunger') {
       text(host, 'HUNGRY', host.fx(1), host.fy(1), host.ITEM);
       hearts(host, Math.min(4, s.hunger || 0), host.fx(1), host.fy(9));
     } else if (page === 'strength') {
-      text(host, 'STRENGTH', host.fx(0), host.fy(1), 3);
+      text(host, 'STRENGTH', host.fx(0), host.fy(1), host.ITEM, 0);
       hearts(host, Math.min(4, s.strength || 0), host.fx(1), host.fy(9));
     } else if (page === 'win') {
       var w = s.wins || 0, l = s.losses || 0, b = s.battles || 0;
@@ -248,8 +274,8 @@
 
   function menuRow(host, selected, y, label) {
     item(host, selected ? 'triangle' : 'empty_triangle', host.fx(0), y);
-    // Scale 3 so 7-letter words (JOGRESS, PROTEIN) fit the 32-dot field.
-    text(host, label, host.fx(6), y, 3);
+    // Native ITEM scale; tight tracking so 7-letter words (JOGRESS) fit.
+    text(host, label, host.fx(8), y, host.ITEM, 0);
   }
 
   function drawFood(host) {
@@ -375,7 +401,7 @@
       text(host, 'COUNT', host.fx(4), host.fy(2), host.ITEM);
       num(host, battle.shakes, host.fx(12), host.fy(10), host.ITEM, 2);
     } else if (battle.phase === 'shots') {
-      text(host, 'HP', host.fx(0), host.fy(0), 3);
+      text(host, 'HP', host.fx(0), host.fy(0), host.ITEM);
       num(host, battle.hpS, host.fx(8), host.fy(0), host.ITEM, 1);
       num(host, battle.hpF, host.fx(22), host.fy(0), host.ITEM, 1);
       blitMon(host, host.state.mon, host.fx(0), host.fy(4), 'attack', false);

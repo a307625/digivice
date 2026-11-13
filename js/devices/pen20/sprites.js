@@ -4,9 +4,14 @@
  * Official files are 36x36 1-bit GIFs whose 2x2 blocks are uniform
  * (18x18 logical dots). We crop the 1-dot border to a 16x16 cell so
  * 1 original LCD dot = 4 canvas px (64x64), matching the app field.
- * Only the official idle frame is stored. idle1 is a 1-dot downward
- * bob (labelled reconstruction). Sleep / fridge / computer / skull
- * poses that have no official GIF are labelled reconstruction.
+ * The official idle frame is stored as-is. Other poses are labelled
+ * reconstructions derived from that cell: idle1 is a 1-dot downward
+ * bob; eat0 is the official idle (closed mouth); eat1 / happy / angry /
+ * attack open a 3×2 slit just inside the front of the head (mouth open,
+ * same standing body); refuse is the official idle (the UI mirrors it
+ * for a 2 Hz head-shake); sleep flattens the silhouette and sleep1
+ * bobs that pose 1 dot. Fridge / computer / skull have no official GIF
+ * and are also reconstructions.
  */
 (function (root) {
   'use strict';
@@ -345,13 +350,116 @@
     return out;
   }
 
+  function copyRows(rows) {
+    var out = [], y;
+    for (y = 0; y < rows.length; y++) out.push(rows[y].slice());
+    return out;
+  }
+
+  // Reconstruction: a 3×2 paper slit just inside the leftmost outline of
+  // the head, at ~42% of body height. Official eat/happy keep the standing
+  // body and only open the mouth. We do not invent a new pose or a flip.
+  function openMouth(rows) {
+    var out = copyRows(rows);
+    function ink(v) { return !!v; }
+    var pts = [], y, x;
+    for (y = 0; y < 16; y++)
+      for (x = 0; x < 16; x++) if (ink(out[y][x])) pts.push([x, y]);
+    if (!pts.length) return out;
+    var miny = 16, maxy = 0;
+    pts.forEach(function (p) {
+      if (p[1] < miny) miny = p[1];
+      if (p[1] > maxy) maxy = p[1];
+    });
+    var h = maxy - miny + 1;
+    var my = miny + Math.max(2, Math.floor(h * 0.42));
+    var xs = [];
+    for (y = my - 1; y <= my + 1; y++) {
+      if (y < 0 || y > 15) continue;
+      for (x = 0; x < 16; x++) if (ink(out[y][x])) xs.push(x);
+    }
+    if (!xs.length) return out;
+    var left = Math.min.apply(null, xs);
+    var dy, dx;
+    var changed = false;
+    var EMPTY = 0;
+    for (dy = 0; dy < 2; dy++) {
+      for (dx = 1; dx < 4; dx++) {
+        x = left + dx;
+        y = my + dy;
+        if (x >= 0 && x < 16 && y >= 0 && y < 16 && ink(out[y][x])) {
+          out[y][x] = EMPTY;
+          changed = true;
+        }
+      }
+    }
+
+    if (!changed) {
+      // Interior punch: a 2×2 hole on a filled cluster in the head band.
+      var oy, ox, n, yy, xx;
+      for (y = my; y <= my + 3 && y < 16 && !changed; y++) {
+        for (x = 1; x < 15 && !changed; x++) {
+          if (!ink(out[y][x])) continue;
+          n = 0;
+          for (oy = -1; oy <= 1; oy++)
+            for (ox = -1; ox <= 1; ox++) {
+              if (!oy && !ox) continue;
+              yy = y + oy; xx = x + ox;
+              if (yy >= 0 && yy < 16 && xx >= 0 && xx < 16 && ink(out[yy][xx])) n++;
+            }
+          if (n >= 3) {
+            for (oy = 0; oy < 2; oy++)
+              for (ox = 0; ox < 2; ox++)
+                if (y + oy < 16 && x + ox < 16 && ink(out[y + oy][x + ox])) {
+                  out[y + oy][x + ox] = EMPTY;
+                  changed = true;
+                }
+          }
+        }
+      }
+    }
+    if (!changed) {
+      // Hollow outline: open a 2-dot gap in a head-row ink run and drop a jaw.
+      var runStart, runLen, mx, saved, x2;
+      for (y = my - 1; y <= my + 2 && y < 16 && !changed; y++) {
+        if (y < 0) continue;
+        runStart = -1;
+        for (x = 0; x <= 16; x++) {
+          var on = (x < 16 && ink(out[y][x]));
+          if (on && runStart < 0) runStart = x;
+          if (!on && runStart >= 0) {
+            runLen = x - runStart;
+            if (runLen >= 2) {
+              mx = runStart + Math.floor((runLen - 1) / 2);
+              saved = out[y][mx];
+              out[y][mx] = EMPTY;
+              if (runLen >= 3 && ink(out[y][mx + 1])) out[y][mx + 1] = EMPTY;
+              if (y + 1 < 16 && !ink(out[y + 1][mx])) out[y + 1][mx] = saved;
+              changed = true;
+              break;
+            }
+            runStart = -1;
+          }
+        }
+      }
+    }
+
+    return out;
+  }
+
   function rowsOf(id, pose) {
     pose = pose || 'idle0';
     var hex = PACK[id] || RECON[id];
     if (!hex) return null;
     var rows = unpack(hex);
     if (pose === 'idle1' || pose === 'walk1') return shiftDown(rows);
-    if (pose === 'sleep' || pose === 'tired') return sleepPose(rows);
+    if (pose === 'sleep' || pose === 'sleep0' || pose === 'tired') return sleepPose(rows);
+    if (pose === 'sleep1') return shiftDown(sleepPose(rows));
+    // eat0 = official idle (closed mouth). eat1 / happy / angry / attack =
+    // open-mouth reconstruction. refuse = official idle; the UI mirrors it.
+    if (pose === 'eat1' || pose === 'happy' || pose === 'angry' || pose === 'attack') {
+      return openMouth(rows);
+    }
     return rows;
   }
 
@@ -433,6 +541,7 @@
     RECON_NOTE: RECON_NOTE,
     has: has,
     rowsOf: rowsOf,
+    openMouth: openMouth,
     sourceOf: sourceOf,
     blit: blit,
     toImageData: toImageData,

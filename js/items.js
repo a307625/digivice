@@ -126,8 +126,12 @@
     return dx - x;
   }
 
-  function drawText(ctx, text, x, y, scale) {
+  function drawText(ctx, text, x, y, scale, tracking) {
+    /* tracking = extra LCD dots between glyphs (default 1). A 5th string
+       argument (legacy INK) is ignored so 1 font pixel always equals `scale`
+       canvas pixels — the same as a sprite LCD-dot at that scale. */
     scale = scale || 1;
+    if (typeof tracking !== 'number') tracking = 1;
     var dx = x;
     text = String(text || '').toUpperCase();
     for (var i = 0; i < text.length; i++) {
@@ -136,9 +140,40 @@
       var name = 'letter_' + ch;
       if (!ITEMS[name]) continue;
       blit(ctx, name, dx, y, scale);
-      dx += (ITEMS[name].w + 1) * scale;
+      dx += (ITEMS[name].w + tracking) * scale;
     }
     return dx - x;
+  }
+
+  /* Wrap at native dot scale so long names (METALGARURUMON, …) stay
+     1 glyph-pixel = 1 sprite-dot and still fit a 32-dot field. */
+  function drawTextWrapped(ctx, text, x, y, scale, maxDots, lineGap) {
+    scale = scale || 1;
+    maxDots = maxDots || 30;
+    lineGap = lineGap || 7;
+    text = String(text || '').toUpperCase().replace(/\s+/g, '');
+    var lines = [];
+    var i = 0;
+    while (i < text.length) {
+      var n = 0, w = 0;
+      while (i + n < text.length) {
+        var ch = text.charAt(i + n);
+        var name = 'letter_' + ch;
+        var cw = (ITEMS[name] ? ITEMS[name].w : 4) + 1;
+        if (n > 0 && w + cw - 1 > maxDots) break;
+        w += cw;
+        n++;
+      }
+      if (n === 0) n = 1;
+      lines.push(text.slice(i, i + n));
+      i += n;
+    }
+    var total = 0, ly = y;
+    for (var k = 0; k < lines.length; k++) {
+      total += drawText(ctx, lines[k], x, ly, scale);
+      ly += lineGap * scale;
+    }
+    return total;
   }
 
   function drawHearts(ctx, x, y, filled, max, scale) {
@@ -181,7 +216,9 @@
     { id: 'egg_pen_5_5', dataEgg: 'pen_5_5', label: '超五 5.5 金屬帝國數碼蛋' },
     { id: 'egg_pen_zero', dataEgg: 'pen_zero', label: '超0 病毒剋星數碼蛋' },
     { id: 'egg_pen_20th_sk', dataEgg: 'pen_20th_sk', label: '新超代 銀黑數碼蛋' },
-    { id: 'egg_pen_20th_sb', dataEgg: 'pen_20th_sb', label: '新超代 銀藍數碼蛋' }
+    { id: 'egg_pen_20th_sb', dataEgg: 'pen_20th_sb', label: '新超代 銀藍數碼蛋' },
+    { id: 'egg_dv1999_v1', dataEgg: 'dv1999_v1', label: '神聖計畫 Ver.1' },
+    { id: 'egg_dv1999_v2', dataEgg: 'dv1999_v2', label: '神聖計畫 Ver.2' }
   ];
 
   var api = {
@@ -201,6 +238,7 @@
     drawNumber: drawNumber,
     drawSmallNumber: drawSmallNumber,
     drawText: drawText,
+    drawTextWrapped: drawTextWrapped,
     drawHearts: drawHearts,
     bitGrid: bitGrid
   };

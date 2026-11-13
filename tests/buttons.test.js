@@ -148,7 +148,7 @@ console.log('5) CSS: instant press (no transition), touch-action, per-device sty
   ok(/transition:\s*none/.test(css), 'transition: none — instant on iOS 15');
   ok(/\[data-model="dm1997"\].*\.pad/s.test(css) || /data-model="dm1997"/.test(css), '1997-styled press');
   ok(/data-model="dm20"/.test(css), 'DM20-styled press');
-  ok(/data-model="pendulum"/.test(css), 'Pendulum-styled press (visible metal caps)');
+  ok(/data-model="pendulum"/.test(css), 'Pendulum-styled press (transparent over photo buttons)');
   // :active exists as fallback but the comment / is-pressed is the real path
   ok(/:active is not/.test(css) || /is-pressed/.test(css), 'documented that :active is not enough');
 }

@@ -53,6 +53,9 @@
     // Grave / dying paint their own art on paper.
     if (state.dead && view !== 'play') return 'paper';
     var fam = familyOf(state, family);
+    // Digivice 1999: no lights-care menu, no sourced backlight-off.
+    // Playfield stays on paper. Must run before the lights-flag return.
+    if (fam === 'digivice') return 'paper';
     // Pen20: Off is freeze or sleep, not a lamp. Frozen/sleeping pets
     // show fridge / sleep on paper regardless of a lights flag.
     if (fam === 'pen20') {

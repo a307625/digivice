@@ -126,6 +126,11 @@
     return !!(d && d.family === 'pen20');
   }
 
+  function isDigivice() {
+    var d = currentDevice();
+    return !!(d && d.family === 'digivice');
+  }
+
   function engine() {
     if (window.Devices && window.Devices.engineFor) return window.Devices.engineFor(state);
     return window.Engine;
@@ -188,7 +193,7 @@
       }
     }
     var fake = document.getElementById('btn-shake-fallback');
-    if (fake) fake.hidden = !(d && (d.family === 'pendulum' || d.family === 'pen20'));
+    if (fake) fake.hidden = !(d && (d.family === 'pendulum' || d.family === 'pen20' || d.family === 'digivice'));
     function placeIcon(id, box) {
       var el = document.getElementById('icon-' + id);
       if (!el || !box) return;
@@ -256,6 +261,24 @@
       dev.setAttribute('data-buttons', d.buttonStyle || '');
     }
     applyShellLayout();
+    var c = $('screen');
+    if (c) {
+      if (d && d.family === 'digivice') {
+        if (c.width !== 144 || c.height !== 144) { c.width = 144; c.height = 144; }
+      } else if (c.width !== 160 || c.height !== 96) {
+        c.width = 160; c.height = 96;
+      }
+    }
+    var ba = $('btn-a'), bb = $('btn-b'), bc = $('btn-c');
+    if (d && d.family === 'digivice') {
+      if (ba) ba.setAttribute('aria-label', '左（A）決定');
+      if (bb) bb.setAttribute('aria-label', '右上 選擇');
+      if (bc) bc.setAttribute('aria-label', '右下 返回');
+    } else {
+      if (ba) ba.setAttribute('aria-label', 'A 選擇');
+      if (bb) bb.setAttribute('aria-label', 'B 決定');
+      if (bc) bc.setAttribute('aria-label', 'C 取消');
+    }
     tryLockOrient(d.orient);
     updateRotateHint(d.orient);
     sizeLcd();
@@ -263,7 +286,9 @@
 
   function menuItem(I, selected, y, label) {
     blitItem(selected ? 'triangle' : 'empty_triangle', fx(1), y, ITEM);
-    if (I && I.drawText) I.drawText(ctx, label, fx(9), y, 2);
+    /* Native ITEM scale (1 font pixel = 1 sprite dot). Tight tracking so
+       7-letter labels (COPYMON, DIGIMON) still fit the 32-dot field. */
+    if (I && I.drawText) I.drawText(ctx, label, fx(9), y, ITEM, 0);
   }
 
 
@@ -356,6 +381,20 @@
       else fr = 'idle0';
     }
     if (!sp.frames[fr]) fr = 'idle0';
+    // DM20 artbook mons store the same official action cell as eat0 and
+    // eat1. Play official idle (closed) as eat0 so the 2 Hz bite alternates
+    // with the official open/action cell. Official pixels are not retouched.
+    if (frameName === 'eat0' && sp.frames.eat0 && sp.frames.eat1 && sp.frames.idle0 &&
+        framesEqual(sp.frames.eat0, sp.frames.eat1) &&
+        !framesEqual(sp.frames.eat0, sp.frames.idle0)) {
+      fr = 'idle0';
+    }
+    var shiftSleep = false;
+    if (frameName === 'sleep1' && sp.frames.sleep0 &&
+        (!sp.frames.sleep1 || framesEqual(sp.frames.sleep1, sp.frames.sleep0))) {
+      fr = 'sleep0';
+      shiftSleep = true;
+    }
     var img = atlas.renderToImageData(sp, fr, 1);
     var w = sp.w, h = sp.h;
     var out = document.createElement('canvas');
@@ -367,7 +406,9 @@
       o.translate(out.width, 0);
       o.scale(-1, 1);
     }
-    o.drawImage(img, 0, 0, out.width, out.height);
+    // Official sleep1 is a 1-px shift of sleep0 when only one sleep cell exists.
+    if (shiftSleep) o.drawImage(img, 0, 1 * scale, out.width, out.height);
+    else o.drawImage(img, 0, 0, out.width, out.height);
     cache[key] = out;
     return out;
   }
@@ -379,6 +420,34 @@
 
   function blitItem(name, x, y, scale, flip) {
     if (items()) items().blit(ctx, name, x, y, scale != null ? scale : ITEM, flip);
+  }
+
+  function framesEqual(a, b) {
+    if (!a || !b) return false;
+    if (a === b) return true;
+    if (a.length !== b.length) return false;
+    var i;
+    for (i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+  }
+
+  // Official 1997 eat: 5 meat frames at 2 Hz — full, full lowered, half,
+  // half, empty — which is three bites. Protein is 4 frames (pill, pill
+  // lowered, pill, half-pill). Shared with Pendulum and Pen20 via penHost.
+  function eatFoodSprite(anim) {
+    anim = anim || eatAnim;
+    if (!anim || !anim.on || anim.refused) return null;
+    var phase = anim.t;
+    var kind = anim.kind;
+    var food = 'meat';
+    if (kind === 'protein') {
+      food = phase >= 3 ? 'half_pill' : 'pill';
+    } else {
+      if (phase >= 4) food = 'empty_meat';
+      else if (phase >= 2) food = 'half_meat';
+      else food = 'meat';
+    }
+    return { food: food, xDots: 24, yDots: (phase === 0) ? 0 : 8 };
   }
 
   function idleFrame() {
@@ -463,7 +532,7 @@
     // "A big Z will appear over the Digimon's head" (WTW / Humulos Z's).
     var mx = fx(Math.floor((FW - 16) / 2));
     I.drawText(ctx, 'Z', mx + 14 * DOT, fy(0), ITEM);
-    I.drawText(ctx, 'Z', mx + 20 * DOT, fy(2), 2);
+    I.drawText(ctx, 'Z', mx + 20 * DOT, fy(2), ITEM);
   }
 
   function poopCount() {
@@ -557,18 +626,8 @@
     drawMonAt(mx, my, fr, flip);
 
     if (eatAnim.on && !eatAnim.refused) {
-      var phase = eatAnim.t;
-      var kind = eatAnim.kind;
-      var food = 'meat';
-      if (kind === 'protein') {
-        food = phase >= 3 ? 'half_pill' : 'pill';
-      } else {
-        if (phase >= 4) food = 'empty_meat';
-        else if (phase >= 2) food = 'half_meat';
-        else food = 'meat';
-      }
-      var fyFood = (phase === 0) ? fy(0) : fy(8);
-      blitItem(food, fx(24), fyFood, ITEM, false);
+      var food = eatFoodSprite(eatAnim);
+      if (food) blitItem(food.food, fx(food.xDots), fy(food.yDots), ITEM, false);
     }
     drawPoop();
     drawSleepZ();
@@ -624,7 +683,8 @@
     var page = pages[statusPage] || pages[0];
     if (page === 'name') {
       var nm = (s.nameEn || s.nameZh || '').toString();
-      I.drawText(ctx, nm, fx(1), fy(5), 2);
+      if (I.drawTextWrapped) I.drawTextWrapped(ctx, nm, fx(1), fy(1), ITEM, 30, 7);
+      else I.drawText(ctx, nm, fx(1), fy(5), ITEM);
     } else if (page === 'age') {
       blitItem('age', fx(1), fy(1), ITEM);
       I.drawNumber(ctx, s.age, fx(10), fy(2), ITEM, 2);
@@ -641,7 +701,7 @@
       I.drawText(ctx, 'DP', fx(1), fy(3), ITEM);
       I.drawNumber(ctx, s.dp || 0, fx(12), fy(3), ITEM, 0);
       if (s.dpMax) {
-        I.drawText(ctx, 'MAX', fx(1), fy(10), 2);
+        I.drawText(ctx, 'MAX', fx(1), fy(10), ITEM);
         I.drawNumber(ctx, s.dpMax, fx(14), fy(9), ITEM, 0);
       }
     } else {
@@ -743,12 +803,12 @@
     var mode = train.mode || 'meter';
     var fr = train.done ? (train.success ? 'happy' : 'angry') : ((animTick() % 2) ? 'train1' : 'train0');
     if (mode === 'highlow') {
-      I.drawText(ctx, 'HI', fx(24), fy(1), 2);
-      I.drawText(ctx, 'LO', fx(24), fy(7), 2);
+      I.drawText(ctx, 'HI', fx(24), fy(1), ITEM);
+      I.drawText(ctx, 'LO', fx(24), fy(7), ITEM);
       var ty = train.target === 1 ? fy(1) : fy(7);
       blitItem('arrow', fx(18), ty, ITEM);
       I.drawNumber(ctx, (train.round || 0) + 1, fx(1), fy(1), ITEM, 0);
-      I.drawText(ctx, 'HIT', fx(1), fy(7), 2);
+      I.drawText(ctx, 'HIT', fx(1), fy(7), ITEM);
       I.drawNumber(ctx, train.hits || 0, fx(12), fy(6), ITEM, 0);
     } else if (mode === 'mash') {
       var bx = fx(2), by = fy(1), bw = 28 * DOT, bh = 2 * DOT;
@@ -756,10 +816,10 @@
       ctx.fillRect(bx, by, bw, bh);
       ctx.fillStyle = '#5a8a38';
       ctx.fillRect(bx, by, Math.floor(bw * Math.min(1, train.pos)), bh);
-      I.drawText(ctx, 'MASH', fx(2), fy(5), 2);
+      I.drawText(ctx, 'MASH', fx(2), fy(5), ITEM);
     } else if (mode === 'number') {
       I.drawNumber(ctx, train.num || 0, fx(8), fy(1), ITEM, 0);
-      I.drawText(ctx, 'STOP', fx(2), fy(8), 2);
+      I.drawText(ctx, 'STOP', fx(2), fy(8), ITEM);
     } else {
       drawMeter(fy(1), mode === 'meter_slow');
     }
@@ -825,7 +885,7 @@
       PAPER: PAPER, NIGHT: NIGHT, INK: INK,
       DOT: DOT, ITEM: ITEM, OX: OX, OY: OY, FW: FW, FH: FH,
       LCD_W: LCD_W, LCD_H: LCD_H, MON: MON, ANIM_MS: ANIM_MS,
-      walk: walk, eatAnim: eatAnim, poseFx: poseFx, evoFx: evoFx,
+      walk: walk, eatAnim: eatAnim, eatFoodSprite: eatFoodSprite, poseFx: poseFx, evoFx: evoFx,
       shotMode: shotMode,
       persist: persist,
       playPose: playPose,
@@ -860,6 +920,11 @@
   function draw() {
     if (!ctx) return;
     ctx.imageSmoothingEnabled = false;
+    if (isDigivice() && window.Dv1999UI) {
+      window.Dv1999UI.draw(penHost());
+      updateIcons();
+      return;
+    }
     if (isPen20() && window.Pen20UI) {
       window.Pen20UI.draw(penHost());
       updateIcons();
@@ -1337,6 +1402,9 @@
       clockSetAdjust('h');
       return;
     }
+    if (isDigivice() && window.Dv1999UI) {
+      if (window.Dv1999UI.pressA(penHost())) return;
+    }
     if (isPen20() && window.Pen20UI) {
       if (window.Pen20UI.pressA(penHost())) return;
     }
@@ -1356,6 +1424,9 @@
       if (getClockHold().shouldIgnoreClick()) return;
       clockSetAdjust('m');
       return;
+    }
+    if (isDigivice() && window.Dv1999UI) {
+      if (window.Dv1999UI.pressB(penHost())) return;
     }
     if (isPen20() && window.Pen20UI) {
       if (window.Pen20UI.pressB(penHost())) return;
@@ -1378,6 +1449,9 @@
       view = 'play';
       sel = -1;
       return;
+    }
+    if (isDigivice() && window.Dv1999UI) {
+      if (window.Dv1999UI.pressC(penHost())) return;
     }
     if (isPen20() && window.Pen20UI) {
       if (window.Pen20UI.pressC(penHost())) return;
@@ -1406,6 +1480,11 @@
     }
     frame++;
     var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    if (poseFx.name && now >= poseFx.until) {
+      poseFx.name = null;
+      poseFx.until = 0;
+      poseFx.extra = null;
+    }
     if (!lastAnimAt) lastAnimAt = now;
     if (now - lastAnimAt >= ANIM_MS) {
       lastAnimAt += ANIM_MS;
@@ -1463,6 +1542,9 @@
         view = 'dying';
       }
       if (Date.now() - lastSave > 2500) persist();
+    }
+    if (isDigivice() && window.Dv1999UI && window.Dv1999UI.afterTick) {
+      window.Dv1999UI.afterTick(penHost());
     }
     if (isPen20() && window.Pen20UI) {
       window.Pen20UI.tickMinigame(penHost());
@@ -1772,6 +1854,23 @@
         var cx = c.getContext('2d');
         cx.imageSmoothingEnabled = false;
         cx.drawImage(src, 0, 0, 32, 32);
+      } else if (/^dv1999/.test(String(egg.dataEgg))) {
+        // Start-unit icon for the 神聖計畫 picker cell: a small oval
+        // communicator, no partner roster (no spoilers).
+        var cx = c.getContext('2d');
+        cx.imageSmoothingEnabled = false;
+        cx.fillStyle = /v2$/.test(egg.dataEgg) ? '#e88ab0' : '#d08a28';
+        cx.beginPath();
+        cx.ellipse(16, 17, 11, 13, 0, 0, Math.PI * 2);
+        cx.fill();
+        cx.fillStyle = '#1a1c16';
+        cx.beginPath();
+        cx.arc(16, 16, 5, 0, Math.PI * 2);
+        cx.fill();
+        cx.fillStyle = /v2$/.test(egg.dataEgg) ? '#f4c4d6' : '#f0d090';
+        cx.beginPath();
+        cx.arc(16, 16, 3, 0, Math.PI * 2);
+        cx.fill();
       }
     });
     row.querySelectorAll('[data-egg]').forEach(function (btn) {
@@ -1828,6 +1927,28 @@
       var ep = new URLSearchParams(location.search).get('egg');
       if (ep && DM20_EGGS[ep]) { state.eggKind = ep; state.version = 'special'; }
       else if (ep && /^[1-5]$/.test(ep)) { state.eggKind = 'ver' + ep; state.version = parseInt(ep, 10); }
+      else if ((ep && /^dv1999/.test(String(ep))) || (name && String(name).indexOf('digivice') === 0)) {
+        if (window.DigiviceEngine) {
+          var eggDv = 'dv1999_v1';
+          if (ep && /^dv1999/.test(ep)) eggDv = ep;
+          else if (name && /digivice-v2/.test(String(name))) eggDv = 'dv1999_v2';
+          state = window.DigiviceEngine.defaultState(eggDv);
+          // Shot setup: pick first partner (Agumon line), SET done, Child form,
+          // mid-area so map/battle shots have something to show.
+          window.DigiviceEngine.pickPartner(state, 0);
+          state.clock = { h12: 10, min: 34, pm: false, field: 'h' };
+          window.DigiviceEngine.confirmClock(state);
+          state.gameTime = window.DigiviceData ? window.DigiviceData.CHILD_EVOLVE_SEC + 1 : 301;
+          window.DigiviceEngine.tick(state, Date.now());
+          var pDv = window.DigiviceEngine.active(state);
+          if (pDv && pDv.stage === 'II') {
+            // Force the "shortly" Child evo for the screenshot.
+            state.childEvolveAt = 0;
+            window.DigiviceEngine.tick(state, Date.now() + 50);
+          }
+          state.clockOffset = 10 * 3600 + 34 * 60 - (state.gameTime || 0);
+        }
+      }
       else if ((ep && /^pen_20th/.test(String(ep))) || (name && String(name).indexOf('pen-20th') === 0)) {
         if (window.Pen20Engine) {
           var egg20 = 'pen_20th_sk';
@@ -1886,7 +2007,32 @@
     } catch (eEgg) {}
     applyShell();
     walk.x = 8; walk.dir = -1;
-    if (name === 'idle' || name === 'idle1280') {
+    if (isDigivice() && window.DigiviceEngine && window.Dv1999UI) {
+      window.Dv1999UI.resetUi();
+      var shot = String(name || '');
+      if (shot === 'map' || shot === 'digivice-map' || /map/.test(shot)) {
+        window.Dv1999UI.setScreen('map');
+        view = 'play';
+      } else if (shot === 'battle' || shot === 'digivice-battle' || /battle/.test(shot)) {
+        var E = window.DigiviceEngine;
+        var Da = window.DigiviceData;
+        var p = E.active(state);
+        if (p && p.stage === 'II') {
+          state.childEvolveAt = 0;
+          E.tick(state, Date.now() + 20);
+        }
+        state.encounter = { id: 'gizamon', isBoss: false, optional: false };
+        var btl = E.startBattle(state, { encounter: state.encounter });
+        if (btl) {
+          btl.phase = 'options';
+          window.Dv1999UI.setScreen('battle');
+        }
+        view = 'play';
+      } else {
+        window.Dv1999UI.setScreen('main');
+        view = 'play';
+      }
+    } else if (name === 'idle' || name === 'idle1280') {
       view = 'play';
     } else if (name === 'menuicon') {
       sel = 0;
@@ -2208,18 +2354,22 @@
     if (canvas) {
       canvas.style.touchAction = 'manipulation';
       canvas.addEventListener('pointerdown', function (ev) {
+        if (isDigivice() && window.Dv1999UI) window.Dv1999UI.onCanvasPointerDown(penHost(), ev);
         if (isPen20() && window.Pen20UI) window.Pen20UI.onCanvasPointerDown(penHost(), ev);
         if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerDown(penHost(), ev);
       });
       canvas.addEventListener('pointermove', function (ev) {
+        if (isDigivice() && window.Dv1999UI) window.Dv1999UI.onCanvasPointerMove(penHost(), ev);
         if (isPen20() && window.Pen20UI) window.Pen20UI.onCanvasPointerMove(penHost(), ev);
         if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerMove(penHost(), ev);
       });
       canvas.addEventListener('pointerup', function (ev) {
+        if (isDigivice() && window.Dv1999UI) window.Dv1999UI.onCanvasPointerUp(ev);
         if (isPen20() && window.Pen20UI) window.Pen20UI.onCanvasPointerUp(ev);
         if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerUp(ev);
       });
       canvas.addEventListener('pointercancel', function (ev) {
+        if (isDigivice() && window.Dv1999UI) window.Dv1999UI.onCanvasPointerUp(ev);
         if (isPen20() && window.Pen20UI) window.Pen20UI.onCanvasPointerUp(ev);
         if (isPendulum() && window.PendulumUI) window.PendulumUI.onCanvasPointerUp(ev);
       });
@@ -2327,6 +2477,7 @@
     if (shakeBtn) {
       shakeBtn.addEventListener('click', function () {
         if (window.PendulumShake) window.PendulumShake.simulate(1);
+        if (isDigivice() && window.Dv1999UI) window.Dv1999UI.noteShakeOnState(penHost(), 1);
         if (isPen20() && window.Pen20UI) window.Pen20UI.noteShakeOnState(penHost(), 1);
         if (isPendulum() && window.PendulumUI) window.PendulumUI.noteShakeOnState(penHost(), 1);
         toast('模擬搖動 +1');

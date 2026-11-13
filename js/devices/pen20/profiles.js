@@ -7,28 +7,28 @@
   'use strict';
 
   var LAYOUT = {
-    aspectW: 1600,
-    aspectH: 1024,
-    lcd: { left: 16.4, top: 34.2, width: 33.8, height: 31.687 },
+    aspectW: 2000,
+    aspectH: 1304,
+    lcd: { left: 20.5, top: 38.113, width: 24.75, height: 24.08 },
     buttons: {
-      a: { cx: 79.8, cy: 31.5, w: 10.4, h: 16.25 },
-      b: { cx: 79.8, cy: 50.0, w: 10.4, h: 16.25 },
-      c: { cx: 79.8, cy: 68.5, w: 10.4, h: 16.25 },
-      reset: { cx: 90.2, cy: 84.0, w: 2.2, h: 3.438 }
+      a: { cx: 75.057, cy: 26.24, w: 12.499, h: 19.17 },
+      b: { cx: 75.567, cy: 47.396, w: 11.978, h: 18.372 },
+      c: { cx: 76.086, cy: 69.352, w: 12.499, h: 19.17 },
+      reset: { cx: 66.832, cy: 57.625, w: 4.687, h: 7.189 }
     },
     icons_top: [
-      { left: 16.0, top: 23.6, width: 5.5, height: 6.6 },
-      { left: 23.275, top: 23.6, width: 5.5, height: 6.6 },
-      { left: 30.55, top: 23.6, width: 5.5, height: 6.6 },
-      { left: 37.825, top: 23.6, width: 5.5, height: 6.6 },
-      { left: 45.1, top: 23.6, width: 5.5, height: 6.6 }
+      { left: 19.62, top: 28.996, width: 4.869, height: 7.842 },
+      { left: 25.03, top: 28.996, width: 4.869, height: 7.842 },
+      { left: 30.44, top: 28.996, width: 4.869, height: 7.842 },
+      { left: 35.85, top: 28.996, width: 4.869, height: 7.842 },
+      { left: 41.261, top: 28.996, width: 4.869, height: 7.842 }
     ],
     icons_bot: [
-      { left: 16.0, top: 69.688, width: 5.5, height: 6.6 },
-      { left: 23.275, top: 69.688, width: 5.5, height: 6.6 },
-      { left: 30.55, top: 69.688, width: 5.5, height: 6.6 },
-      { left: 37.825, top: 69.688, width: 5.5, height: 6.6 },
-      { left: 45.1, top: 69.688, width: 5.5, height: 6.6 }
+      { left: 19.62, top: 63.111, width: 4.869, height: 7.058 },
+      { left: 25.03, top: 63.111, width: 4.869, height: 7.058 },
+      { left: 30.44, top: 63.111, width: 4.869, height: 7.058 },
+      { left: 35.85, top: 63.111, width: 4.869, height: 7.058 },
+      { left: 41.261, top: 63.111, width: 4.869, height: 7.058 }
     ],
     names_top: ['STATUS', 'FEED', 'TRAIN', 'COLOSSEUM', 'FLUSH'],
     names_bot: ['LIGHT', 'MEDIC', 'ALBUM', 'CONNECT', 'CALL'],

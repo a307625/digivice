@@ -61,7 +61,7 @@ ok(items.ITEMS.skull && items.ITEMS.skull.src === 'reconstructed', 'skull marked
 ok(items.ITEMS.grave && items.ITEMS.grave.w === 16 && items.ITEMS.grave.src === 'reconstructed', 'grave 16x16 reconstructed');
 
 console.log('5) Egg picker: one flat list, names only, no targets, no random');
-ok(items.EGG_PICKER.length === 28, '28 eggs (15 prior + 11 Pendulum OG + 2 Ver.20th)');
+ok(items.EGG_PICKER.length === 30, '30 eggs (15 prior + 11 Pendulum OG + 2 Ver.20th + 2 神聖計畫)');
 ok(items.EGG_PICKER.every((e) => e.label && e.id && e.dataEgg && e.label.indexOf('→') < 0), 'labels have no arrows');
 ok(items.EGG_PICKER.every((e) => !/斬龍|破壞龍|杜蘭達|阿爾法|拉結爾|戰鬥暴龍|傑斯|阿波羅|狄安娜/.test(e.label)), 'labels have no mega targets');
 ok(items.EGG_PICKER.every((e) => e.dataEgg !== 'random'), 'no random pool');
@@ -86,6 +86,15 @@ ok(p20sk && p20sk.label === '新超代 銀黑數碼蛋', 'SK picker label is 新
 ok(p20sb && p20sb.label === '新超代 銀藍數碼蛋', 'SB picker label is 新超代 銀藍數碼蛋');
 ok(items.EGG_PICKER.every((e) => !/Dukemon|Beelzebumon|帝皇龍|別西卜|紅金|紫黑/.test(e.label)), 'picker has no DC/BC spoiler or unverified colorway');
 ok(items.EGG_PICKER.filter((e) => /^pen_20th/.test(e.dataEgg)).length === 2, 'only SK+SB Pen20 eggs in the picker');
+
+// 神聖計畫 (Digivice 1999): two start units, no-spoiler labels, no partner names.
+const dv1 = items.EGG_PICKER.find((e) => e.dataEgg === 'dv1999_v1');
+const dv2 = items.EGG_PICKER.find((e) => e.dataEgg === 'dv1999_v2');
+ok(dv1 && dv1.label === '神聖計畫 Ver.1', 'Ver.1 picker label is 神聖計畫 Ver.1');
+ok(dv2 && dv2.label === '神聖計畫 Ver.2', 'Ver.2 picker label is 神聖計畫 Ver.2');
+ok(!/Agumon|Gabumon|Tailmon|Hikari|亞古獸|加布獸|迪路|太一/.test((dv1 && dv1.label) + (dv2 && dv2.label)), '神聖計畫 start-unit labels have no partner or chosen-child spoilers');
+ok(items.EGG_PICKER.filter((e) => /^dv1999/.test(e.dataEgg)).length === 2, 'only Ver.1+Ver.2 Digivice start units in the picker');
+
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 

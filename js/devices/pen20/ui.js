@@ -25,9 +25,6 @@
   var train = { on: false, shakes: 0, startedAt: 0, phase: 'idle', result: null, tag: false };
   var battle = { on: false, phase: 'idle', won: false, foe: '', startedAt: 0, injured: false };
   var lastInputAt = 0;
-  var eatKind = null;
-  var eatUntil = 0;
-
   function E() { return Eng(); }
   function D() { return Data(); }
 
@@ -37,25 +34,25 @@
     ctx.fillRect(0, 0, host.LCD_W, host.LCD_H);
   }
 
-  function text(host, s, x, y, sc) {
+  function text(host, s, x, y, sc, tracking) {
     if (root.VpetItems && root.VpetItems.drawText) {
-      root.VpetItems.drawText(host.ctx, String(s), x, y, sc || 1, host.INK);
+      root.VpetItems.drawText(host.ctx, String(s), x, y, sc || host.ITEM, tracking);
     }
   }
   function num(host, n, x, y, sc, pad) {
     var s = String(n);
     if (pad) while (s.length < pad) s = '0' + s;
     if (root.VpetItems && root.VpetItems.drawNumber) {
-      root.VpetItems.drawNumber(host.ctx, s, x, y, sc || 1, host.INK);
+      root.VpetItems.drawNumber(host.ctx, s, x, y, sc || host.ITEM, pad);
     } else text(host, s, x, y, sc);
   }
   function hearts(host, filled, x, y) {
     if (root.VpetItems && root.VpetItems.drawHearts) {
-      root.VpetItems.drawHearts(host.ctx, filled, 4, x, y, 1, host.INK);
+      root.VpetItems.drawHearts(host.ctx, x, y, filled, 4, host.ITEM);
     } else {
       var i, s = '';
       for (i = 0; i < 4; i++) s += i < filled ? '*' : '-';
-      text(host, s, x, y, 1);
+      text(host, s, x, y, host.ITEM);
     }
   }
 
@@ -111,13 +108,13 @@
 
     if (s.display === 'computer' || (s.deadComputer && s.display === 'computer')) {
       blitPet(host, { mon: 'computer', dead: true }, host.fx(8), host.fy(0));
-      text(host, 'COMPUTER', host.fx(2), host.fy(14), 1);
+      text(host, 'COMPUTER', host.fx(2), host.fy(9), host.ITEM, 0);
       return;
     }
     if (s.display === 'egg' && s.pendingEgg) {
       var eId = (s.unlockedEggs && s.unlockedEggs[0]) || 'digitama_nsp';
       blitPet(host, { mon: 'egg', eggId: eId }, host.fx(8), host.fy(0));
-      text(host, 'EGG', host.fx(10), host.fy(14), 1);
+      text(host, 'EGG', host.fx(10), host.fy(9), host.ITEM);
       return;
     }
 
@@ -129,15 +126,35 @@
     if (!pets.length) return;
 
     // Dual: two 16-dot cells side by side on the 32-dot field (64+64=128 px).
-    if (pets.length >= 2) {
+    var eating = host.eatAnim && host.eatAnim.on && !host.eatAnim.refused;
+    var poseFx = host.poseFx;
+    var poseLive = poseFx && poseFx.name && (!poseFx.until || now < poseFx.until);
+    if (pets.length >= 2 && !eating) {
       blitPet(host, pets[0], host.fx(0), host.fy(0), null, false);
       blitPet(host, pets[1], host.fx(16), host.fy(0), null, true);
     } else {
       var walkX = (host.walk && host.walk.x != null) ? host.walk.x : 8;
       var flip = host.walk && host.walk.dir > 0;
       var pose = monFrame(host);
-      if (eatKind && now < eatUntil) pose = 'idle0';
+      if (eating) {
+        // Mouth closed/open on the official 2 Hz clock; face the food at x=24.
+        pose = (host.eatAnim.t % 2) ? 'eat1' : 'eat0';
+        walkX = 8;
+        flip = true;
+      } else if (poseLive && poseFx.name === 'refuse') {
+        pose = 'refuse';
+        walkX = 8;
+        flip = (host.animTick() % 2) === 1;
+      } else if (poseLive && (poseFx.name === 'happy' || poseFx.name === 'angry')) {
+        pose = poseFx.name;
+        walkX = 8;
+        flip = false;
+      }
       blitPet(host, pets[0], host.fx(walkX), host.fy(0), pose, flip);
+      if (eating && host.eatFoodSprite) {
+        var food = host.eatFoodSprite();
+        if (food) host.blitItem(food.food, host.fx(food.xDots), host.fy(food.yDots), host.ITEM, false);
+      }
     }
 
     // Shared poop piles (4 → sick). Draw small squares on the right.
@@ -157,58 +174,59 @@
     if (root.VpetItems && root.VpetItems.blit) {
       try { root.VpetItems.blit(host.ctx, selected ? 'triangle' : 'empty_triangle', host.fx(1), y, host.ITEM || 4); } catch (e) {}
     }
-    text(host, label, host.fx(5), y, 1);
+    text(host, label, host.fx(8), y, host.ITEM, 0);
   }
 
   function drawStatus(host) {
     lcdPaper(host);
     var Eapi = E();
     var pet = Eapi && Eapi.activePet(host.state);
-    if (!pet) { text(host, 'NO DATA', host.fx(2), host.fy(6), 1); return; }
+    if (!pet) { text(host, 'NO DATA', host.fx(2), host.fy(6), host.ITEM); return; }
     var m = D() && D().monster(pet.mon);
     var page = STATUS_PAGES[statusPage] || 'name';
     if (page === 'name') {
-      text(host, (m && m.name) ? m.name.toUpperCase() : (pet.mon || '?'), host.fx(1), host.fy(6), 1);
+      if (root.VpetItems.drawTextWrapped) root.VpetItems.drawTextWrapped(host.ctx, (m && m.name) ? m.name : (pet.mon || '?'), host.fx(1), host.fy(5), host.ITEM, 30, 7);
+      else text(host, (m && m.name) ? m.name.toUpperCase() : (pet.mon || '?'), host.fx(1), host.fy(6), host.ITEM);
     } else if (page === 'age') {
-      text(host, 'AGE', host.fx(2), host.fy(3), 1);
-      num(host, pet.ageDays || 0, host.fx(2), host.fy(9), 1);
-      text(host, 'Y', host.fx(16), host.fy(9), 1);
+      text(host, 'AGE', host.fx(2), host.fy(3), host.ITEM);
+      num(host, pet.ageDays || 0, host.fx(2), host.fy(9), host.ITEM);
+      text(host, 'Y', host.fx(16), host.fy(9), host.ITEM);
     } else if (page === 'weight') {
-      text(host, 'WEIGHT', host.fx(2), host.fy(3), 1);
-      num(host, pet.weight || 0, host.fx(2), host.fy(9), 1);
-      text(host, 'G', host.fx(16), host.fy(9), 1);
+      text(host, 'WEIGHT', host.fx(2), host.fy(3), host.ITEM, 0);
+      num(host, pet.weight || 0, host.fx(2), host.fy(9), host.ITEM);
+      text(host, 'G', host.fx(16), host.fy(9), host.ITEM);
     } else if (page === 'hunger') {
-      text(host, 'HUNGER', host.fx(2), host.fy(3), 1);
+      text(host, 'HUNGER', host.fx(2), host.fy(3), host.ITEM);
       hearts(host, pet.hunger || 0, host.fx(2), host.fy(9));
     } else if (page === 'strength') {
-      text(host, 'STRENGTH', host.fx(2), host.fy(3), 1);
+      text(host, 'STRENGTH', host.fx(2), host.fy(3), host.ITEM, 0);
       hearts(host, pet.strength || 0, host.fx(2), host.fy(9));
     } else if (page === 'effort') {
-      text(host, 'EFFORT', host.fx(2), host.fy(3), 1);
+      text(host, 'EFFORT', host.fx(2), host.fy(3), host.ITEM);
       hearts(host, Eapi.effortHearts(pet), host.fx(2), host.fy(9));
     } else if (page === 'dp') {
-      text(host, 'DP', host.fx(2), host.fy(3), 1);
+      text(host, 'DP', host.fx(2), host.fy(3), host.ITEM);
       var cur = Math.floor((pet.dpQ || 0) / 4);
       var mx = Math.floor((pet.dpMaxQ || 0) / 4);
-      num(host, cur, host.fx(2), host.fy(9), 1);
-      text(host, '/', host.fx(12), host.fy(9), 1);
-      num(host, mx, host.fx(16), host.fy(9), 1);
+      num(host, cur, host.fx(2), host.fy(9), host.ITEM);
+      text(host, '/', host.fx(12), host.fy(9), host.ITEM);
+      num(host, mx, host.fx(16), host.fy(9), host.ITEM);
     } else if (page === 'attr') {
-      text(host, 'ATTR', host.fx(2), host.fy(3), 1);
+      text(host, 'ATTR', host.fx(2), host.fy(3), host.ITEM);
       var a = (m && m.attr) || 'free';
       // Free: "there will be nothing listed"
-      if (a !== 'free') text(host, String(a).toUpperCase(), host.fx(2), host.fy(9), 1);
+      if (a !== 'free') text(host, String(a).toUpperCase(), host.fx(2), host.fy(9), host.ITEM);
     } else if (page === 'bj') {
       // B = Battle, J = Jogress; O can, X cannot.
       var canB = !!(m && m.canBattle) && (pet.dpQ || 0) > 0;
       var canJ = !!(m && m.canJogress) && (pet.dpQ || 0) >= (pet.dpMaxQ || 0) && (pet.dpMaxQ || 0) > 0;
-      text(host, 'B ' + (canB ? 'O' : 'X'), host.fx(2), host.fy(4), 1);
-      text(host, 'J ' + (canJ ? 'O' : 'X'), host.fx(2), host.fy(10), 1);
+      text(host, 'B ' + (canB ? 'O' : 'X'), host.fx(2), host.fy(4), host.ITEM);
+      text(host, 'J ' + (canJ ? 'O' : 'X'), host.fx(2), host.fy(10), host.ITEM);
     } else if (page === 'record') {
-      text(host, 'W', host.fx(2), host.fy(4), 1);
-      num(host, pet.wins || 0, host.fx(10), host.fy(4), 1);
-      text(host, 'L', host.fx(2), host.fy(10), 1);
-      num(host, pet.losses || 0, host.fx(10), host.fy(10), 1);
+      text(host, 'W', host.fx(2), host.fy(4), host.ITEM);
+      num(host, pet.wins || 0, host.fx(10), host.fy(4), host.ITEM);
+      text(host, 'L', host.fx(2), host.fy(10), host.ITEM);
+      num(host, pet.losses || 0, host.fx(10), host.fy(10), host.ITEM);
     }
   }
 
@@ -248,56 +266,57 @@
       menuRow(host, subSel === 1, host.fy(10), 'TAG');
     }
     var rnd = (subSel === 1) ? s.coloTag : s.coloSingle;
-    if (rnd > 100) text(host, 'CLEAR', host.fx(20), host.fy(14), 1);
+    if (rnd > 100) text(host, 'CLEAR', host.fx(20), host.fy(9), host.ITEM);
   }
   function drawColo(host) {
     lcdPaper(host);
     var pet = E() && E().activePet(host.state);
     if (battle.phase === 'fight') {
       if (pet) blitPet(host, pet, host.fx(0), host.fy(0));
-      text(host, 'VS', host.fx(14), host.fy(6), 1);
-      text(host, (battle.foe || '?').slice(0, 8), host.fx(18), host.fy(6), 1);
+      text(host, 'VS', host.fx(14), host.fy(6), host.ITEM);
+      text(host, (battle.foe || '?').slice(0, 6), host.fx(18), host.fy(6), host.ITEM, 0);
     } else if (battle.phase === 'result') {
-      text(host, battle.won ? 'WIN' : 'LOSE', host.fx(8), host.fy(4), 1);
-      if (battle.injured) text(host, 'INJURY', host.fx(6), host.fy(10), 1);
+      text(host, battle.won ? 'WIN' : 'LOSE', host.fx(8), host.fy(4), host.ITEM);
+      if (battle.injured) text(host, 'INJURY', host.fx(6), host.fy(10), host.ITEM, 0);
     }
   }
   function drawTrain(host) {
     lcdPaper(host);
     var pet = E() && E().activePet(host.state);
     if (train.phase === 'count') {
-      text(host, 'COUNT', host.fx(6), host.fy(2), 1);
+      text(host, 'COUNT', host.fx(6), host.fy(2), host.ITEM);
       if (pet) blitPet(host, pet, host.fx(8), host.fy(4), monFrame(host));
-      num(host, train.shakes || 0, host.fx(12), host.fy(14), 1);
+      num(host, train.shakes || 0, host.fx(12), host.fy(9), host.ITEM);
     } else if (train.phase === 'result') {
       var lab = train.result === 'gigahit' ? 'GIGAHIT' : train.result === 'megahit' ? 'MEGAHIT' : train.result === 'success' ? 'GREAT' : 'FAIL';
-      text(host, lab, host.fx(4), host.fy(6), 1);
+      text(host, lab, host.fx(4), host.fy(6), host.ITEM);
     }
   }
   function drawAlbum(host) {
     lcdPaper(host);
     var tabs = ['DIGIMON', 'COPYMON', 'RECORD', 'PASS'];
-    text(host, tabs[albumTab], host.fx(1), host.fy(1), 1);
+    text(host, tabs[albumTab], host.fx(1), host.fy(1), host.ITEM);
     var s = host.state;
     if (albumTab === 0) {
       var list = s.album || [];
       var id = list[albumIdx] || '';
       var m = id && D() && D().monster(id);
-      text(host, (m && m.name) ? m.name.slice(0, 10).toUpperCase() : (id || '----'), host.fx(1), host.fy(7), 1);
-      num(host, list.length, host.fx(1), host.fy(13), 1);
+      if (root.VpetItems.drawTextWrapped) root.VpetItems.drawTextWrapped(host.ctx, (m && m.name) ? m.name : (id || '----'), host.fx(1), host.fy(6), host.ITEM, 30, 7);
+      else text(host, (m && m.name) ? m.name.slice(0, 6).toUpperCase() : (id || '----'), host.fx(1), host.fy(7), host.ITEM, 0);
+      num(host, list.length, host.fx(1), host.fy(9), host.ITEM);
     } else if (albumTab === 1) {
       var cm = (s.copymon || [])[albumIdx];
-      text(host, cm ? String(cm.id).toUpperCase() : '----', host.fx(1), host.fy(7), 1);
+      text(host, cm ? String(cm.id).toUpperCase() : '----', host.fx(1), host.fy(7), host.ITEM);
     } else if (albumTab === 2) {
-      text(host, 'W', host.fx(2), host.fy(5), 1);
-      num(host, Math.min(999, s.recordWins || 0), host.fx(10), host.fy(5), 1);
-      text(host, 'B', host.fx(2), host.fy(11), 1);
-      num(host, Math.min(999, s.recordBattles || 0), host.fx(10), host.fy(11), 1);
-      if (s.champion) text(host, 'CHAMPION', host.fx(1), host.fy(14), 1);
+      text(host, 'W', host.fx(2), host.fy(5), host.ITEM);
+      num(host, Math.min(999, s.recordWins || 0), host.fx(10), host.fy(5), host.ITEM);
+      text(host, 'B', host.fx(2), host.fy(11), host.ITEM);
+      num(host, Math.min(999, s.recordBattles || 0), host.fx(10), host.fy(11), host.ITEM);
+      if (s.champion) text(host, 'CHAMPION', host.fx(1), host.fy(9), host.ITEM, 0);
     } else {
       var i, xs = '';
       for (i = 0; i < 6; i++) xs += String(passDigits[i]);
-      text(host, xs, host.fx(4), host.fy(7), 1);
+      text(host, xs, host.fx(4), host.fy(7), host.ITEM);
       // caret under passPos
       host.ctx.fillStyle = host.INK;
       host.ctx.fillRect(host.fx(4 + passPos * 4), host.fy(11), 12, 2);
@@ -308,8 +327,9 @@
     var eggs = (host.state.unlockedEggs || []);
     var id = eggs[eggPickIdx] || '';
     var e = D() && D().EGGS && D().EGGS[id];
-    text(host, 'EGG', host.fx(2), host.fy(2), 1);
-    text(host, (e && e.name) ? e.name.slice(0, 12).toUpperCase() : id.slice(0, 12), host.fx(1), host.fy(8), 1);
+    text(host, 'EGG', host.fx(2), host.fy(2), host.ITEM);
+    if (root.VpetItems.drawTextWrapped) root.VpetItems.drawTextWrapped(host.ctx, (e && e.name) ? e.name : id, host.fx(1), host.fy(7), host.ITEM, 30, 7);
+      else text(host, (e && e.name) ? e.name.slice(0, 6).toUpperCase() : id.slice(0, 6), host.fx(1), host.fy(8), host.ITEM, 0);
     if (Spr() && Spr().has(id)) Spr().blit(host.ctx, id, host.fx(20), host.fy(0), 'idle0', false, host.INK, 4);
   }
   function drawClock(host) {
@@ -335,16 +355,16 @@
     }
     var hh = (h < 10 ? '0' : '') + h;
     var mm = (min < 10 ? '0' : '') + min;
-    text(host, hh + ':' + mm, host.fx(4), host.fy(5), 2);
-    if (ap) text(host, ap, host.fx(22), host.fy(12), 1);
-    if (set) text(host, 'SET', host.fx(2), host.fy(1), 1);
+    text(host, hh + ':' + mm, host.fx(4), host.fy(5), host.ITEM);
+    if (ap) text(host, ap, host.fx(22), host.fy(12), host.ITEM);
+    if (set) text(host, 'SET', host.fx(2), host.fy(1), host.ITEM);
   }
   function drawDying(host) {
     lcdPaper(host);
     var pet = E() && E().activePet(host.state);
     if (pet && pet.dying) {
       blitPet(host, pet, host.fx(8), host.fy(0));
-      if (host.animTick() % 2 === 0) text(host, '!!!!', host.fx(10), host.fy(14), 1);
+      if (host.animTick() % 2 === 0) text(host, '!!!!', host.fx(10), host.fy(9), host.ITEM);
     }
   }
 
@@ -477,11 +497,20 @@
     }
     if (v === 'food') {
       var kind = subSel === 1 ? 'protein' : 'meat';
-      Eapi.feed(s, kind);
-      eatKind = kind;
-      eatUntil = (typeof performance !== 'undefined' ? performance.now() : Date.now()) + 1100;
+      var fed = Eapi.feed(s, kind);
       host.setView('play');
-      if (host.returnToFoodSoon) host.returnToFoodSoon(1100);
+      if (!fed || !fed.ok) {
+        if (host.playPose) host.playPose('refuse', 1100);
+        if (host.returnToFoodSoon) host.returnToFoodSoon(1100);
+      } else if (host.eatAnim) {
+        // Same official 2 Hz eat as 1997 / Pendulum: 5 meat / 4 protein
+        // frames, then return to the food menu (main loop, returnToFood).
+        host.eatAnim.on = true;
+        host.eatAnim.t = 0;
+        host.eatAnim.kind = kind;
+        host.eatAnim.refused = false;
+        host.eatAnim.returnToFood = true;
+      }
       if (host.persist) host.persist();
       // keep-last: do not reset subSel
       return true;

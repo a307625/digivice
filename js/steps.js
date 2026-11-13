@@ -173,6 +173,15 @@
     // count (ungated) but must not grant effortQ / strength / weight.
     if (state.family === 'pen20') return result;
 
+    // Digivice: phone steps (and shake) drive the authentic map countdown.
+    // Do not grant 1997 Effort / strength / weight.
+    if (state.family === 'digivice') {
+      if (root.DigiviceEngine && root.DigiviceEngine.applySteps) {
+        root.DigiviceEngine.applySteps(state, delta);
+      }
+      return result;
+    }
+
     var newEffortBlocks = Math.floor(s.lifetime / STEPS_PER_EFFORT) - Math.floor(prev / STEPS_PER_EFFORT);
     var effortGrant = Math.min(newEffortBlocks, Math.max(0, DAILY_EFFORT_CAP - s.dayEffort));
     if (effortGrant > 0) {

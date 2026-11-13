@@ -2,6 +2,10 @@
  * Reconstruction 16×16 LCD sprites for Pendulum Ver.1.5–5.5 + ZERO.
  * Same object-size rule (upsampled 2× to 32×32, 1 original dot = 4 px).
  * SRC is 'reconstruction-lcd-16x16' so official dumps can replace them.
+ * eat0 is the standing idle (closed mouth). eat1 / happy / angry / attack
+ * open a 3×2 slit in the front of the head — a reconstruction, same body.
+ * sleep1 is a 1-dot downward bob of the sleep cell. refuse is idle0; the
+ * UI mirrors it on the 2 Hz clock for a head-shake.
  */
 (function (root) {
   'use strict';
@@ -20,12 +24,107 @@
     }
     return rows;
   }
+  function openMouth16(s16) {
+    var rows = [], y, x;
+    for (y = 0; y < 16; y++) rows.push(s16.substr(y * 16, 16).split(''));
+    function ink(v) { return v && v !== '0'; }
+    var pts = [];
+    for (y = 0; y < 16; y++)
+      for (x = 0; x < 16; x++) if (ink(rows[y][x])) pts.push([x, y]);
+    if (pts.length) {
+      var miny = 16, maxy = 0;
+      pts.forEach(function (p) {
+        if (p[1] < miny) miny = p[1];
+        if (p[1] > maxy) maxy = p[1];
+      });
+      var h = maxy - miny + 1;
+      var my = miny + Math.max(2, Math.floor(h * 0.42));
+      var xs = [];
+      for (y = my - 1; y <= my + 1; y++) {
+        if (y < 0 || y > 15) continue;
+        for (x = 0; x < 16; x++) if (ink(rows[y][x])) xs.push(x);
+      }
+      if (xs.length) {
+        var left = Math.min.apply(null, xs);
+        var dy, dx;
+        var changed = false;
+        var EMPTY = '0';
+        var out = rows;
+        for (dy = 0; dy < 2; dy++) {
+          for (dx = 1; dx < 4; dx++) {
+            x = left + dx;
+            y = my + dy;
+            if (x >= 0 && x < 16 && y >= 0 && y < 16 && ink(out[y][x])) {
+              out[y][x] = EMPTY;
+              changed = true;
+            }
+          }
+        }
+
+    if (!changed) {
+      // Interior punch: a 2×2 hole on a filled cluster in the head band.
+      var oy, ox, n, yy, xx;
+      for (y = my; y <= my + 3 && y < 16 && !changed; y++) {
+        for (x = 1; x < 15 && !changed; x++) {
+          if (!ink(out[y][x])) continue;
+          n = 0;
+          for (oy = -1; oy <= 1; oy++)
+            for (ox = -1; ox <= 1; ox++) {
+              if (!oy && !ox) continue;
+              yy = y + oy; xx = x + ox;
+              if (yy >= 0 && yy < 16 && xx >= 0 && xx < 16 && ink(out[yy][xx])) n++;
+            }
+          if (n >= 3) {
+            for (oy = 0; oy < 2; oy++)
+              for (ox = 0; ox < 2; ox++)
+                if (y + oy < 16 && x + ox < 16 && ink(out[y + oy][x + ox])) {
+                  out[y + oy][x + ox] = EMPTY;
+                  changed = true;
+                }
+          }
+        }
+      }
+    }
+    if (!changed) {
+      // Hollow outline: open a 2-dot gap in a head-row ink run and drop a jaw.
+      var runStart, runLen, mx, saved, x2;
+      for (y = my - 1; y <= my + 2 && y < 16 && !changed; y++) {
+        if (y < 0) continue;
+        runStart = -1;
+        for (x = 0; x <= 16; x++) {
+          var on = (x < 16 && ink(out[y][x]));
+          if (on && runStart < 0) runStart = x;
+          if (!on && runStart >= 0) {
+            runLen = x - runStart;
+            if (runLen >= 2) {
+              mx = runStart + Math.floor((runLen - 1) / 2);
+              saved = out[y][mx];
+              out[y][mx] = EMPTY;
+              if (runLen >= 3 && ink(out[y][mx + 1])) out[y][mx + 1] = EMPTY;
+              if (y + 1 < 16 && !ink(out[y + 1][mx])) out[y + 1][mx] = saved;
+              changed = true;
+              break;
+            }
+            runStart = -1;
+          }
+        }
+      }
+    }
+      }
+    }
+    return rows.map(function (r) { return r.join(''); }).join('');
+  }
+  function shift16(s16) {
+    return '0000000000000000' + s16.substr(0, 16 * 15);
+  }
   function add(id, pal, i0, i1, sl) {
     var a = up32(i0), b = up32(i1), s = up32(sl);
+    var eatOpen = up32(openMouth16(i0));
+    var sleepBob = up32(shift16(sl));
     SPRITES[id] = { w: 32, h: 32, pal: pal, src: SRC, frames: {
       idle0: a, idle1: b, walk: b,
-      eat0: a, eat1: b, sleep0: s, sleep1: s,
-      happy: b, refuse: a, sick: a, angry: a, attack: b, lose: s
+      eat0: a, eat1: eatOpen, sleep0: s, sleep1: sleepBob,
+      happy: eatOpen, refuse: a, sick: a, angry: eatOpen, attack: eatOpen, lose: s
     }};
   }
   add('tailmon', PAL, '0000000000000000000011111110000000001000001000000100300100300000000001222100000000002222222000000001222222210000000222222222000000132222222310000013222222231000003222222222300000312222222130000000222222200000000001222100000000000001000000000000000000000000', '0000000000000000000001111111000000000100000100000010030010030000000000122210000000000222222200000000122222221000000022222222200000013222222231000001322222223100000322222222230000031222222213000000022222220000000000122210000000000000100000000000000000000000', '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000111111100000010030010030000000000122210000000001222222210000001322222223100000132222222310000032222222223000000022222220000000000001000000000000000000000000');

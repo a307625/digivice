@@ -1,5 +1,5 @@
 /* Offline cache for 數碼怪獸對打機 */
-var CACHE = 'digivice-v28';
+var CACHE = 'digivice-v29';
 var ASSETS = [
   './',
   './index.html',
@@ -46,10 +46,17 @@ var ASSETS = [
   './js/devices/pen20/engine.js',
   './js/devices/pen20/profiles.js',
   './js/devices/pen20/ui.js',
+  './js/devices/digivice/data.js',
+  './js/devices/digivice/sprites.js',
+  './js/devices/digivice/engine.js',
+  './js/devices/digivice/profiles.js',
+  './js/devices/digivice/ui.js',
   './js/engine.js',
   './js/ui.js',
   './icons/shell/pen-20th-sk.png',
   './icons/shell/pen-20th-sb.png',
+  './icons/shell/digivice-v1.png',
+  './icons/shell/digivice-v2.png',
   './icons/shell/pen-1-0.png',
   './icons/shell/pen-1-5.png',
   './icons/shell/pen-2-0.png',

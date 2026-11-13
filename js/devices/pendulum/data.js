@@ -31,32 +31,34 @@
 (function (root) {
   'use strict';
 
-  // Landscape shell 1600×1024. Percentages match icons/shell/pen-1-0.png.
+  // Landscape shell from a 4K Nature Spirits product photo (Moonlight Mouse).
+  // Percentages measured on the punched photo shell. No front pendulum window
+  // (the clacker is internal); chamber is null and the HTML overlay stays hidden.
   var LAYOUT = {
-    aspectW: 1600,
-    aspectH: 1024,
-    lcd: { left: 35.5, top: 36.8, width: 28.0, height: 26.25 },
+    aspectW: 2000,
+    aspectH: 1304,
+    lcd: { left: 20.5, top: 38.113, width: 24.75, height: 24.08 },
     buttons: {
-      a: { cx: 89.5, cy: 28.0, w: 9.2, h: 14.4 },
-      b: { cx: 89.5, cy: 50.0, w: 9.2, h: 14.4 },
-      c: { cx: 89.5, cy: 72.0, w: 9.2, h: 14.4 },
-      reset: { cx: 81.6, cy: 61.0, w: 4.2, h: 6.6 }
+      a: { cx: 75.057, cy: 26.24, w: 12.499, h: 19.17 },
+      b: { cx: 75.567, cy: 47.396, w: 11.978, h: 18.372 },
+      c: { cx: 76.086, cy: 69.352, w: 12.499, h: 19.17 },
+      reset: { cx: 66.832, cy: 57.625, w: 4.687, h: 7.189 }
     },
     icons_top: [
-      { left: 36.0, top: 27.6, width: 5.6, height: 7.2 },
-      { left: 43.0, top: 27.6, width: 5.6, height: 7.2 },
-      { left: 50.4, top: 27.6, width: 5.6, height: 7.2 },
-      { left: 57.6, top: 27.6, width: 5.6, height: 7.2 }
+      { left: 19.756, top: 28.996, width: 5.951, height: 7.842 },
+      { left: 26.518, top: 28.996, width: 5.951, height: 7.842 },
+      { left: 33.281, top: 28.996, width: 5.951, height: 7.842 },
+      { left: 40.043, top: 28.996, width: 5.951, height: 7.842 }
     ],
     icons_bot: [
-      { left: 36.0, top: 64.8, width: 5.6, height: 7.2 },
-      { left: 43.0, top: 64.8, width: 5.6, height: 7.2 },
-      { left: 50.4, top: 64.8, width: 5.6, height: 7.2 },
-      { left: 57.6, top: 64.8, width: 5.6, height: 7.2 }
+      { left: 19.756, top: 63.111, width: 5.951, height: 7.058 },
+      { left: 26.518, top: 63.111, width: 5.951, height: 7.058 },
+      { left: 33.281, top: 63.111, width: 5.951, height: 7.058 },
+      { left: 40.043, top: 63.111, width: 5.951, height: 7.058 }
     ],
     names_top: ['STATUS', 'FEED', 'TRAIN', 'CONNECT'],
     names_bot: ['FLUSH', 'LIGHT', 'MEDIC', 'CALL'],
-    chamber: { cx: 15.5, cy: 50.0, r: 11.6 }
+    chamber: null
   };
 
   // Attribute triangle — NHOKO original-Pendulum page (Vac strong vs Virus).

@@ -175,6 +175,10 @@ console.log('3) Pendulum: black when awake and off (incl. Baby I); black-z when 
   function pen(mon, extra) {
     const s = PenEng.defaultState('pen_1_0');
     s.clockInitialized = true;
+    // Daytime clock so "awake + off" cases are not time-of-day flaky
+    // (Baby II bedtime around evening would put Motimon to sleep at 19:00).
+    s.clockOffset = 12 * 3600;
+    s.gameTime = 0;
     s.mon = mon;
     s.lights = true;
     s.sleeping = false;

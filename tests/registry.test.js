@@ -19,6 +19,9 @@ global.PendulumEngine = PendulumEngine;
 global.Pen20Data = require('../js/devices/pen20/data.js');
 global.Pen20Engine = require('../js/devices/pen20/engine.js');
 require('../js/devices/pen20/profiles.js');
+global.DigiviceData = require('../js/devices/digivice/data.js');
+global.DigiviceEngine = require('../js/devices/digivice/engine.js');
+require('../js/devices/digivice/profiles.js');
 
 let passed = 0, failed = 0;
 const failures = [];
@@ -99,7 +102,7 @@ console.log('3) Pendulum Ver.1.0 is its own device');
   ok(!Devices.isPendulumEgg('ver1'), '1997 egg is not pendulum');
   eq(Devices.engineFor(s), PendulumEngine, 'engine is PendulumEngine, not 1997');
   ok(p.layout.lcd.left !== 12.249, 'pen LCD is not the 1997 window');
-  ok(p.layout.chamber && p.layout.chamber.r > 0, 'pendulum chamber in layout');
+  eq(p.layout.chamber, null, 'OG Pendulum has no front chamber window (clacker is internal)');
   eq(p.hasMegahitScreen, false, '1.0 has no MEGAHIT result screen');
 }
 
@@ -130,7 +133,7 @@ console.log('5) 1997 Engine.tick ignores (delegates) a pendulum save');
 console.log('6) Egg picker is still one flat list with no spoilers (items)');
 {
   const items = require('../js/items.js');
-  ok(items.EGG_PICKER.length === 28, '28 eggs');
+  ok(items.EGG_PICKER.length === 30, '30 eggs');
   ok(items.EGG_PICKER.some((e) => e.dataEgg === 'pen_zero'), 'Pendulum ZERO egg still present');
   ok(items.EGG_PICKER.some((e) => e.dataEgg === 'pen_1_0'), '1.0 egg still present');
   ok(items.EGG_PICKER.some((e) => e.dataEgg === 'pen_1_5'), '1.5 egg present');
@@ -217,6 +220,37 @@ console.log('8) Pendulum Ver.20th is its own family, not pendulum / 1997');
   const Engine = require('../js/engine.js');
   Engine.tick(s, Date.now());
   eq(s.pets[0].mon, before, '1997 tick did not mutate Pen20 mon');
+}
+
+
+console.log('9) 神聖計畫 (Digivice 1999) is its own family, portrait, not 1997 / pendulum / pen20');
+{
+  const p = Devices.profileByEgg('dv1999_v1');
+  ok(p, 'Ver.1 profile registered');
+  eq(p && p.family, 'digivice', 'family is digivice');
+  eq(p && p.id, 'digivice-v1', 'device id');
+  eq(p && p.shell, 'digivice-v1', 'own orange shell');
+  eq(p && p.orient, 'portrait', 'portrait / round');
+  eq(p && p.clockSet, 'digivice', 'own clock-SET');
+  eqArr(p.selectable, ['STATUS', 'MAP', 'SLOT', 'CARD', 'MEDICAL', 'VS'], '6 Digivice menus, no hunger icons');
+  ok(Devices.isDigiviceEgg('dv1999_v1'), 'isDigiviceEgg is true');
+  ok(!Devices.isPendulumEgg('dv1999_v1'), 'isPendulumEgg is false');
+  ok(!Devices.isPen20Egg('dv1999_v1'), 'isPen20Egg is false');
+  const s = DigiviceEngine.defaultState('dv1999_v1');
+  eq(s.family, 'digivice', 'default family');
+  eq(Devices.engineFor(s), DigiviceEngine, 'engineFor returns DigiviceEngine');
+  ok(Devices.isDigivice(s), 'isDigivice');
+  ok(!Devices.isPen20(s), 'isPen20 is false');
+  ok(!Devices.isPendulum(s), 'isPendulum is false');
+  const v2 = Devices.profileByEgg('dv1999_v2');
+  eq(v2 && v2.shell, 'digivice-v2', 'Ver.2 own pink shell');
+  eq(v2 && v2.orient, 'portrait', 'Ver.2 also portrait');
+  // 1997 Engine.tick delegates and does not apply 1997 formulas
+  const Engine = require('../js/engine.js');
+  const before = s.phase;
+  Engine.tick(s, Date.now());
+  eq(s.phase, before, '1997 tick did not mutate Digivice phase');
+  eq(s.family, 'digivice', 'family stays digivice after 1997 tick');
 }
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
