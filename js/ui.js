@@ -42,6 +42,7 @@
   var soundOn = false;
   var audioCtx = null;
   var keyA = false, keyB = false, keyC = false;
+  var chordAt = 0;
 
   var lightSel = 0;
   var albumSel = 0;
@@ -1065,12 +1066,14 @@
       hideAllOverlays();
       fillEggGrid();
       showOverlay('overlay-egg', true);
+      chordAt = Date.now();
       return true;
     }
     return false;
   }
 
   function pressA() {
+    if (Date.now() - chordAt < 900) return;
     lastKeyAt = Date.now();
     beep();
     if (anyOverlay()) return;
@@ -1079,6 +1082,7 @@
     cycleSel();
   }
   function pressB() {
+    if (Date.now() - chordAt < 900) return;
     lastKeyAt = Date.now();
     beep();
     if (anyOverlay()) return;
@@ -1086,6 +1090,7 @@
     confirmSel();
   }
   function pressC() {
+    if (Date.now() - chordAt < 900) return;
     lastKeyAt = Date.now();
     beep();
     if (anyOverlay()) { hideAllOverlays(); return; }
@@ -1561,12 +1566,26 @@
     try { soundOn = localStorage.getItem('digivice-sound') === '1'; } catch (e) {}
     updateSoundBtn();
 
-    function downA() { keyA = true; maybeNewEggCombo(); }
+    var downAt = { A: 0, B: 0, C: 0 };
+    function mark(k) { downAt[k] = Date.now(); }
+    function recentChord() {
+      var n = Date.now(), w = 700;
+      return (n - downAt.A < w && (n - downAt.C < w || n - downAt.B < w));
+    }
+    function tryChord() { if (recentChord()) { keyA = true; keyC = true; } var r = maybeNewEggCombo(); if (r) { keyA = keyB = keyC = false; } return r; }
+    function downA(e) { keyA = true; mark('A'); tryChord(); }
     function upA() { keyA = false; }
-    function downB() { keyB = true; maybeNewEggCombo(); }
+    function downB(e) { keyB = true; mark('B'); tryChord(); }
     function upB() { keyB = false; }
-    function downC() { keyC = true; maybeNewEggCombo(); }
+    function downC(e) { keyC = true; mark('C'); tryChord(); }
     function upC() { keyC = false; }
+    function resetTap(e) {
+      if (e) e.preventDefault();
+      beep();
+      if (view === 'grave' || view === 'dying' || (state && state.dead)) {
+        keyA = true; keyC = true; maybeNewEggCombo(); keyA = keyC = false;
+      }
+    }
 
     $('btn-a').addEventListener('click', pressA);
     $('btn-b').addEventListener('click', pressB);
@@ -1577,7 +1596,12 @@
     $('btn-b').addEventListener('pointerup', upB);
     $('btn-c').addEventListener('pointerdown', downC);
     $('btn-c').addEventListener('pointerup', upC);
-
+    $('btn-reset').addEventListener('click', resetTap);
+    ['pointercancel', 'pointerleave'].forEach(function (ev) {
+      $('btn-a').addEventListener(ev, upA);
+      $('btn-b').addEventListener(ev, upB);
+      $('btn-c').addEventListener(ev, upC);
+    });
     document.addEventListener('keydown', function (e) {
       if (e.repeat) return;
       var k = e.key;

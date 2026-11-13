@@ -167,7 +167,8 @@ body {
   background: rgba(255, 255, 255, 0.14);
 }
 .pad-reset {
-  pointer-events: none;
+  pointer-events: auto;
+  border-radius: 50%;
 }
 
 /* Overlays for extra functions only */
