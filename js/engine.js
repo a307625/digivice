@@ -1,18 +1,37 @@
 /**
  * Digital Monster care / time / evolution engine.
- * Stage battle counters reset on evolution; lifetime totals do not.
+ * 1997 Ver.1–5 firmware for care, timers, battles, and Perfect.
+ * DM20 rules only for Mega, Jogress, and 20th-exclusive eggs.
+ *
+ * Battles, wins, losses, win score and the Perfect-qualified bit CARRY
+ * from Child→Adult. Other stage counters reset on evolution.
+ *
+ * Sleep wake (UI worker): disturbSleep / awakeUntil / DISTURB_AWAKE_SEC
+ * and sleepCalledTonight / toggleLights behaviour are kept. The 10-minute
+ * DISTURB_AWAKE_SEC is an unverified placeholder, not an official figure.
  */
 (function (root) {
   'use strict';
   var data = root.EvolutionData;
   var evo = root.Evolution;
 
-  var CALL_TIMEOUT = 20 * 60;      // 20 min game-time
-  var POOP_INTERVAL = 3 * 3600;
+  var CALL_TIMEOUT = 20 * 60;      // 20 min game-time (1997 firmware, 0x08C3)
+  // Awake window after a sleep disturbance. The exact official duration is
+  // unverified (1997 firmware does not quote one; rules-audit §4). The
+  // "10 minutes" on Humulos DMC Sleep is the *call timeout*, not this
+  // window — do not cite it as official. 10 min is a non-official
+  // placeholder so the pet is not immediately put back to sleep.
+  var DISTURB_AWAKE_SEC = 10 * 60;
+  var POOP_INTERVAL = 3 * 3600;    // NHOKO ~3 h; Wikimon ~2 h — unverified vs ROM, keep current
   var INJURY_DEATH = 6 * 3600;
   var STARVE_DEATH = 12 * 3600;
   var MAX_INJURIES = 20;
   var OVERFEED_LOCK = 3600;
+  // Raised past 12 h so a single catch-up can fire the official 6 h / 12 h deaths.
+  var MAX_CATCHUP = 13 * 3600;
+  var DP_REFILL_SEC = 8 * 3600;
+  var CALLS_CAP = 15;
+  var WIN_SCORE_MAX = 15;
 
   function now() { return Date.now(); }
 
@@ -25,21 +44,21 @@
   };
 
   function defaultState(eggVersion, specialEgg) {
-    var eggId, mon, eggKind, version;
+    var eggId, monId, eggKind, version;
     if (specialEgg) {
       eggId = SPECIAL_EGG_IDS[specialEgg] || ("egg_" + specialEgg);
-      mon = eggId;
+      monId = eggId;
       eggKind = specialEgg;
       version = specialEgg;
     } else {
       eggId = "egg_v" + (eggVersion || 1);
-      mon = eggId;
+      monId = eggId;
       eggKind = "ver" + (eggVersion || 1);
       version = eggVersion || 1;
     }
     var clock = new Date();
-    return {
-      mon: mon,
+    var state = {
+      mon: monId,
       version: version,
       eggKind: eggKind,
       bornAt: now(),
@@ -54,8 +73,8 @@
       hungerCap: 4,
       strength: 4,
       dp: 0,
-      dpMax: 4,
-      weight: (data.MONSTERS[mon] && data.MONSTERS[mon].weight) || 5,
+      dpMax: 0,
+      weight: (data.MONSTERS[monId] && data.MONSTERS[monId].weight) || 5,
       calls: 0,
       train: 0,
       overfeed: 0,
@@ -81,15 +100,41 @@
       lastHungerTick: 0,
       lastStrTick: 0,
       overfeedLockUntil: 0,
-      album: mon ? [mon] : [],
+      album: monId ? [monId] : [],
       events: [],
       sleepStart: 21,
       sleepEnd: 8,
+      awakeUntil: 0,
+      sleepCalledTonight: false,
+      // New official-rule fields
+      winScore: 0,
+      perfectQualified: false,
+      perfectRolledThisStage: false,
+      megaChecked: false,
+      overdose: 0,
+      proteinRemainder: 0,
+      proteinPowerUp: 0,
+      boostCareDown: 0,
+      satietyFilled: 4,
+      sleptContinuously: 0,
+      lifespanElapsed: false,
+      oldAgeMistakes: 0,
+      evoDueAt: null,
+      callAt: null,
+      callResolved: false,
+      lightsCallResolved: false,
+      healProgress: 0,
+      emptyCallSince: null,
+      awakeInStage: 0,
+      cpuPlayerInitiates: true,
       steps: (root.Steps && root.Steps.empty) ? root.Steps.empty() : {
         days: {}, lastHealthSyncAt: 0, lastHealthSyncDate: '', lastHealthSyncTotal: 0,
         lifetime: 0, dayEffectsDate: '', dayEffort: 0, dayStrength: 0, dayWeightLoss: 0
       }
     };
+    applySpeciesCare(state, { setWeight: true });
+    rollEvoDueAt(state);
+    return state;
   }
 
   function mon(state) { return data.MONSTERS[state.mon]; }
@@ -101,15 +146,16 @@
     return Math.floor(clockSeconds(state) / 3600);
   }
   function isSleepHours(state) {
+    var start = state.sleepStart != null ? state.sleepStart : 21;
+    var end = state.sleepEnd != null ? state.sleepEnd : 8;
     var h = clockHour(state);
-    if (state.sleepStart > state.sleepEnd) return h >= state.sleepStart || h < state.sleepEnd;
-    return h >= state.sleepStart && h < state.sleepEnd;
+    if (start > end) return h >= start || h < end;
+    return h >= start && h < end;
   }
   function ageDays(state) {
     return Math.floor(state.gameTime / 86400);
   }
   function timeInStage(state) {
-    // game-seconds in current form
     return Math.max(0, state.gameTime - (state.stageEnteredGame || 0));
   }
   function winRate(battles, wins) {
@@ -119,9 +165,16 @@
   function cycleSec(state) {
     var m = mon(state);
     if (!m) return 3600;
+    if (m.cycleMin != null) return m.cycleMin * 60;
     if (m.stage === 'egg') return 600;
     if (m.stage === 'baby1') return 3 * 60;
-    return 57 * 60;
+    return 57 * 60; // placeholder fallback, labelled on the monster when used
+  }
+
+  function satietyOf(state) {
+    var m = mon(state);
+    if (m && m.satiety != null) return m.satiety;
+    return 4;
   }
 
   function pushEvent(state, type, text) {
@@ -134,19 +187,141 @@
     if (id && state.album.indexOf(id) < 0) state.album.push(id);
   }
 
+  function hasPerfectRoll(m) {
+    if (!m) return false;
+    var rules = data.BRANCHES[m.id] || [];
+    for (var i = 0; i < rules.length; i++) if (rules[i].perfectRoll) return true;
+    return false;
+  }
+
+  function hasMegaBranch(m) {
+    if (!m) return false;
+    if (m.megaAwakeMin) return true;
+    var rules = data.BRANCHES[m.id] || [];
+    for (var i = 0; i < rules.length; i++) {
+      var r = rules[i];
+      if (r.to && !r.stay && !r.perfectRoll && !r.leftover) {
+        var dest = data.MONSTERS[r.to];
+        if (dest && (dest.stage === 'mega' || dest.stage === 'super')) return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Firmware Perfect die: winScore 0–4 / 5–8 / 9–15 → 1/8, 1/4, 1/2.
+   * Inequality is ASSUMED as `die < 2/4/8` with die in 0..15
+   * (2/16, 4/16, 8/16). The exact 0x0D67 comparison was not re-read.
+   */
+  function rollPerfect(winScore, rng) {
+    var t;
+    var s = winScore || 0;
+    if (s <= 4) t = 2;
+    else if (s <= 8) t = 4;
+    else t = 8;
+    var die = Math.floor((rng || Math.random)() * 16);
+    return die < t;
+  }
+
+  /**
+   * Battle injury: (s+1)/16 where s = base + overdose, s in 0..15.
+   * Firmware hole at s === 15: the comparison never hits; no injury.
+   * rng() is 0..1; we use floor(rng*16) as a 0..15 die.
+   */
+  function rollBattleInjury(base, overdose, rng) {
+    var s = (base || 0) + (overdose || 0);
+    if (s > 15) s = 15;
+    if (s === 15) return false;
+    var t = s + 1;
+    return Math.floor((rng || Math.random)() * 16) < t;
+  }
+
+  /**
+   * Boost / enhancement: ⌊max(min(overdoses,4) + strengthHearts − min(CM,4), 0) / 2⌋
+   */
+  function enhancement(state) {
+    if (!state) return 0;
+    var od = Math.min(4, state.proteinPowerUp || 0);
+    var hearts = state.strength || 0;
+    var cm = Math.min(4, state.calls || 0);
+    return Math.floor(Math.max(od + hearts - cm, 0) / 2);
+  }
+
+  function rngOf(rngOrOpts) {
+    if (typeof rngOrOpts === 'function') return rngOrOpts;
+    if (rngOrOpts && typeof rngOrOpts.rng === 'function') return rngOrOpts.rng;
+    return Math.random;
+  }
+
+  function rollEvoDueAt(state, rng) {
+    var m = mon(state);
+    if (!m) { state.evoDueAt = 0; return state.evoDueAt; }
+    rng = rng || Math.random;
+    if (m.stage === 'ultimate' && hasMegaBranch(m) && m.noMega) {
+      // shouldn't happen
+    }
+    if (m.lifespanMode === 'baby1-dice' || (m.stage === 'baby1' && (m.lifespanMin || 0) <= 69)) {
+      var tens = Math.floor(rng() * 10);
+      var lo = tens >= 5 ? 60 : 50;
+      state.evoDueAt = lo + Math.floor(rng() * 10);
+      return state.evoDueAt;
+    }
+    var a = m.lifespanMin != null ? m.lifespanMin : 0;
+    var b = m.lifespanMax != null ? m.lifespanMax : a;
+    if (b < a) b = a;
+    state.evoDueAt = a + Math.floor(rng() * (b - a + 1));
+    return state.evoDueAt;
+  }
+
+  function applySpeciesCare(state, opts) {
+    opts = opts || {};
+    var m = mon(state);
+    if (!m) return;
+    if (m.sleepStart != null) {
+      state.sleepStart = m.sleepStart;
+      state.sleepEnd = m.sleepEnd;
+    }
+    if (m.dpMax != null) {
+      if (opts.migrate) {
+        if ((state.dpMax || 0) < m.dpMax) state.dpMax = m.dpMax;
+      } else {
+        state.dpMax = m.dpMax;
+        if ((state.dp || 0) > state.dpMax) state.dp = state.dpMax;
+      }
+    }
+    if (opts.setWeight && m.weight != null) state.weight = m.weight;
+  }
+
   function resetStageCounters(state) {
-    // Official: counters reset on evolution (including internal battle record).
+    // Official: care counters reset. Battles + win score + Perfect bit CARRY
+    // Child→Adult (and are harmless to keep after later evos).
     state.calls = 0;
     state.train = 0;
     state.overfeed = 0;
     state.sleepDist = 0;
     state.injuries = 0;
-    state.battles = 0;
-    state.wins = 0;
-    state.losses = 0;
     state.callHungerAt = null;
     state.callStrengthAt = null;
     state.callLightsAt = null;
+    state.callAt = null;
+    state.callResolved = false;
+    state.lightsCallResolved = false;
+    state.emptyCallSince = null;
+    state.emptySince = null;
+    state.overdose = 0;
+    state.proteinPowerUp = 0;
+    state.boostCareDown = 0;
+    state.healProgress = 0;
+    state.lifespanElapsed = false;
+    state.oldAgeMistakes = 0;
+    state.perfectRolledThisStage = false;
+    state.megaChecked = false;
+    state.satietyFilled = state.hunger || 0;
+    state.sleptContinuously = 0;
+    state.awakeInStage = 0;
+    state.sleepCalledTonight = false;
+    // proteinRemainder CARRIES. battles / wins / losses / winScore /
+    // perfectQualified CARRY.
   }
 
   function evolveTo(state, toId, reason) {
@@ -156,18 +331,103 @@
     var m = mon(state);
     if (m) state.weight = m.weight || state.weight;
     resetStageCounters(state);
+    applySpeciesCare(state, { setWeight: true });
+    rollEvoDueAt(state);
     albumAdd(state, toId);
-    if (m && m.canBattle) state.dpMax = m.stage === 'rookie' ? 3 : 4;
     pushEvent(state, 'evolve', (data.MONSTERS[from] || {}).nameZh + ' → ' + (m ? m.nameZh : toId) + '（' + (reason || '') + '）');
     return true;
   }
 
-  function tryEvolve(state) {
+  function stageMinsForEvo(state, m) {
+    if (m.stage === 'ultimate' && hasMegaBranch(m) && !m.noMega) {
+      return (state.awakeInStage || 0) / 60;
+    }
+    return timeInStage(state) / 60;
+  }
+
+  function evoDueMinutes(state, m) {
+    var due = state.evoDueAt;
+    var lo = m.lifespanMin || 0;
+    // Stale due from an earlier form (e.g. tests that swap mon after defaultState):
+    if (due == null || due < lo) due = lo;
+    return due;
+  }
+
+  function tryEvolve(state, rngOrOpts) {
     if (state.dead) return false;
     var m = mon(state);
     if (!m) return false;
+    var rng = rngOf(rngOrOpts);
+
+    // Mega: 48 h AWAKE (DM20), independent of the 1997 Perfect lifespan window.
+    if (m.stage === 'ultimate' && hasMegaBranch(m) && !m.noMega && !state.megaChecked) {
+      var need = m.megaAwakeMin || 2880;
+      if ((state.awakeInStage || 0) / 60 >= need) {
+        state.megaChecked = true;
+        // Engine already gated on 48 h awake; bypass lifespanMin (1997 Perfect window is longer).
+        var megaStats = buildStats(state, 999999);
+        var megaR = evo.resolveEvolution(data, state.mon, megaStats);
+        if (!megaR.stayed && megaR.to && megaR.to !== state.mon) {
+          return evolveTo(state, megaR.to, megaR.reason);
+        }
+        // Failed (calls > 2): stay. Old-age still uses the 1997 Perfect window.
+      }
+    }
+
     var mins = timeInStage(state) / 60;
-    var stats = {
+    var due = evoDueMinutes(state, m);
+    if (mins < due) return false;
+
+    // Already failed this form's evolution and is in old-age.
+    if (state.lifespanElapsed && m.stage !== 'rookie' && m.stage !== 'baby1' && m.stage !== 'baby2' && m.stage !== 'egg') {
+      return false;
+    }
+
+    // Ultimates with a Mega: Mega is only via the 48 h awake path above.
+    // At the 1997 Perfect window, start old-age (5 CM) if still in this form.
+    if (m.stage === 'ultimate' && hasMegaBranch(m) && !m.noMega) {
+      state.lifespanElapsed = true;
+      return false;
+    }
+
+    var stats = buildStats(state, mins);
+
+    if (hasPerfectRoll(m)) {
+      if (!state.perfectRolledThisStage) {
+        state.perfectRolledThisStage = true;
+        if ((state.battles || 0) >= 15) {
+          if (state.perfectQualified) {
+            // Child-stage success is enough; no second required roll.
+          } else if (rollPerfect(state.winScore || 0, rng)) {
+            state.perfectQualified = true;
+          }
+        }
+      }
+      stats.perfectEligible = !!(state.perfectQualified && (state.battles || 0) >= 15);
+    }
+
+    var r = evo.resolveEvolution(data, state.mon, stats);
+
+    if (m.stage === 'rookie' && (state.battles || 0) >= 15 && !state.perfectQualified) {
+      // III→IV qualifying roll, carried into Adult. Runs whether or not
+      // this Child became a "good" Adult (e.g. Numemon still carries the bit).
+      if (rollPerfect(state.winScore || 0, rng)) state.perfectQualified = true;
+    }
+
+    if (!r.stayed && r.to && r.to !== state.mon) {
+      return evolveTo(state, r.to, r.reason);
+    }
+
+    // Stay: Champion that failed Perfect, or a no-mega Ultimate at its window,
+    // or a failed-mega Ultimate at its 1997 window.
+    if (m.stage === 'champion' || m.stage === 'ultimate' || m.stage === 'mega' || m.stage === 'super') {
+      state.lifespanElapsed = true;
+    }
+    return false;
+  }
+
+  function buildStats(state, mins) {
+    return {
       calls: state.calls,
       train: state.train,
       overfeed: state.overfeed,
@@ -178,49 +438,96 @@
       winRate: winRate(state.battles, state.wins),
       timeInStage: mins,
       eggKind: state.eggKind || null,
-      lifeSteps: (state.steps && state.steps.lifetime) || 0
+      lifeSteps: (state.steps && state.steps.lifetime) || 0,
+      perfectEligible: !!state.perfectQualified
     };
-    var r = evo.resolveEvolution(data, state.mon, stats);
-    if (!r.stayed && r.to && r.to !== state.mon) {
-      return evolveTo(state, r.to, r.reason);
+  }
+
+  function addCareMistake(state, why) {
+    state.calls = Math.min(CALLS_CAP, (state.calls || 0) + 1);
+    state.boostCareDown = Math.min(4, (state.boostCareDown || 0) + 1);
+    if (state.lifespanElapsed) {
+      state.oldAgeMistakes = (state.oldAgeMistakes || 0) + 1;
+    }
+    pushEvent(state, 'call', why || '育成失誤 +1');
+  }
+
+  function syncCallMeters(state) {
+    var emptyH = state.hunger <= 0;
+    var emptyS = state.strength <= 0;
+    if (!emptyH && !emptyS) {
+      state.callAt = null;
+      state.callResolved = false;
+      state.callHungerAt = null;
+      state.callStrengthAt = null;
+      state.emptyCallSince = null;
+      state.emptySince = null;
+      return;
+    }
+    if (state.callResolved) {
+      // Mistake already taken for this empty period; do not start a new call
+      // until a meter is filled (firmware: no retrigger).
+      if (!state.emptyCallSince) state.emptyCallSince = state.callAt || state.gameTime;
+      state.emptySince = state.emptyCallSince;
+      return;
+    }
+    if (state.callAt == null) {
+      state.callAt = state.gameTime;
+      if (emptyH) state.callHungerAt = state.gameTime;
+      if (emptyS) state.callStrengthAt = state.gameTime;
+    }
+    if (!state.emptyCallSince) state.emptyCallSince = state.callAt;
+    state.emptySince = state.emptyCallSince;
+  }
+
+  function isCallLit(state) {
+    if (!state || state.dead) return false;
+    if (state.callAt != null && !state.callResolved && (state.hunger <= 0 || state.strength <= 0) &&
+        state.gameTime - state.callAt < CALL_TIMEOUT) {
+      return true;
+    }
+    if (state.callLightsAt != null && !state.lightsCallResolved && state.sleeping && state.lights &&
+        state.gameTime - state.callLightsAt < CALL_TIMEOUT) {
+      return true;
     }
     return false;
   }
 
   function markCall(state, kind) {
-    if (kind === 'hunger' && state.callHungerAt == null) state.callHungerAt = state.gameTime;
-    if (kind === 'strength' && state.callStrengthAt == null) state.callStrengthAt = state.gameTime;
-    if (kind === 'lights' && state.callLightsAt == null) state.callLightsAt = state.gameTime;
+    if (kind === 'hunger' || kind === 'strength') {
+      syncCallMeters(state);
+      return;
+    }
+    if (kind === 'lights' && state.callLightsAt == null && !state.lightsCallResolved) {
+      state.callLightsAt = state.gameTime;
+    }
   }
 
   function resolveCalls(state) {
-    // If both hunger and strength are in a missed window, count as ONE mistake (original).
-    var missedH = state.callHungerAt != null && state.gameTime - state.callHungerAt >= CALL_TIMEOUT && state.hunger <= 0;
-    var missedS = state.callStrengthAt != null && state.gameTime - state.callStrengthAt >= CALL_TIMEOUT && state.strength <= 0;
-    if (missedH || missedS) {
-      state.calls += 1;
-      state.callHungerAt = missedH ? null : state.callHungerAt;
-      state.callStrengthAt = missedS ? null : state.callStrengthAt;
-      // after a locked-in mistake, start a new window only when still empty later
-      if (state.hunger <= 0) state.callHungerAt = state.gameTime;
-      if (state.strength <= 0) state.callStrengthAt = state.gameTime;
-      pushEvent(state, 'call', '育成失誤 +1');
+    syncCallMeters(state);
+    if (state.callAt != null && !state.callResolved &&
+        (state.hunger <= 0 || state.strength <= 0) &&
+        state.gameTime - state.callAt >= CALL_TIMEOUT) {
+      addCareMistake(state, '育成失誤 +1');
+      state.callResolved = true;
+      // Do not restart the call.
     }
-    if (state.callLightsAt != null && state.sleeping && state.lights && state.gameTime - state.callLightsAt >= CALL_TIMEOUT) {
-      state.calls += 1;
-      state.callLightsAt = state.gameTime;
-      pushEvent(state, 'call', '未關燈，育成失誤 +1');
+    if (state.callLightsAt != null && !state.lightsCallResolved &&
+        state.sleeping && state.lights &&
+        state.gameTime - state.callLightsAt >= CALL_TIMEOUT) {
+      addCareMistake(state, '未關燈，育成失誤 +1');
+      state.lightsCallResolved = true;
+      // Do not retrigger; one lights mistake per night (sleepCalledTonight).
     }
   }
 
   function tick(state, realNow) {
     if (state.dead) return { died: false, evolved: false };
+    migrateState(state);
     var dtReal = Math.max(0, (realNow - state.lastReal) / 1000);
     state.lastReal = realNow;
     var dt = dtReal * (state.speed || 1);
     if (dt <= 0) return { died: false, evolved: false };
-    // Cap catch-up: 8 game-hours. Long background pauses should not insta-kill.
-    var MAX_CATCHUP = 8 * 3600;
     if (dt > MAX_CATCHUP) dt = MAX_CATCHUP;
     var evolved = false, died = false;
     var remain = dt;
@@ -231,14 +538,19 @@
       var m = mon(state);
       if (!m) break;
 
-      // egg auto hatch via tryEvolve
       if (m.stage !== 'egg') {
         var cyc = cycleSec(state);
         if (!state.sleeping) {
+          state.awakeInStage = (state.awakeInStage || 0) + step;
           if (state.gameTime - (state.lastHungerTick || 0) >= cyc) {
             state.lastHungerTick = state.gameTime;
-            if (state.gameTime >= state.overfeedLockUntil) {
+            if (state.gameTime >= (state.overfeedLockUntil || 0)) {
+              var prevH = state.hunger;
               state.hunger = Math.max(0, state.hunger - 1);
+              if (state.hunger < prevH) {
+                // New fullness cycle after a heart drops (next OF after drop).
+                state.satietyFilled = state.hunger;
+              }
             }
           }
           if (state.gameTime - (state.lastStrTick || 0) >= cyc) {
@@ -248,38 +560,63 @@
           if (state.gameTime - (state.lastPoopAt || 0) >= POOP_INTERVAL) {
             state.lastPoopAt = state.gameTime;
             state.poop = Math.min(8, (state.poop || 0) + 1);
-            if (state.poop >= 8 && !state.injured) injure(state, 'poop');
+            if (state.poop >= 8) injure(state, 'poop');
           }
         }
-        if (state.hunger <= 0) {
-          markCall(state, 'hunger');
-          if (!state.emptySince) state.emptySince = state.gameTime;
-        }
-        if (state.strength <= 0) markCall(state, 'strength');
-        if (state.hunger > 0 && state.strength > 0) state.emptySince = null;
 
-        // sleep
-        var shouldSleep = m.stage !== 'baby1' && isSleepHours(state);
-        if (shouldSleep && !state.sleeping) {
-          state.sleeping = true;
-          if (state.lights) markCall(state, 'lights');
+        if (state.hunger <= 0 || state.strength <= 0) syncCallMeters(state);
+        else {
+          state.callAt = null;
+          state.callResolved = false;
+          state.callHungerAt = null;
+          state.callStrengthAt = null;
+          state.emptyCallSince = null;
+          state.emptySince = null;
         }
-        if (!shouldSleep && state.sleeping) {
-          state.sleeping = false;
-          state.callLightsAt = null;
-          // 8h sleep refills DP
-          state.dp = state.dpMax || 4;
-          state.hunger = Math.max(state.hunger, 2);
-          state.strength = Math.max(state.strength, 2);
+
+        // sleep — official DMC / 1997 schedule and disturbance window
+        var shouldSleep = m.stage !== 'baby1' && isSleepHours(state);
+        var inDisturbAwake = !!(state.awakeUntil && state.gameTime < state.awakeUntil);
+        if (state.sleeping) {
+          state.sleptContinuously = (state.sleptContinuously || 0) + step;
+        }
+        if (shouldSleep && !state.sleeping) {
+          if (!inDisturbAwake) {
+            state.sleeping = true;
+            state.awakeUntil = 0;
+            // One lights-out call per night (Humulos DMC Call).
+            if (state.lights && !state.sleepCalledTonight) {
+              state.lightsCallResolved = false;
+              markCall(state, 'lights');
+            }
+            state.sleepCalledTonight = true;
+          }
+        }
+        if (!shouldSleep) {
+          if (state.sleeping) {
+            state.sleeping = false;
+            state.callLightsAt = null;
+            state.lightsCallResolved = false;
+            // Natural morning wake refills DP only after ≥8 h continuous sleep.
+            // A disturbance wake does not (disturbSleep resets sleptContinuously).
+            // No hunger / strength gift (that was invented).
+            if ((state.sleptContinuously || 0) >= DP_REFILL_SEC) {
+              state.dp = state.dpMax || 0;
+            }
+          }
+          state.sleepCalledTonight = false;
+          state.awakeUntil = 0;
+          state.sleptContinuously = 0;
         }
         resolveCalls(state);
 
-        if (state.injured && state.injuredAt && state.gameTime - state.injuredAt >= INJURY_DEATH) {
+        if (state.injured && state.injuredAt != null && state.gameTime - state.injuredAt >= INJURY_DEATH) {
           die(state, '受傷未治療');
           died = true;
           break;
         }
-        if (state.emptySince && state.gameTime - state.emptySince >= STARVE_DEATH && m.stage !== 'baby1' && m.stage !== 'egg') {
+        if (state.emptyCallSince && state.gameTime - state.emptyCallSince >= STARVE_DEATH &&
+            m.stage !== 'baby1' && m.stage !== 'egg') {
           die(state, '飢餓過久');
           died = true;
           break;
@@ -289,25 +626,25 @@
           died = true;
           break;
         }
-      }
-      if (tryEvolve(state)) evolved = true;
-
-      // old age death for mega/super after lifespan * 1.5 if already checked
-      m = mon(state);
-      if (m && (m.stage === 'mega' || m.stage === 'super' || (m.stage === 'ultimate' && m.noMega) || (m.stage === 'champion' && timeInStage(state) / 60 > (m.lifespanMin || 0) * 1.8))) {
-        if (timeInStage(state) / 60 > (m.lifespanMin || 96 * 60) * 1.6) {
+        if (state.lifespanElapsed && (state.oldAgeMistakes || 0) >= 5) {
           die(state, '壽終');
           died = true;
+          break;
         }
       }
+      if (tryEvolve(state)) evolved = true;
     }
     return { evolved: evolved, died: died };
   }
 
   function injure(state, why) {
-    state.injured = true;
-    state.injuredAt = state.gameTime;
-    state.injuries += 1;
+    // Do not reset the 6 h untreated clock if already injured.
+    if (!state.injured) {
+      state.injured = true;
+      state.injuredAt = state.gameTime;
+      state.healProgress = 0;
+    }
+    state.injuries = (state.injuries || 0) + 1;
     pushEvent(state, 'injury', '受傷（' + why + '）');
   }
 
@@ -318,15 +655,53 @@
     pushEvent(state, 'death', why);
   }
 
-  function wakePenalty(state, action) {
-    if (state.sleeping && (action === 'food' || action === 'train' || action === 'battle')) {
-      state.sleeping = false;
-      state.sleepDist += 1;
-      state.callLightsAt = null;
-      pushEvent(state, 'sleep', '睡眠打擾 +1');
-      return true;
+  /**
+   * Official wake (Humulos 1997 FAQ, Wikimon Ver.1/2, Humulos DMC Sleep):
+   * attempting to feed, train or battle wakes the pet and counts a sleep
+   * disturbance (not a care mistake). Lights on/off do not wake it (1997 / DMC).
+   * It then stays awake DISTURB_AWAKE_SEC before falling back asleep if it
+   * is still night. That duration is an unverified, non-official placeholder
+   * (see the DISTURB_AWAKE_SEC comment); it is not the Humulos DMC "10 minutes",
+   * which is a call timeout.
+   */
+  function disturbSleep(state, reason) {
+    if (!state || state.dead || !state.sleeping) return { woken: false };
+    if (reason !== 'food' && reason !== 'train' && reason !== 'battle') {
+      return { woken: false };
     }
-    return false;
+    state.sleeping = false;
+    state.sleepDist = (state.sleepDist || 0) + 1;
+    state.awakeUntil = state.gameTime + DISTURB_AWAKE_SEC;
+    state.callLightsAt = null;
+    // Disturbance breaks the 8 h continuous-sleep stretch for DP refill.
+    state.sleptContinuously = 0;
+    pushEvent(state, 'sleep', '睡眠打擾');
+    return { woken: true, sleepDist: state.sleepDist };
+  }
+
+  function wakePenalty(state, action) {
+    return disturbSleep(state, action).woken;
+  }
+
+  function clearHungerCall(state) {
+    if (state.hunger > 0) state.callHungerAt = null;
+    if (state.hunger > 0 && state.strength > 0) {
+      state.callAt = null;
+      state.callResolved = false;
+      state.emptyCallSince = null;
+      state.emptySince = null;
+      state.callStrengthAt = null;
+    }
+  }
+  function clearStrengthCall(state) {
+    if (state.strength > 0) state.callStrengthAt = null;
+    if (state.hunger > 0 && state.strength > 0) {
+      state.callAt = null;
+      state.callResolved = false;
+      state.emptyCallSince = null;
+      state.emptySince = null;
+      state.callHungerAt = null;
+    }
   }
 
   function feedMeat(state) {
@@ -334,22 +709,29 @@
     var m = mon(state);
     if (!m || m.stage === 'egg') return { ok: false, reason: 'egg' };
     wakePenalty(state, 'food');
-    var cap = 4;
-    if (state.hunger >= cap) {
-      // refuse → overfeed if lock expired
-      if (state.gameTime >= (state.overfeedLockUntil || 0)) {
-        state.overfeed += 1;
-        state.overfeedLockUntil = state.gameTime + OVERFEED_LOCK;
-        state.weight = Math.min(99, state.weight + 1);
-        return { ok: true, overfeed: true, refused: true };
-      }
-      return { ok: false, reason: 'full' };
+    var capHearts = 4;
+    var capSat = satietyOf(state);
+    var filled = state.satietyFilled || 0;
+    if (state.hunger < capHearts) {
+      state.hunger = Math.min(capHearts, state.hunger + 1);
+      state.weight = Math.min(99, (state.weight || 0) + 1);
+      state.satietyFilled = filled + 1;
+      clearHungerCall(state);
+      return { ok: true };
     }
-    state.hunger = Math.min(cap, state.hunger + 1);
-    state.weight = Math.min(99, state.weight + 1);
-    if (state.hunger > 0) state.callHungerAt = null;
-    if (state.hunger > 0 && state.strength > 0) state.emptySince = null;
-    return { ok: true };
+    // Hearts full: further meats count toward 満腹 until the refuse cap.
+    if (filled < capSat) {
+      state.satietyFilled = filled + 1;
+      state.weight = Math.min(99, (state.weight || 0) + 1);
+      return { ok: true, satiety: true };
+    }
+    if (state.gameTime >= (state.overfeedLockUntil || 0)) {
+      state.overfeed = (state.overfeed || 0) + 1;
+      state.overfeedLockUntil = state.gameTime + OVERFEED_LOCK;
+      state.weight = Math.min(99, (state.weight || 0) + 1);
+      return { ok: true, overfeed: true, refused: true };
+    }
+    return { ok: false, reason: 'full' };
   }
 
   function feedProtein(state) {
@@ -357,15 +739,42 @@
     var m = mon(state);
     if (!m || m.stage === 'egg') return { ok: false, reason: 'egg' };
     wakePenalty(state, 'food');
-    state.strength = Math.min(4, state.strength + 1);
-    if (state.strength > 0) state.callStrengthAt = null;
-    if (state.hunger > 0 && state.strength > 0) state.emptySince = null;
-    state._proteinBank = (state._proteinBank || 0) + 1;
-    if (state._proteinBank >= 4) {
-      state._proteinBank = 0;
-      state.dp = Math.min(state.dpMax || 4, state.dp + 1);
+    // +1 strength (no overfill past 4), +2 g, always accepted (protein is
+    // not a 満腹 refuse). Every 4 proteins: +1 Energy (DP, no overfill past
+    // dpMax), +1 overdose (0–15), +1 power-up (0–4). Remainder 0–3 carries.
+    if (state.strength < 4) state.strength = state.strength + 1;
+    state.weight = Math.min(99, (state.weight || 0) + 2);
+    clearStrengthCall(state);
+    var rem = (state.proteinRemainder != null ? state.proteinRemainder : (state._proteinBank || 0)) + 1;
+    if (rem >= 4) {
+      rem = 0;
+      state.overdose = Math.min(15, (state.overdose || 0) + 1);
+      state.proteinPowerUp = Math.min(4, (state.proteinPowerUp || 0) + 1);
+      state.dp = Math.min(state.dpMax || 0, (state.dp || 0) + 1);
     }
-    return { ok: true };
+    state.proteinRemainder = rem;
+    state._proteinBank = rem; // alias for older UI
+    return { ok: true, proteinRemainder: rem };
+  }
+
+  function noteTrainingOpened(state) {
+    if (!state || state.dead) return { ok: false };
+    var m = mon(state);
+    if (!m || m.stage === 'egg' || m.stage === 'baby1' || m.stage === 'baby2') {
+      return { ok: false, reason: 'too-young' };
+    }
+    var countsAny = m.trainCounts === 'any' || Number(m.version) === 1;
+    if (countsAny && !state._trainSessionCounted) {
+      state.train = (state.train || 0) + 1;
+      state._trainSessionCounted = true;
+    }
+    return { ok: true, train: state.train };
+  }
+
+  function cancelTraining(state) {
+    // Ver.1 already counted on open; no weight change (they did not exercise).
+    if (state) state._trainSessionCounted = false;
+    return { ok: true, train: state ? state.train : 0 };
   }
 
   function finishTraining(state, success, attempted) {
@@ -374,15 +783,19 @@
     if (!m || m.stage === 'egg' || m.stage === 'baby1' || m.stage === 'baby2') return { ok: false, reason: 'too-young' };
     wakePenalty(state, 'train');
     var countsAny = m.trainCounts === 'any' || Number(m.version) === 1;
-    if (countsAny && attempted) state.train += 1;
-    else if (!countsAny && success) state.train += 1;
+    if (state._trainSessionCounted) {
+      state._trainSessionCounted = false;
+    } else {
+      if (countsAny && attempted) state.train += 1;
+      else if (!countsAny && success) state.train += 1;
+    }
     if (success) {
       state.strength = Math.min(4, state.strength + 1);
       state.weight = Math.max(m.weight || 5, state.weight - (Number(m.version) === 1 ? 1 : 2));
     } else if (attempted) {
       state.weight = Math.max(m.weight || 5, state.weight - 1);
     }
-    if (state.strength > 0) state.callStrengthAt = null;
+    clearStrengthCall(state);
     return { ok: true, train: state.train };
   }
 
@@ -393,22 +806,32 @@
   }
 
   function toggleLights(state) {
+    // 1997 / DMC: Light only toggles the lamp. It does not wake the pet
+    // and does not start a second lights-out call (Humulos DMC: one call per night).
+    // (UI-worker behaviour, kept; lamp-on starting a call is unverified.)
     state.lights = !state.lights;
     if (!state.lights) state.callLightsAt = null;
-    else if (state.sleeping) markCall(state, 'lights');
     return { lights: state.lights };
   }
 
   function heal(state) {
     if (state.dead) return { ok: false };
     if (!state.injured) return { ok: false, reason: 'healthy' };
+    var m = mon(state);
+    var doses = (m && m.healDoses != null) ? m.healDoses : 1;
+    if (doses < 1) doses = 1;
+    state.healProgress = (state.healProgress || 0) + 1;
+    var remaining = Math.max(0, doses - state.healProgress);
+    if (remaining > 0) {
+      return { ok: true, remaining: remaining, needMore: true };
+    }
     state.injured = false;
     state.injuredAt = null;
-    return { ok: true };
+    state.healProgress = 0;
+    return { ok: true, remaining: 0 };
   }
 
-  function recordBattle(state, result) {
-    // CPU and PvP both use this.
+  function recordBattle(state, result, rng) {
     if (state.dead) return;
     var m = mon(state);
     if (!m || !m.canBattle) return { ok: false, reason: 'cannot-battle' };
@@ -416,21 +839,34 @@
     wakePenalty(state, 'battle');
     state.dp = Math.max(0, state.dp - 1);
     state.weight = Math.max(m.weight || 5, state.weight - (Number(m.version) === 1 ? 2 : 4));
-    state.battles += 1;
-    state.lifeBattles += 1;
+    state.battles = (state.battles || 0) + 1;
+    state.lifeBattles = (state.lifeBattles || 0) + 1;
     if (result === 'win') {
-      state.wins += 1;
-      state.lifeWins += 1;
+      state.wins = (state.wins || 0) + 1;
+      state.lifeWins = (state.lifeWins || 0) + 1;
+      state.winScore = Math.min(WIN_SCORE_MAX, (state.winScore || 0) + 1);
     } else {
-      state.losses += 1;
-      state.lifeLosses += 1;
+      state.losses = (state.losses || 0) + 1;
+      state.lifeLosses = (state.lifeLosses || 0) + 1;
+      state.winScore = Math.max(0, (state.winScore || 0) - 1);
+    }
+    var base = m.injuryBase != null ? m.injuryBase : 0;
+    if (rollBattleInjury(base, state.overdose || 0, rng || Math.random)) {
       injure(state, 'battle');
     }
-    // even winners can be injured sometimes
-    if (result === 'win' && Math.random() < 0.12) injure(state, 'battle');
-    return { ok: true, result: result, battles: state.battles, wins: state.wins, wr: winRate(state.battles, state.wins) };
+    return {
+      ok: true, result: result,
+      battles: state.battles, wins: state.wins,
+      winScore: state.winScore,
+      wr: winRate(state.battles, state.wins)
+    };
   }
 
+  function nextCpuInitiator(state) {
+    var init = state.cpuPlayerInitiates !== false;
+    state.cpuPlayerInitiates = !init;
+    return init;
+  }
 
   function tryJogress(state, partnerId) {
     if (state.dead) return { ok: false };
@@ -494,6 +930,8 @@
       wins: bw,
       losses: state.losses,
       winRate: winRate(br, bw),
+      winScore: state.winScore || 0,
+      perfectQualified: !!state.perfectQualified,
       lifeBattles: state.lifeBattles,
       lifeWins: state.lifeWins,
       lifeLosses: state.lifeLosses,
@@ -507,10 +945,13 @@
       clockSec: clockSeconds(state),
       timeInStageMin: Math.floor(timeInStage(state) / 60),
       lifespanMin: m.lifespanMin,
+      lifespanMax: m.lifespanMax,
+      evoDueAt: state.evoDueAt,
       canBattle: !!(m.canBattle && !state.dead),
       tagWins: state.tagWins || 0,
       lifeSteps: (state.steps && state.steps.lifetime) || 0,
-      steps: root.Steps ? root.Steps.todaySummary(state) : null
+      steps: root.Steps ? root.Steps.todaySummary(state) : null,
+      calling: isCallLit(state)
     };
   }
 
@@ -525,12 +966,63 @@
     return s;
   }
 
+  /**
+   * Backward-compatible save migration. Idempotent.
+   * Old saves get defaults, a winScore estimated from wins−losses, a
+   * random evoDueAt inside the official window (or "due now" if already
+   * past the max), and a raised dpMax without a free DP refill.
+   */
+  function migrateState(state) {
+    if (!state) return state;
+    if (state.winScore == null) {
+      state.winScore = Math.min(WIN_SCORE_MAX, Math.max(0, (state.wins || 0) - (state.losses || 0)));
+    }
+    if (state.perfectQualified == null) state.perfectQualified = false;
+    if (state.perfectRolledThisStage == null) state.perfectRolledThisStage = false;
+    if (state.megaChecked == null) state.megaChecked = false;
+    if (state.overdose == null) state.overdose = 0;
+    if (state.proteinRemainder == null) {
+      state.proteinRemainder = state._proteinBank || 0;
+    }
+    if (state.proteinPowerUp == null) state.proteinPowerUp = 0;
+    if (state.boostCareDown == null) state.boostCareDown = Math.min(4, state.calls || 0);
+    if (state.satietyFilled == null) state.satietyFilled = state.hunger || 0;
+    if (state.sleptContinuously == null) state.sleptContinuously = 0;
+    if (state.lifespanElapsed == null) state.lifespanElapsed = false;
+    if (state.oldAgeMistakes == null) state.oldAgeMistakes = 0;
+    if (state.callResolved == null) state.callResolved = false;
+    if (state.lightsCallResolved == null) state.lightsCallResolved = false;
+    if (state.healProgress == null) state.healProgress = 0;
+    if (state.awakeInStage == null) state.awakeInStage = 0;
+    if (state.awakeUntil == null) state.awakeUntil = 0;
+    if (state.sleepCalledTonight == null) state.sleepCalledTonight = false;
+    if (state.cpuPlayerInitiates == null) state.cpuPlayerInitiates = true;
+    if (state.emptyCallSince == null && state.emptySince != null) state.emptyCallSince = state.emptySince;
+    applySpeciesCare(state, { migrate: true });
+    if (state.evoDueAt == null) {
+      var m = mon(state);
+      var mins = timeInStage(state) / 60;
+      if (m && m.lifespanMax != null && mins >= m.lifespanMax) {
+        // Already past the official window: evolve on the next tick.
+        state.evoDueAt = mins;
+      } else if (m && m.lifespanMin != null && mins >= m.lifespanMin) {
+        // Already inside the window (old flat timer): due now.
+        state.evoDueAt = mins;
+      } else {
+        rollEvoDueAt(state);
+      }
+    }
+    return state;
+  }
+
   root.Engine = {
     defaultState: defaultState,
     tick: tick,
     feedMeat: feedMeat,
     feedProtein: feedProtein,
     finishTraining: finishTraining,
+    noteTrainingOpened: noteTrainingOpened,
+    cancelTraining: cancelTraining,
     flush: flush,
     toggleLights: toggleLights,
     heal: heal,
@@ -547,6 +1039,26 @@
     clockSeconds: clockSeconds,
     ageDays: ageDays,
     winRate: winRate,
-    mon: mon
+    mon: mon,
+    isSleepHours: isSleepHours,
+    disturbSleep: disturbSleep,
+    DISTURB_AWAKE_SEC: DISTURB_AWAKE_SEC,
+    CALL_TIMEOUT: CALL_TIMEOUT,
+    MAX_CATCHUP: MAX_CATCHUP,
+    STARVE_DEATH: STARVE_DEATH,
+    INJURY_DEATH: INJURY_DEATH,
+    OVERFEED_LOCK: OVERFEED_LOCK,
+    DP_REFILL_SEC: DP_REFILL_SEC,
+    MAX_INJURIES: MAX_INJURIES,
+    isCallLit: isCallLit,
+    enhancement: enhancement,
+    rollPerfect: rollPerfect,
+    rollBattleInjury: rollBattleInjury,
+    rollEvoDueAt: rollEvoDueAt,
+    migrateState: migrateState,
+    applySpeciesCare: applySpeciesCare,
+    nextCpuInitiator: nextCpuInitiator,
+    evolveTo: evolveTo
   };
+  if (typeof module !== 'undefined' && module.exports) module.exports = root.Engine;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -172,7 +172,8 @@
     var newEffortBlocks = Math.floor(s.lifetime / STEPS_PER_EFFORT) - Math.floor(prev / STEPS_PER_EFFORT);
     var effortGrant = Math.min(newEffortBlocks, Math.max(0, DAILY_EFFORT_CAP - s.dayEffort));
     if (effortGrant > 0) {
-      state.train = (state.train || 0) + effortGrant;
+      // dayEffort is a walking extra. It must NOT increment official
+      // state.train (1997 training counts only come from the training menu).
       s.dayEffort += effortGrant;
       result.effort = effortGrant;
     }

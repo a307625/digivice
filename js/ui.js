@@ -1,78 +1,203 @@
 /**
- * Color pixel-art device UI: care, battle, save QR, PWA install hint.
+ * Official-device Digital Monster UI.
+ * Button mapping, icon order, status pages, items and sleep rules:
+ * see /workspace/ui-research/ui-spec.md.
  */
 (function () {
   'use strict';
-  var W = 256, H = 160;
-  var MENU = [
-    { id: 'status', label: '狀態', icon: 'icon_status' },
-    { id: 'food', label: '食物', icon: 'icon_food' },
-    { id: 'train', label: '訓練', icon: 'icon_train' },
-    { id: 'battle', label: '對戰', icon: 'icon_battle' },
-    { id: 'flush', label: '清掃', icon: 'icon_flush' },
-    { id: 'lights', label: '燈光', icon: 'icon_lights' },
-    { id: 'medicine', label: '治療', icon: 'icon_medicine' },
-    { id: 'settings', label: '設定', icon: 'icon_settings' }
-  ];
+
+  var LCD_W = 160, LCD_H = 96, MON = 2;
+  var SELECTABLE = (window.VpetItems && window.VpetItems.SELECTABLE) ||
+    ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC'];
   var SPEEDS = [1, 10, 60, 120, 600];
+  var PAPER = '#c6cbb8';
+  var NIGHT = '#10141c';
+  var INK = '#1a1c16';
 
   var canvas, ctx;
   var state = null;
-  var view = 'boot'; // boot | play | train | evo | dead
-  var menuIdx = 0;
+  var view = 'play';
+  var sel = -1;
+  var statusPage = 0;
+  var foodSel = 0;
+  var battleSel = 0;
   var frame = 0;
   var lastSave = 0;
-  var toastMsg = '';
-  var toastUntil = 0;
+  var lastKeyAt = 0;
+  var shotMode = false;
   var cache = {};
   var scanTimer = null;
   var scanStream = null;
   var train = { t: 0, pos: 0, dir: 1, done: false, success: false };
   var evoFx = { t: 0, from: '', to: '' };
   var battleFx = { t: 0, foe: '', result: '', active: false };
-  var poseFx = { name: null, until: 0 };
+  var poseFx = { name: null, until: 0, extra: null };
+  var eatAnim = { on: false, t: 0, kind: 'meat', refused: false };
+  var flushAnim = { on: false, t: 0, n: 0, off: 0 };
+  var walk = { x: 40, dir: -1 };
+  var dyingT = 0;
   var motionOn = false;
   var pedometer = null;
   var healthAppliedThisSession = false;
-  var stepsPromptShown = false;
+  var soundOn = false;
+  var audioCtx = null;
+  var keyA = false, keyB = false, keyC = false;
 
-  function playPose(name, ms, extra) {
-    poseFx.name = name;
-    poseFx.until = performance.now() + (ms || 1200);
-    poseFx.extra = extra || null;
-    poseFx.started = performance.now();
-  }
+  var lightSel = 0;
+  var albumSel = 0;
+  var connectSel = 0;
+  var albumPose = 0;
 
-  function monFrame() {
-    if (!state) return 'idle0';
-    if (state.dead) return 'idle0';
-    if (state.sleeping) return (Math.floor(frame / 18) % 2) ? 'sleep1' : 'sleep0';
-    if (poseFx.name && performance.now() < poseFx.until) {
-      if (poseFx.name === 'eat') return (Math.floor(frame / 8) % 2) ? 'eat1' : 'eat0';
-      if (poseFx.name === 'sleep') return (Math.floor(frame / 18) % 2) ? 'sleep1' : 'sleep0';
-      if (poseFx.name === 'hurt') return (Math.floor(frame / 10) % 2) ? 'hurt1' : 'hurt0';
-      return poseFx.name;
+  var SHELL_LAYOUT = {
+    lcd: { left: 12.249, top: 39.634, width: 33.4, height: 23.819 },
+    buttons: {
+      a: { cx: 81.459, cy: 26.422, w: 11.379, h: 16.393 },
+      b: { cx: 81.459, cy: 50.53, w: 11.379, h: 16.393 },
+      c: { cx: 81.459, cy: 72.71, w: 11.379, h: 16.393 },
+      reset: { cx: 75.435, cy: 61.62, w: 4.819, h: 6.943 }
+    },
+    icons_top: [
+      { left: 14.19, top: 29.315, width: 6.493, height: 7.425 },
+      { left: 21.754, top: 29.219, width: 6.627, height: 7.522 },
+      { left: 30.254, top: 29.026, width: 5.154, height: 7.811 },
+      { left: 37.751, top: 29.026, width: 5.288, height: 7.907 }
+    ],
+    icons_bot: [
+      { left: 14.659, top: 66.249, width: 5.556, height: 7.811 },
+      { left: 23.025, top: 66.152, width: 4.016, height: 8.004 },
+      { left: 29.987, top: 66.056, width: 5.689, height: 8.1 },
+      { left: 37.483, top: 66.635, width: 6.225, height: 6.461 }
+    ],
+    names_top: ['STATUS', 'FEED', 'TRAIN', 'BATTLE'],
+    names_bot: ['FLUSH', 'LIGHT', 'MEDIC', 'CALL']
+  };
+
+  var DM20_EGGS = {
+    zuba: 'dm20-zuba', meicoo: 'dm20-zuba',
+    corona: 'dm20-omega',
+    luna: 'dm20-alpha', doru: 'dm20-alpha',
+    hack: 'dm20-brown', dra_blue: 'dm20-brown', dra_green: 'dm20-brown',
+    anime_agumon: 'dm20-brown', anime_gabumon: 'dm20-brown'
+  };
+
+  function currentDevice() {
+    var kind = (state && state.eggKind) || '';
+    var ver = parseInt((state && state.version), 10);
+    if (kind && DM20_EGGS[kind]) {
+      return { family: 'dm20', shell: DM20_EGGS[kind], orient: 'landscape', version: 20 };
     }
-    poseFx.name = null;
-    poseFx.extra = null;
-    return idleFrame();
+    if (kind && /^ver[1-5]$/.test(String(kind))) ver = parseInt(String(kind).charAt(3), 10);
+    if (!(ver >= 1 && ver <= 5)) ver = 1;
+    return { family: 'dm1997', shell: 'dm1997-v' + ver, orient: 'landscape', version: ver };
   }
 
-  function blitFlip(id, x, y, scale, frameName) {
-    var c = spriteCanvas(id, frameName, scale || 1);
+  function selectable() {
+    if (currentDevice().family === 'dm20') {
+      return ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC', 'ALBUM', 'CONNECT'];
+    }
+    return ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC'];
+  }
+
+  function statusPages() {
+    if (currentDevice().family === 'dm20') {
+      return ['name', 'age', 'hunger', 'strength', 'effort', 'dp', 'win'];
+    }
+    return ['age', 'hunger', 'strength', 'dp', 'win'];
+  }
+
+  function applyShellLayout() {
+    var L = SHELL_LAYOUT;
+    function placeIcon(id, box) {
+      var el = document.getElementById('icon-' + id);
+      if (!el || !box) return;
+      el.style.left = box.left + '%';
+      el.style.top = box.top + '%';
+      el.style.width = box.width + '%';
+      el.style.height = box.height + '%';
+    }
+    L.names_top.forEach(function (n, i) { placeIcon(n, L.icons_top[i]); });
+    L.names_bot.forEach(function (n, i) { placeIcon(n, L.icons_bot[i]); });
+    function placePad(id, b) {
+      var el = $(id);
+      if (!el || !b) return;
+      el.style.left = b.cx + '%';
+      el.style.top = b.cy + '%';
+      el.style.width = b.w + '%';
+      el.style.height = b.h + '%';
+    }
+    placePad('btn-a', L.buttons.a);
+    placePad('btn-b', L.buttons.b);
+    placePad('btn-c', L.buttons.c);
+    placePad('btn-reset', L.buttons.reset);
+  }
+
+  function sizeLcd() {
+    var c = $('screen');
     if (!c) return;
-    ctx.save();
-    ctx.translate(Math.round(x) + c.width, Math.round(y));
-    ctx.scale(-1, 1);
-    ctx.drawImage(c, 0, 0);
-    ctx.restore();
+    // CSS (height:100%; width:auto; max-width:100%) fills the official
+    // window with contain + letterbox. Clear any stale inline size.
+    c.style.width = '';
+    c.style.height = '';
   }
 
-  function blitOverlay(id, x, y, scale) {
-    blit(id, x, y, scale || 1, 'idle0');
+  function tryLockOrient(orient) {
+    try {
+      if (window.screen && screen.orientation && typeof screen.orientation.lock === 'function') {
+        var p = screen.orientation.lock(orient || 'landscape');
+        if (p && p.catch) p.catch(function () {});
+      }
+    } catch (e) {}
   }
+
+  function updateRotateHint(need) {
+    var el = $('rotate-hint');
+    if (!el) return;
+    if (shotMode) { el.classList.remove('show'); el.style.display = 'none'; return; }
+    need = need || currentDevice().orient || 'landscape';
+    el.setAttribute('data-need', need);
+    el.style.display = '';
+    var land = window.innerWidth >= window.innerHeight;
+    var ok = (need === 'landscape') ? land : !land;
+    el.classList.toggle('show', !ok);
+  }
+
+  function applyShell() {
+    var d = currentDevice();
+    var dev = $('device');
+    var img = $('shell-art');
+    var src = './icons/shell/' + d.shell + '.png';
+    if (img && img.getAttribute('src') !== src) img.setAttribute('src', src);
+    if (dev) {
+      dev.setAttribute('data-model', d.family);
+      dev.setAttribute('data-shell', d.shell);
+      dev.setAttribute('data-orient', d.orient);
+    }
+    tryLockOrient(d.orient);
+    updateRotateHint(d.orient);
+    sizeLcd();
+  }
+
+  function menuItem(I, selected, y, label) {
+    blitItem(selected ? 'triangle' : 'empty_triangle', 12, y, 2);
+    if (I && I.drawText) I.drawText(ctx, label, 36, y, 2);
+  }
+
 
   function $(id) { return document.getElementById(id); }
+  function items() { return window.VpetItems; }
+  function mon() { return (window.EvolutionData.MONSTERS[state && state.mon]) || null; }
+
+  function toast(msg, ms) {
+    var b = $('banner');
+    if (!b) return;
+    b.textContent = msg;
+    b.classList.remove('hidden');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () {
+      if (b.textContent === msg) b.classList.add('hidden');
+    }, ms || 1800);
+  }
+
   function showOverlay(id, on) {
     var el = $(id);
     if (!el) return;
@@ -81,325 +206,527 @@
   }
   function hideAllOverlays() {
     document.querySelectorAll('.overlay').forEach(function (el) { el.classList.remove('show'); });
+    stopScan();
   }
-  function toast(msg, ms) {
-    toastMsg = msg;
-    toastUntil = performance.now() + (ms || 1800);
-    var b = $('banner');
-    if (b) {
-      b.textContent = msg;
-      b.classList.remove('hidden');
-      setTimeout(function () { if (b.textContent === msg) b.classList.add('hidden'); }, ms || 1800);
-    }
+  function anyOverlay() {
+    return !!document.querySelector('.overlay.show');
   }
 
-  function mon() { return (window.EvolutionData.MONSTERS[state && state.mon]) || null; }
+  function beep() {
+    if (!soundOn) return;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!audioCtx) audioCtx = new AC();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var o = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      o.type = 'square';
+      o.frequency.value = 880;
+      g.gain.value = 0.045;
+      o.connect(g);
+      g.connect(audioCtx.destination);
+      o.start();
+      o.stop(audioCtx.currentTime + 0.05);
+    } catch (e) {}
+  }
 
-  function renderSafe(sprite, frameName, scale) {
+  function playPose(name, ms, extra) {
+    poseFx = { name: name, until: performance.now() + (ms || 1000), extra: extra || null, started: performance.now() };
+  }
+
+  function decodeIndex(ch) {
+    if (window.SpriteAtlas && window.SpriteAtlas.decodeIndex) return window.SpriteAtlas.decodeIndex(ch);
+    var n = parseInt(ch, 36);
+    return isNaN(n) ? 0 : n;
+  }
+
+  function spriteCanvas(id, frameName, scale, flip) {
     scale = scale || 1;
-    var rows = (sprite.frames && (sprite.frames[frameName] || sprite.frames.idle0)) || [];
-    var h = rows.length;
-    var w = (rows[0] && rows[0].length) || sprite.w || 32;
-    var cw = document.createElement('canvas');
-    cw.width = w; cw.height = h;
-    var c = cw.getContext('2d');
-    var img = c.createImageData(w, h);
-    var pal = sprite.pal || [];
-    var dec = window.SpriteAtlas.decodeIndex;
-    for (var y = 0; y < h; y++) {
-      for (var x = 0; x < w; x++) {
-        var i = dec(rows[y][x] || '0');
-        var hex = pal[i] || '#00000000';
-        var p = (y * w + x) * 4;
-        if (!hex || hex.length < 7 || hex.slice(0, 9) === '#00000000') { img.data[p + 3] = 0; continue; }
-        img.data[p] = parseInt(hex.slice(1, 3), 16);
-        img.data[p + 1] = parseInt(hex.slice(3, 5), 16);
-        img.data[p + 2] = parseInt(hex.slice(5, 7), 16);
-        img.data[p + 3] = 255;
-      }
+    var key = id + ':' + (frameName || 'idle0') + ':' + scale + ':' + (flip ? 1 : 0);
+    if (cache[key]) return cache[key];
+    var atlas = window.SpriteAtlas;
+    if (!atlas || !atlas.SPRITES[id]) return null;
+    var sp = atlas.SPRITES[id];
+    var fr = frameName;
+    if (!sp.frames[fr]) {
+      if (fr === 'sleep1') fr = 'sleep0';
+      else if (fr === 'sleep0' && sp.frames.sleep) fr = 'sleep';
+      else if (fr === 'eat1') fr = 'eat0';
+      else if (fr === 'train1') fr = 'train0';
+      else if (fr === 'train0' && sp.frames.attack) fr = 'attack';
+      else if (fr === 'sick' && sp.frames.hurt) fr = 'hurt';
+      else if (fr === 'lose' && sp.frames.hurt) fr = 'hurt';
+      else if (fr === 'hatch' && sp.frames.idle1) fr = 'idle1';
+      else fr = 'idle0';
     }
-    c.putImageData(img, 0, 0);
-    if (scale === 1) return cw;
+    if (!sp.frames[fr]) fr = 'idle0';
+    var img = atlas.renderToImageData(sp, fr, 1);
+    var w = sp.w, h = sp.h;
     var out = document.createElement('canvas');
-    out.width = w * scale; out.height = h * scale;
+    out.width = w * scale;
+    out.height = h * scale;
     var o = out.getContext('2d');
     o.imageSmoothingEnabled = false;
-    o.drawImage(cw, 0, 0, out.width, out.height);
+    if (flip) {
+      o.translate(out.width, 0);
+      o.scale(-1, 1);
+    }
+    o.drawImage(img, 0, 0, out.width, out.height);
+    cache[key] = out;
     return out;
   }
 
-  function spriteCanvas(id, frameName, scale) {
-    var key = id + ':' + (frameName || 'idle0') + ':' + scale;
-    if (cache[key]) return cache[key];
-    var sp = window.SpriteAtlas.SPRITES[id];
-    if (!sp) return null;
-    cache[key] = renderSafe(sp, frameName || 'idle0', scale);
-    return cache[key];
-  }
-
-  function blit(id, x, y, scale, frameName) {
-    var c = spriteCanvas(id, frameName, scale || 1);
+  function blitMon(id, x, y, scale, frameName, flip) {
+    var c = spriteCanvas(id, frameName, scale || MON, flip);
     if (c) ctx.drawImage(c, Math.round(x), Math.round(y));
   }
 
-  function idleFrame() {
-    return (Math.floor(frame / 24) % 2) ? 'idle1' : 'idle0';
+  function blitItem(name, x, y, scale, flip) {
+    if (items()) items().blit(ctx, name, x, y, scale || 2, flip);
   }
 
-  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function idleFrame() {
+    return (Math.floor(frame / 16) % 2) ? 'idle1' : 'idle0';
+  }
 
-  function clockStr() {
-    if (!state) return '00:00';
-    var s = window.Engine.clockSeconds(state);
-    var h = Math.floor(s / 3600);
-    var m = Math.floor((s % 3600) / 60);
-    return pad2(h) + ':' + pad2(m);
+  function monFrame() {
+    if (!state) return 'idle0';
+    if (state.dead && view !== 'dying') return 'lose';
+    if (state.sleeping) return (Math.floor(frame / 18) % 2) ? 'sleep1' : 'sleep0';
+    if (poseFx.name && performance.now() < poseFx.until) {
+      if (poseFx.name === 'sleep') return (Math.floor(frame / 18) % 2) ? 'sleep1' : 'sleep0';
+      if (poseFx.name === 'eat') return (Math.floor(frame / 8) % 2) ? 'eat1' : 'eat0';
+      if (poseFx.name === 'happy') return 'happy';
+      if (poseFx.name === 'angry') return 'angry';
+      if (poseFx.name === 'refuse') return 'refuse';
+    } else if (poseFx.name && performance.now() >= poseFx.until) {
+      poseFx = { name: null, until: 0, extra: null };
+    }
+    if (eatAnim.on && !eatAnim.refused) {
+      return (Math.floor(eatAnim.t / 8) % 2) ? 'eat1' : 'eat0';
+    }
+    if (state.injured) {
+      var sp = window.SpriteAtlas && window.SpriteAtlas.SPRITES[state.mon];
+      if (sp && sp.frames.sick) return (Math.floor(frame / 16) % 2) ? 'sick' : 'idle0';
+    }
+    return idleFrame();
   }
 
   function isCalling() {
+    if (window.Engine && window.Engine.isCallLit) return window.Engine.isCallLit(state);
     if (!state || state.dead) return false;
     if (state.hunger <= 0 || state.strength <= 0) return true;
-    if (state.sleeping && state.lights) return true;
+    if (state.sleeping && state.lights && state.callLightsAt != null) return true;
     return false;
   }
 
-  function drawBg() {
-    var g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#245c52');
-    g.addColorStop(0.55, '#1b4a42');
-    g.addColorStop(1, '#123830');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W, H);
-    // floor
-    ctx.fillStyle = '#0e2a24';
-    ctx.fillRect(0, 124, W, 36);
-    ctx.fillStyle = '#2e7a68';
-    ctx.fillRect(0, 124, W, 2);
-    // pixel dither
-    ctx.fillStyle = 'rgba(0,0,0,0.08)';
-    for (var y = 0; y < H; y += 2) ctx.fillRect(0, y, W, 1);
-    if (state && !state.lights) {
-      ctx.fillStyle = 'rgba(4,8,16,0.55)';
-      ctx.fillRect(0, 0, W, H);
+  function sizeLcd() {
+    if (!canvas) return;
+    var well = document.querySelector('.lcd-well');
+    if (!well) return;
+    var aw = well.clientWidth, ah = well.clientHeight;
+    var s = Math.max(1, Math.floor(Math.min(aw / LCD_W, ah / LCD_H)));
+    canvas.style.width = (LCD_W * s) + 'px';
+    canvas.style.height = (LCD_H * s) + 'px';
+  }
+
+  function lcdBg() {
+    var night = state && !state.lights;
+    ctx.fillStyle = night ? NIGHT : PAPER;
+    ctx.fillRect(0, 0, LCD_W, LCD_H);
+    if (!night) {
+      ctx.fillStyle = 'rgba(80, 86, 70, 0.07)';
+      for (var y = 0; y < LCD_H; y += 2) ctx.fillRect(0, y, LCD_W, 1);
+      ctx.fillStyle = 'rgba(70, 80, 55, 0.18)';
+      ctx.fillRect(0, LCD_H - 3, LCD_W, 3);
+    } else {
+      ctx.fillStyle = 'rgba(8, 10, 16, 0.35)';
+      ctx.fillRect(0, 0, LCD_W, LCD_H);
     }
   }
 
-  function drawMenu() {
-    ctx.fillStyle = '#0c201c';
-    ctx.fillRect(0, 0, W, 22);
-    var x = 4;
-    for (var i = 0; i < MENU.length; i++) {
-      var sel = i === menuIdx && view === 'play';
-      if (sel) {
-        ctx.fillStyle = '#e8c45c';
-        ctx.fillRect(x - 1, 1, 18, 18);
+  function poopRightBound() {
+    var n = Math.min(8, (flushAnim.on ? flushAnim.n : (state && state.poop)) || 0);
+    var cols = Math.ceil(n / 2);
+    return LCD_W - cols * 16;
+  }
+
+  function drawPoop() {
+    if (!state && !flushAnim.on) return;
+    var n = flushAnim.on ? flushAnim.n : Math.min(8, state.poop || 0);
+    if (n <= 0) return;
+    var off = flushAnim.on ? flushAnim.off : 0;
+    var flip = (Math.floor(frame / 12) % 2) === 1;
+    var maxX = LCD_W;
+    var pw = 16;
+    for (var i = 0; i < n; i++) {
+      var x, y;
+      if (i % 2 === 0) {
+        x = maxX - pw - pw * (i / 2);
+        y = LCD_H - pw - 4 + off;
+        if (flushAnim.on) {
+          blitItem('poopwave', x, y - pw, 2, flip);
+        }
+        blitItem('poop', x, y, 2, flip);
+      } else {
+        x = maxX - pw - pw * ((i - 1) / 2);
+        y = LCD_H - pw * 2 - 4 + off;
+        blitItem('poop', x, y, 2, flip);
       }
-      blit(MENU[i].icon, x, 3, 1, 'idle0');
-      x += 20;
-    }
-    ctx.fillStyle = '#d7f0c8';
-    ctx.font = '8px monospace';
-    ctx.textAlign = 'right';
-    ctx.fillText(clockStr(), W - 4, 14);
-    if (state && state.speed && state.speed !== 1) {
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#e8c45c';
-      ctx.fillText('×' + state.speed, 166, 14);
-    }
-    if (isCalling() && Math.floor(frame / 12) % 2 === 0) {
-      blit('icon_call', 148, 3, 1, 'idle0');
     }
   }
 
-  function drawHearts(x, y, val, max, icon) {
-    max = max || 4;
-    for (var i = 0; i < max; i++) {
-      blit(i < val ? 'icon_heart' : 'icon_heart_empty', x + i * 10, y, 1, 'idle0');
+  function walkUpdate() {
+    if (!state || state.dead || state.sleeping || poseFx.name || eatAnim.on || flushAnim.on) return;
+    if (view !== 'play') return;
+    if (frame % 3 !== 0) return;
+    var sw = 32 * MON;
+    var maxX = Math.max(2, poopRightBound() - sw - 2);
+    var minX = 2;
+    walk.x += walk.dir * 1;
+    if (walk.x <= minX) { walk.x = minX; walk.dir = 1; }
+    if (walk.x >= maxX) { walk.x = maxX; walk.dir = -1; }
+  }
+
+  function drawMonAt(x, y, fr, flip) {
+    if (!state || !state.mon) return;
+    blitMon(state.mon, x, y, MON, fr, flip);
+    if (state.injured && view !== 'dying' && view !== 'grave' && !state.dead) {
+      var bob = (Math.floor(frame / 10) % 2) ? 2 : 0;
+      blitItem('skull', x + 32 * MON - 6, y + 8 + bob, 2);
     }
   }
 
   function drawPlay() {
-    drawBg();
-    drawMenu();
+    lcdBg();
     if (!state) return;
-    var m = mon();
-    var scale = 3;
-    var sw = 32 * scale;
-    var sh = 32 * scale;
-    var mx = Math.floor((W - sw) / 2);
-    var my = 28;
+    if (state.dead && view !== 'dying') {
+      drawGrave();
+      return;
+    }
     var fr = monFrame();
-    var walking = !state.dead && !state.sleeping && !poseFx.name && (fr === 'idle0' || fr === 'idle1');
-    if (walking) {
-      var span = 48;
-      var period = span * 2;
-      var t = Math.floor(frame / 3) % period;
-      var dx = t <= span ? t : (period - t);
-      mx = Math.floor((W - sw) / 2) - Math.floor(span / 2) + dx;
-    }
-    if (state.sleeping) my += 8;
-
-    if (state.dead) {
-      ctx.globalAlpha = 0.55;
-      if (m) blit(state.mon, mx, my, scale, 'idle0');
-      ctx.globalAlpha = 1;
-      blitOverlay('overlay_zz', mx + sw - 8, my - 4, 1);
-    } else if (m) {
-      var flip = (poseFx.name === 'refuse' && Math.floor(frame / 6) % 2 === 1);
-      if (flip) blitFlip(state.mon, mx, my, scale, 'refuse');
-      else blit(state.mon, mx, my, scale, fr);
-    }
-
-    // food item shrinks toward the mouth (left side, left-facing)
-    if (poseFx.name === 'eat' && poseFx.extra) {
-      var dur = Math.max(200, poseFx.until - poseFx.started);
-      var k = Math.min(1, Math.max(0, (performance.now() - poseFx.started) / dur));
-      var foodId = poseFx.extra === 'protein' ? 'overlay_protein' : 'overlay_meat';
-      if (!window.SpriteAtlas.SPRITES[foodId]) foodId = poseFx.extra === 'protein' ? 'icon_protein' : 'icon_food';
-      var scF = Math.max(0.4, 1 - k * 0.7);
-      var fx = mx - 8 + k * 18;
-      var fy = my + 40 + k * 10;
-      blitOverlay(foodId, fx, fy, scF < 0.7 ? 1 : 1);
-    }
-
-    // poop piles (shared overlay)
-    var poopN = Math.min(4, state.poop || 0);
-    for (var p = 0; p < poopN; p++) {
-      blit('icon_poop', 208 + (p % 2) * 20, 100 + Math.floor(p / 2) * 18, 1, 'idle0');
-    }
-    // skull floats beside an injured Digimon
-    if (state.injured) {
-      var bob = Math.floor(frame / 10) % 2 === 0 ? 0 : 2;
-      blitOverlay('overlay_skull', mx + sw - 6, my + 8 + bob, 1);
-    }
-    // Z's above the head when sleeping or tired-sleep pose
+    var sw = 32 * MON;
+    var sh = 32 * MON;
+    var my = LCD_H - sh - 4;
+    var mx = walk.x;
+    var flip = false;
     if (state.sleeping) {
-      var zbob = Math.floor(frame / 12) % 2 === 0 ? 0 : 3;
-      blitOverlay('overlay_zz', mx + sw - 4, my - 2 + zbob, 1);
+      mx = Math.floor((LCD_W - sw) / 2);
+      flip = false;
+    } else if (eatAnim.on) {
+      mx = LCD_W - 16 - sw - 4;
+      flip = true;
+    } else if (poseFx.name === 'refuse') {
+      flip = (Math.floor(frame / 6) % 2) === 1;
+      mx = Math.floor((LCD_W - sw) / 2);
+    } else if (poseFx.name) {
+      mx = Math.floor((LCD_W - sw) / 2);
+      flip = false;
+    } else {
+      flip = walk.dir > 0;
     }
+    if (view === 'dying') {
+      mx = Math.floor((LCD_W - sw) / 2);
+      fr = 'lose';
+      flip = false;
+    }
+    drawMonAt(mx, my, fr, flip);
 
-    // name plate
-    ctx.fillStyle = 'rgba(8,20,16,0.72)';
-    ctx.fillRect(0, 142, W, 18);
-    ctx.fillStyle = '#e8e0d0';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'left';
-    var label = m ? (m.nameZh + '  ' + m.nameEn) : '';
-    var st = m && window.EvolutionData.STAGES[m.stage];
-    if (st) label += '  ·  ' + st.zh;
-    ctx.fillText(label, 6, 154);
-    if (state.dead) {
-      ctx.fillStyle = '#e05656';
-      ctx.textAlign = 'right';
-      ctx.fillText(state.deadReason || '死亡', W - 6, 154);
+    if (eatAnim.on && !eatAnim.refused) {
+      var phase = Math.floor(eatAnim.t / 18);
+      var kind = eatAnim.kind;
+      var food = 'meat';
+      if (kind === 'protein') {
+        food = phase >= 3 ? 'half_pill' : 'pill';
+      } else {
+        if (phase >= 4) food = 'empty_meat';
+        else if (phase >= 2) food = 'half_meat';
+        else food = 'meat';
+      }
+      var fy = (phase === 0) ? my + 8 : my + 24;
+      blitItem(food, LCD_W - 20, fy, 2, false);
     }
+    drawPoop();
+  }
+
+  function drawClock() {
+    lcdBg();
+    if (!state) return;
+    var sec = window.Engine.clockSeconds(state);
+    var h24 = Math.floor(sec / 3600);
+    var m = Math.floor((sec % 3600) / 60);
+    var s = Math.floor(sec % 60);
+    var isAM = h24 < 12;
+    var h = h24 % 12;
+    if (h === 0) h = 12;
+    var I = items();
+    var sc = 3;
+    var y = 22;
+    var x = 14;
+    blitItem(isAM ? 'am' : 'pm', x, y - 2, 2);
+    x = 40;
+    I.drawNumber(ctx, h, x, y, sc, 2);
+    x += 5 * sc * 2 + 4;
+    // colon
+    ctx.fillStyle = INK;
+    ctx.fillRect(x, y + 4, 3, 3);
+    ctx.fillRect(x, y + 14, 3, 3);
+    x += 8;
+    I.drawNumber(ctx, m, x, y, sc, 2);
+    I.drawSmallNumber(ctx, s, 118, y + 8, 2, 2);
+    // second triangles, official ClockScreen.cpp
+    var triY = 70;
+    for (var i = 0; i < 5; i++) blitItem('empty_triangle', 50 + i * 14, triY, 2);
+    var rem = s % 10;
+    if (rem <= 5) {
+      for (var j = 0; j < rem; j++) blitItem('triangle', 50 + j * 14, triY, 2);
+    } else {
+      var dark = 10 - rem;
+      for (var k = 0; k < dark; k++) blitItem('triangle', 50 + 4 * 14 - k * 14, triY, 2);
+    }
+  }
+
+  function drawStatus() {
+    lcdBg();
+    if (!state) return;
+    var I = items();
+    var s = window.Engine.status(state);
+    var pages = statusPages();
+    var page = pages[statusPage] || pages[0];
+    if (page === 'name') {
+      var nm = (s.nameEn || s.nameZh || '').toString();
+      I.drawText(ctx, nm, 12, 40, 2);
+    } else if (page === 'age') {
+      blitItem('age', 16, 16, 3);
+      I.drawNumber(ctx, s.age, 56, 20, 3, 2);
+      blitItem('weight', 16, 56, 3);
+      I.drawNumber(ctx, s.weight, 56, 60, 3, 2);
+    } else if (page === 'hunger') {
+      I.drawHearts(ctx, 28, 36, s.hunger, 4, 3);
+    } else if (page === 'strength') {
+      I.drawHearts(ctx, 28, 36, s.strength, 4, 3);
+    } else if (page === 'effort') {
+      var effort = Math.min(4, Math.floor((s.train || 0) / 4));
+      I.drawHearts(ctx, 28, 36, effort, 4, 3);
+    } else if (page === 'dp') {
+      I.drawText(ctx, 'DP', 16, 28, 3);
+      I.drawNumber(ctx, s.dp || 0, 64, 28, 3, 0);
+      if (s.dpMax) {
+        I.drawText(ctx, 'MAX', 16, 64, 2);
+        I.drawNumber(ctx, s.dpMax, 72, 62, 3, 0);
+      }
+    } else {
+      var pct = Math.round((s.winRate || 0) * 100);
+      var w = I.drawNumber(ctx, pct, 36, 36, 4, 0);
+      blitItem('percent', 36 + w + 6, 38, 3);
+    }
+  }
+
+  function drawFoodMenu() {
+    lcdBg();
+    var y0 = 22, y1 = 56;
+    blitItem(foodSel === 0 ? 'triangle' : 'empty_triangle', 18, y0 + 8, 2);
+    blitItem('meat', 48, y0, 3);
+    blitItem(foodSel === 1 ? 'triangle' : 'empty_triangle', 18, y1 + 8, 2);
+    blitItem('pill', 48, y1, 3);
+  }
+
+  function battleMenuItems() {
+    if (currentDevice().family === 'dm20') return ['SINGLE', 'TAG', 'LINK'];
+    return ['1P', 'LINK'];
+  }
+
+  function drawBattleMenu() {
+    lcdBg();
+    var I = items();
+    var list = battleMenuItems();
+    var n = list.length;
+    var gap = n >= 3 ? 26 : 36;
+    var y0 = n >= 3 ? 14 : 24;
+    for (var i = 0; i < n; i++) {
+      var y = y0 + i * gap;
+      menuItem(I, battleSel === i, y, list[i]);
+    }
+  }
+
+  function drawLightMenu() {
+    lcdBg();
+    var I = items();
+    menuItem(I, lightSel === 0, 24, 'WAKE');
+    menuItem(I, lightSel === 1, 60, 'SLEEP');
+  }
+
+  function drawAlbumMenu() {
+    lcdBg();
+    var I = items();
+    if (view === 'albumView') {
+      if (!state) return;
+      var poses = ['idle0', 'eat0', 'sleep0', 'happy'];
+      var fr = poses[albumPose % poses.length];
+      blitMon(state.mon, (LCD_W - 64) / 2, LCD_H - 64 - 4, MON, fr, false);
+      return;
+    }
+    menuItem(I, albumSel === 0, 10, 'DIGIMON');
+    menuItem(I, albumSel === 1, 32, 'RECORD');
+    menuItem(I, albumSel === 2, 54, 'TAMER');
+    menuItem(I, albumSel === 3, 76, 'COPYMON');
+  }
+
+  function drawConnectMenu() {
+    lcdBg();
+    var I = items();
+    menuItem(I, connectSel === 0, 16, 'BATTLE');
+    menuItem(I, connectSel === 1, 42, 'OTHER');
+    menuItem(I, connectSel === 2, 68, 'COPYMON');
+  }
+
+  function drawAlbumRecord() {
+    lcdBg();
+    if (!state) return;
+    var I = items();
+    var s = window.Engine.status(state);
+    var pct = Math.round((s.winRate || 0) * 100);
+    var w = I.drawNumber(ctx, pct, 36, 36, 4, 0);
+    blitItem('percent', 36 + w + 6, 38, 3);
+  }
+
+  function drawMeter(by, slow) {
+    var bx = 16, bw = LCD_W - 32, bh = 10;
+    ctx.fillStyle = 'rgba(30, 36, 28, 0.55)';
+    ctx.fillRect(bx, by, bw, bh);
+    var zone = Math.floor(bw * 0.18);
+    var zx = bx + Math.floor((bw - zone) / 2);
+    ctx.fillStyle = '#5a8a38';
+    ctx.fillRect(zx, by, zone, bh);
+    ctx.fillStyle = '#c8b040';
+    ctx.fillRect(zx + 4, by, zone - 8, bh);
+    var px = bx + Math.floor(train.pos * (bw - 3));
+    ctx.fillStyle = INK;
+    ctx.fillRect(px, by - 1, 3, bh + 2);
   }
 
   function drawTrain() {
-    drawBg();
-    drawMenu();
-    ctx.fillStyle = 'rgba(8,20,16,0.55)';
-    ctx.fillRect(16, 30, W - 32, 100);
-    ctx.strokeStyle = '#e8c45c';
-    ctx.strokeRect(16, 30, W - 32, 100);
-    ctx.fillStyle = '#e8c45c';
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('訓練！在黃區按下確定', W / 2, 48);
-    // bar
-    var bx = 32, by = 70, bw = W - 64, bh = 16;
-    ctx.fillStyle = '#0a1814';
-    ctx.fillRect(bx, by, bw, bh);
-    ctx.fillStyle = '#5dcc7a';
-    var zone = 28;
-    var zx = bx + Math.floor(bw / 2) - zone / 2;
-    ctx.fillRect(zx, by, zone, bh);
-    ctx.fillStyle = '#e8c45c';
-    ctx.fillRect(zx + 8, by, zone - 16, bh);
-    var px = bx + Math.floor(train.pos * (bw - 4));
-    ctx.fillStyle = '#f0f4f0';
-    ctx.fillRect(px, by - 2, 4, bh + 4);
-    ctx.fillStyle = '#d7f0c8';
-    ctx.font = '10px sans-serif';
-    if (train.done) ctx.fillText(train.success ? '成功！' : '失敗…', W / 2, 108);
-    else ctx.fillText('按 C / 確定', W / 2, 108);
-    if (state && state.mon) {
-      var fr = train.done ? (train.success ? 'happy' : 'angry') : (Math.floor(frame / 8) % 2 ? 'train1' : 'train0');
-      if (!window.SpriteAtlas.SPRITES[state.mon] ||
-          (fr.indexOf('train') === 0 && !window.SpriteAtlas.SPRITES[state.mon].frames[fr])) {
-        fr = train.done ? (train.success ? 'happy' : 'angry') : 'attack';
-      }
-      blit(state.mon, (W - 96) / 2, 36, 3, fr);
-      blitOverlay('overlay_wall', (W - 96) / 2 + 96 - 4, 52, 1);
+    lcdBg();
+    if (!state) return;
+    var I = items();
+    var mode = train.mode || 'meter';
+    var fr = train.done ? (train.success ? 'happy' : 'angry') : ((Math.floor(frame / 8) % 2) ? 'train1' : 'train0');
+    if (mode === 'highlow') {
+      // 1997 Ver.1: A high, B low, 5 rounds, 3/5 to succeed
+      I.drawText(ctx, 'HI', 110, 10, 2);
+      I.drawText(ctx, 'LO', 110, 36, 2);
+      var ty = train.target === 1 ? 8 : 34;
+      blitItem('arrow', 88, ty, 2);
+      I.drawNumber(ctx, (train.round || 0) + 1, 12, 10, 2, 0);
+      I.drawText(ctx, 'HIT', 12, 32, 2);
+      I.drawNumber(ctx, train.hits || 0, 56, 30, 2, 0);
+    } else if (mode === 'mash') {
+      var bx = 16, by = 8, bw = LCD_W - 32, bh = 12;
+      ctx.fillStyle = 'rgba(30, 36, 28, 0.55)';
+      ctx.fillRect(bx, by, bw, bh);
+      ctx.fillStyle = '#5a8a38';
+      ctx.fillRect(bx, by, Math.floor(bw * Math.min(1, train.pos)), bh);
+      I.drawText(ctx, 'MASH', 16, 26, 2);
+    } else if (mode === 'number') {
+      var n = train.num || 0;
+      I.drawNumber(ctx, n, 48, 10, 4, 0);
+      I.drawText(ctx, 'STOP', 16, 36, 2);
+    } else {
+      drawMeter(8, mode === 'meter_slow');
     }
+    blitMon(state.mon, 16, LCD_H - 64 - 4, MON, fr, true);
+    blitItem('wall', LCD_W - 40, LCD_H - 40, 2);
   }
 
   function drawEvo() {
-    drawBg();
+    lcdBg();
     var t = evoFx.t;
-    ctx.fillStyle = '#fff8d0';
-    ctx.globalAlpha = 0.3 + 0.3 * Math.sin(t / 4);
-    ctx.fillRect(0, 0, W, H);
-    ctx.globalAlpha = 1;
+    if (t % 8 < 4) {
+      ctx.fillStyle = 'rgba(255, 248, 210, 0.45)';
+      ctx.fillRect(0, 0, LCD_W, LCD_H);
+    }
     var id = t < 40 ? evoFx.from : evoFx.to;
     var efr = 'idle0';
     if (id && id.indexOf && id.indexOf('egg_') === 0 && t < 40) efr = (t > 16) ? 'hatch' : idleFrame();
     else efr = idleFrame();
-    if (id) blit(id, (W - 96) / 2, 32, 3, efr);
-    ctx.fillStyle = '#1a2418';
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('進化！', W / 2, 148);
+    if (id) blitMon(id, (LCD_W - 64) / 2, LCD_H - 64 - 4, MON, efr, false);
   }
 
   function drawBattleFx() {
-    drawBg();
+    lcdBg();
     var self = state && state.mon;
     var t = battleFx.t;
-    var selfFr = 'idle0';
-    var foeFr = 'idle0';
-    if (t < 40) {
-      selfFr = idleFrame();
-      foeFr = idleFrame();
-    } else if (t < 70) {
+    var selfFr = 'idle0', foeFr = 'idle0';
+    if (t < 40) { selfFr = idleFrame(); foeFr = idleFrame(); }
+    else if (t < 80) {
       if (battleFx.result === 'win') { selfFr = 'attack'; foeFr = 'hurt'; }
       else { selfFr = 'hurt'; foeFr = 'attack'; }
     } else {
       if (battleFx.result === 'win') { selfFr = 'happy'; foeFr = 'angry'; }
       else { selfFr = 'angry'; foeFr = 'happy'; }
     }
-    blit(self, 20, 40, 3, selfFr);
-    blit(battleFx.foe, W - 20 - 96, 40, 3, foeFr);
-    if (t >= 40 && t < 70) {
+    blitMon(self, 0, LCD_H - 64 - 4, MON, selfFr, true);
+    blitMon(battleFx.foe, LCD_W - 64, LCD_H - 64 - 4, MON, foeFr, false);
+    if (t >= 40 && t < 80) {
       var goingRight = battleFx.result === 'win';
-      var u = (t - 40) / 30;
-      var sx = goingRight ? 20 + 96 : W - 20 - 96;
-      var ex = goingRight ? W - 20 - 96 : 20 + 96;
+      var u = (t - 40) / 40;
+      var sx = goingRight ? 64 : LCD_W - 64;
+      var ex = goingRight ? LCD_W - 64 : 64;
       var px = sx + (ex - sx) * u;
-      blitOverlay('overlay_shot', px, 70, 1);
-      if (u > 0.75) blitOverlay('overlay_hit', ex - 8, 64, 1);
+      blitItem('shot', px - 8, 40, 2, !goingRight);
+      if (u > 0.7) blitItem('hit', ex - 16, 28, 2);
     }
-    ctx.fillStyle = '#e8c45c';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    if (t < 50) ctx.fillText('VS', W / 2, 80);
-    else {
-      var txt = battleFx.result === 'win' ? '勝利！' : '敗北…';
-      ctx.fillStyle = battleFx.result === 'win' ? '#5dcc7a' : '#e05656';
-      ctx.fillText(txt, W / 2, 80);
-    }
+  }
+
+  function drawGrave() {
+    lcdBg();
+    blitItem('grave', (LCD_W - 32) / 2, (LCD_H - 32) / 2 - 4, 2);
   }
 
   function draw() {
+    if (!ctx) return;
     ctx.imageSmoothingEnabled = false;
-    if (view === 'train') drawTrain();
+    if (view === 'clock') drawClock();
+    else if (view === 'status') drawStatus();
+    else if (view === 'food') drawFoodMenu();
+    else if (view === 'battleMenu') drawBattleMenu();
+    else if (view === 'lightMenu') drawLightMenu();
+    else if (view === 'album' || view === 'albumView') drawAlbumMenu();
+    else if (view === 'albumRecord') drawAlbumRecord();
+    else if (view === 'connect') drawConnectMenu();
+    else if (view === 'train') drawTrain();
     else if (view === 'evo') drawEvo();
     else if (view === 'battle') drawBattleFx();
+    else if (view === 'grave') drawGrave();
     else drawPlay();
+    updateIcons();
+  }
+
+  function updateIcons() {
+    var current = (view === 'play' || view === 'clock' || view === 'dying' || view === 'grave' ||
+                   view === 'eat' || view === 'flush') ? (sel >= 0 ? selectable()[sel] : null) : (
+      view === 'status' ? 'STATUS' :
+      view === 'food' ? 'FEED' :
+      view === 'train' ? 'TRAIN' :
+      (view === 'lightMenu') ? 'LIGHT' :
+      (view === 'album' || view === 'albumView' || view === 'albumRecord') ? 'ALBUM' :
+      (view === 'connect') ? 'CONNECT' :
+      (view === 'battle' || view === 'battleMenu') ? 'BATTLE' : (sel >= 0 ? selectable()[sel] : null)
+    );
+    document.querySelectorAll('.face-icon').forEach(function (el) {
+      var id = el.getAttribute('data-icon');
+      var lit = (id === current && id !== 'CALL');
+      if (current === 'ALBUM' && id === 'STATUS') lit = false;
+      if (current === 'CONNECT' && id === 'BATTLE') lit = true;
+      el.classList.toggle('on', lit);
+      if (id === 'CALL') el.classList.toggle('call-blink', isCalling());
+      else el.classList.remove('call-blink');
+    });
   }
 
   function persist() {
-    if (!state) return;
+    if (!state || shotMode) return;
     try {
       window.SaveIO.saveLocal(state);
       if (window.Steps) window.Steps.syncLedger(state);
@@ -421,15 +748,14 @@
   }
 
   function loadGame(s) {
-    state = s;
+    state = (window.Engine && window.Engine.migrateState) ? window.Engine.migrateState(s) : s;
     settlePendingSteps(state);
     state.lastReal = Date.now();
-    if (state.dead) view = 'play';
-    else view = 'play';
+    view = state.dead ? 'grave' : 'play';
+    sel = -1;
     persist();
     fillStepsPanels();
-    // Defer so a caller that hideAllOverlays() right after loadGame does not dismiss the prompt.
-    setTimeout(maybePromptSteps, 0);
+    applyShell();
   }
 
   function newEgg(version, special, randomize) {
@@ -437,12 +763,11 @@
     state = window.Engine.hatchIfEggSelect(state, version, !!randomize, special || null);
     state.speed = prevSpeed;
     view = 'play';
+    sel = -1;
     hideAllOverlays();
     persist();
     fillStepsPanels();
-    var m = mon();
-    toast((m ? m.nameZh : '數碼蛋') + ' 開始育成');
-    setTimeout(maybePromptSteps, 0);
+    applyShell();
   }
 
   function confirmOverwrite(msg, fn) {
@@ -452,110 +777,241 @@
     fn();
   }
 
-  function cycleMenu(dir) {
-    if (view !== 'play') return;
-    menuIdx = (menuIdx + dir + MENU.length) % MENU.length;
+  function goHome() {
+    if (view === 'evo' || view === 'battle' || view === 'dying') return;
+    if (view === 'grave') return;
+    view = 'play';
+    sel = -1;
+    eatAnim.on = false;
+  }
+
+  function isMenuView() {
+    return view === 'clock' || view === 'status' || view === 'food' ||
+      view === 'battleMenu' || view === 'lightMenu' || view === 'album' ||
+      view === 'albumView' || view === 'albumRecord' || view === 'connect';
+  }
+
+  function cycleSel() {
+    if (view === 'train') return;
+    if (view === 'evo' || view === 'battle' || view === 'dying' || view === 'grave') return;
+    if (view === 'food') { foodSel = (foodSel + 1) % 2; return; }
+    if (view === 'battleMenu') { battleSel = (battleSel + 1) % battleMenuItems().length; return; }
+    if (view === 'lightMenu') { lightSel = (lightSel + 1) % 2; return; }
+    if (view === 'album') { albumSel = (albumSel + 1) % 4; return; }
+    if (view === 'albumView') { albumPose = (albumPose + 1) % 4; return; }
+    if (view === 'albumRecord') { view = 'album'; return; }
+    if (view === 'connect') { connectSel = (connectSel + 1) % 3; return; }
+    // Official: A always advances the icon, leaving a submenu
+    if (isMenuView()) view = 'play';
+    var list = selectable();
+    sel = (sel + 1);
+    if (sel >= list.length) sel = -1;
+  }
+
+  function disturb(reason) {
+    if (!state) return;
+    window.Engine.disturbSleep(state, reason);
+    persist();
   }
 
   function openStatus() {
     if (!state) return;
-    var s = window.Engine.status(state);
-    var wr = function (r) { return (Math.round(r * 1000) / 10).toFixed(1) + '%'; };
-    $('status-body').innerHTML =
-      '<div class="status-grid">' +
-      '<div>名稱 <b>' + s.nameZh + '</b></div><div>' + s.nameEn + '</div>' +
-      '<div>時期 <b>' + s.stageZh + '</b></div><div>' + s.stageEn + '</div>' +
-      '<div>版本 <b>Ver.' + s.version + '</b></div><div>年齡 <b>' + s.age + '</b> 日</div>' +
-      '<div>體重 <b>' + s.weight + '</b> g</div><div>階段時間 <b>' + s.timeInStageMin + '</b> 分</div>' +
-      '<div>飢餓 <b>' + s.hunger + '</b> / 4</div><div>體力 <b>' + s.strength + '</b> / 4</div>' +
-      '<div>DP <b>' + s.dp + '</b> / ' + s.dpMax + '</div><div>育成失誤 <b>' + s.calls + '</b></div>' +
-      '<div>訓練 <b>' + s.train + '</b></div><div>過食 <b>' + s.overfeed + '</b></div>' +
-      '<div>睡眠打擾 <b>' + s.sleepDist + '</b></div><div>標籤勝 <b>' + s.tagWins + '</b></div>' +
-      '</div>' +
-      '<h3>本階段對戰（進化用）</h3>' +
-      '<p>對戰 <b>' + s.battles + '</b>　勝 <b>' + s.wins + '</b>　敗 <b>' + s.losses +
-      '</b>　勝率 <b>' + wr(s.winRate) + '</b></p>' +
-      '<p style="font-size:12px;color:#8a9aaa">完全體條件：本階段對戰 15 場以上且勝率 80% 以上。進化時此紀錄會重置。</p>' +
-      '<h3>生涯對戰（顯示用）</h3>' +
-      '<p>對戰 <b>' + s.lifeBattles + '</b>　勝 <b>' + s.lifeWins + '</b>　敗 <b>' + s.lifeLosses +
-      '</b>　勝率 <b>' + wr(s.lifeWinRate) + '</b></p>';
-    fillStepsPanels();
-    showOverlay('overlay-status', true);
+    statusPage = 0;
+    view = 'status';
   }
 
   function openFood() {
-    showOverlay('overlay-food', true);
+    if (!state || state.dead) return;
+    var m = mon();
+    if (!m || m.stage === 'egg') { playPose('refuse', 900); return; }
+    disturb('food');
+    foodSel = 0;
+    view = 'food';
+  }
+
+  function doFeed() {
+    if (!state) return;
+    var kind = foodSel === 1 ? 'protein' : 'meat';
+    var r = kind === 'protein' ? window.Engine.feedProtein(state) : window.Engine.feedMeat(state);
+    persist();
+    view = 'play';
+    if (!r.ok || r.refused) {
+      eatAnim.on = false;
+      playPose('refuse', 1100);
+      return;
+    }
+    eatAnim = { on: true, t: 0, kind: kind, refused: false };
   }
 
   function startTrain() {
     var m = mon();
+    disturb('train');
     if (!m || m.stage === 'egg' || m.stage === 'baby1' || m.stage === 'baby2') {
-      toast('還太小，無法訓練');
+      playPose('refuse', 1100);
+      view = 'play';
       return;
     }
     if (state.dead) return;
-    hideAllOverlays();
-    train = { t: 0, pos: 0, dir: 1, done: false, success: false };
+    if (window.Engine.noteTrainingOpened) window.Engine.noteTrainingOpened(state);
+    var d = currentDevice();
+    var mode = 'meter';
+    if (d.family === 'dm20') mode = 'mash';
+    else if (d.version === 1) mode = 'highlow';
+    else if (d.version === 3) mode = 'mash';
+    else if (d.version === 4) mode = 'number';
+    else if (d.version === 5) mode = 'meter_slow';
+    train = {
+      t: 0, pos: 0, dir: 1, done: false, success: false,
+      mode: mode, mash: 0, round: 0, hits: 0,
+      target: Math.random() < 0.5 ? 1 : 0,
+      num: 0
+    };
     view = 'train';
   }
 
-  function resolveTrain() {
+  function finishTrainRound(success) {
     if (train.done) return;
-    var mid = 0.5;
-    train.success = Math.abs(train.pos - mid) < 0.12;
+    train.success = !!success;
     train.done = true;
     window.Engine.finishTraining(state, train.success, true);
     persist();
-    toast(train.success ? '訓練成功' : '訓練失敗');
     setTimeout(function () {
       if (view === 'train') view = 'play';
       playPose(train.success ? 'happy' : 'angry', 1400);
     }, 700);
   }
 
-  function doFlush() {
-    window.Engine.flush(state);
-    persist();
-    toast('清掃完成');
-  }
-  function doLights() {
-    var r = window.Engine.toggleLights(state);
-    persist();
-    toast(r.lights ? '開燈' : '關燈');
-  }
-  function doHeal() {
-    var r = window.Engine.heal(state);
-    persist();
-    toast(r.ok ? '治療完成' : (r.reason === 'healthy' ? '沒有受傷' : '無法治療'));
+  function resolveTrain() {
+    if (train.done) return;
+    var mode = train.mode || 'meter';
+    if (mode === 'mash') {
+      finishTrainRound(train.mash >= (currentDevice().family === 'dm20' ? 13 : 10));
+      return;
+    }
+    if (mode === 'number') {
+      finishTrainRound((train.num || 0) >= 96 && (train.num || 0) <= 100);
+      return;
+    }
+    if (mode === 'highlow') return;
+    var mid = 0.5;
+    finishTrainRound(Math.abs(train.pos - mid) < 0.12);
   }
 
-  function openBattle() {
-    if (!state || state.dead) return;
-    var m = mon();
-    if (!m || !m.canBattle) { toast('現在還不能對戰'); return; }
-    if (state.dp <= 0) { toast('DP 不足，請先睡覺補充'); return; }
-    var partners = window.Engine.jogressPartners(state);
-    var box = $('jogress-box');
-    if (partners.length) {
-      box.classList.remove('hidden');
-      box.innerHTML = partners.map(function (p) {
-        var pm = window.EvolutionData.MONSTERS[p.partner] || {};
-        return '<p>合體對象：' + (pm.nameZh || p.partner) + ' → ' + p.nameZh +
-          '（標籤勝 ' + p.have + ' / ' + p.tagWins + '）</p>' +
-          '<button class="btn" data-jogress="' + p.partner + '">標籤對戰（對 CPU）</button> ' +
-          '<button class="btn primary" data-jogress-evolve="' + p.partner + '">合體進化</button>';
-      }).join('');
-    } else {
-      box.classList.add('hidden');
-      box.innerHTML = '';
+  function trainInput(btn) {
+    if (train.done) return;
+    var mode = train.mode || 'meter';
+    if (mode === 'highlow') {
+      var choice = (btn === 'A') ? 1 : 0;
+      if (choice === train.target) train.hits++;
+      train.round++;
+      if (train.round >= 5) {
+        finishTrainRound(train.hits >= 3);
+      } else {
+        train.target = Math.random() < 0.5 ? 1 : 0;
+      }
+      return;
     }
-    showOverlay('overlay-battle', true);
+    if (mode === 'mash') {
+      train.mash = (train.mash || 0) + 1;
+      train.pos = Math.min(1, train.mash / 16);
+      return;
+    }
+    resolveTrain();
+  }
+
+  function doFlush() {
+    if (!state || state.dead) return;
+    var n = state.poop || 0;
+    if (n <= 0) return;
+    flushAnim = { on: true, t: 0, n: n, off: 0 };
+    window.Engine.flush(state);
+    persist();
+  }
+
+  function doLights() {
+    if (!state) return;
+    if (currentDevice().family === 'dm20') {
+      lightSel = 0;
+      view = 'lightMenu';
+      return;
+    }
+    window.Engine.toggleLights(state);
+    persist();
+  }
+
+  function confirmLight() {
+    if (!state) return;
+    if (lightSel === 0) {
+      // DM20 Wake: official wake is not a care mistake and is not a sleep
+      // disturbance. Use the existing awakeUntil window; do not call disturbSleep.
+      if (state.sleeping) {
+        state.sleeping = false;
+        state.awakeUntil = (state.gameTime || 0) + 600;
+        persist();
+      }
+    } else {
+      // Sleep: official 3-hour nap is engine-owned and not started here.
+      // If the pet is already in a sleep-call / lights-on situation, turn lights off.
+      if (state.lights) {
+        window.Engine.toggleLights(state);
+        persist();
+      }
+    }
+    view = 'play';
+  }
+
+  function confirmAlbum() {
+    if (albumSel === 0) { albumPose = 0; view = 'albumView'; return; }
+    if (albumSel === 1) { view = 'albumRecord'; return; }
+    // TAMER / COPYMON: no engine data — stay on the menu (LCD already lists them)
+  }
+
+  function confirmConnect() {
+    if (connectSel === 0 || connectSel === 1) {
+      fillJogress();
+      showOverlay('overlay-battle', true);
+      return;
+    }
+    // Copymon: no engine support
+  }
+
+  function doHeal() {
+    if (!state) return;
+    var r = window.Engine.heal(state);
+    persist();
+    if (r && r.ok && !r.remaining) playPose('happy', 1200);
+    else if (r && r.ok && r.remaining) playPose('refuse', 900);
+  }
+
+  function openBattleMenu() {
+    if (!state || state.dead) return;
+    disturb('battle');
+    var m = mon();
+    if (!m || !m.canBattle) { playPose('refuse', 1100); return; }
+    battleSel = 0;
+    view = 'battleMenu';
+  }
+
+  function fillJogress() {
+    var box = $('jogress-box');
+    if (!box || !state || !window.Engine.jogressPartners) { if (box) box.classList.add('hidden'); return; }
+    var partners = window.Engine.jogressPartners(state) || [];
+    if (!partners.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+    box.classList.remove('hidden');
+    box.innerHTML = partners.map(function (p) {
+      var pm = window.EvolutionData.MONSTERS[p.partner] || {};
+      return '<p>' + (pm.nameZh || '') + '</p>' +
+        '<button class="btn" data-jogress="' + p.partner + '">標籤對戰（對 CPU）</button> ' +
+        '<button class="btn primary" data-jogress-evolve="' + p.partner + '">合體</button>';
+    }).join('');
   }
 
   function cpuBattle(isTag) {
-    if (!window.Engine.canBattle(state)) { toast('現在不能對戰'); return; }
+    if (!window.Engine.canBattle(state)) { playPose('refuse', 1100); view = 'play'; return; }
     var foe = window.Battle.pickCpuFoe(state.mon);
-    var result = window.Battle.resolveBattle(state.mon, foe, Date.now() >>> 0, window.Battle.snapshot(state), { mon: foe, strength: 2, weight: 20 });
+    var selfSnap = window.Battle.snapshot(state);
+    selfSnap.initiator = window.Engine.nextCpuInitiator ? window.Engine.nextCpuInitiator(state) : true;
+    var result = window.Battle.resolveBattle(state.mon, foe, Date.now() >>> 0, selfSnap, { mon: foe, strength: 2, weight: 20, enhancement: 0 });
     hideAllOverlays();
     battleFx = { t: 0, foe: foe, result: result, active: true };
     view = 'battle';
@@ -566,159 +1022,173 @@
 
   function finishBattleFx() {
     view = 'play';
-    var foe = window.EvolutionData.MONSTERS[battleFx.foe];
-    toast((battleFx.result === 'win' ? '戰勝了 ' : '敗給了 ') + ((foe && foe.nameZh) || ''));
     battleFx.active = false;
+    playPose(battleFx.result === 'win' ? 'happy' : 'angry', 1400);
   }
 
-  function showOffer() {
-    try {
-      var code = window.Battle.makeOffer(state);
-      $('pvp-out').value = code;
-      drawQr('pvp-qr', code);
-      toast('已產生邀請碼，請對方掃描或貼上');
-    } catch (e) { toast(e.message); }
-  }
-
-  function acceptOffer() {
-    var code = $('pvp-in').value;
-    try {
-      var r = window.Battle.acceptOffer(code, state);
-      window.Engine.recordBattle(state, r.result);
-      persist();
-      $('pvp-out').value = r.code;
-      drawQr('pvp-qr', r.code);
-      toast(r.result === 'win' ? '你贏了！把結果碼傳回對方' : '你輸了。把結果碼傳回對方');
-    } catch (e) { toast(e.message); }
-  }
-
-  function applyPvpResult() {
-    var code = $('pvp-in').value;
-    try {
-      var r = window.Battle.applyResult(code, state);
-      window.Engine.recordBattle(state, r.result);
-      persist();
-      toast(r.result === 'win' ? '對方確認：你贏了' : '對方確認：你輸了');
-    } catch (e) { toast(e.message); }
-  }
-
-  function drawQr(elId, text) {
-    var box = $(elId);
-    if (!box) return;
-    box.innerHTML = '';
-    if (!window.QRCode || !text) return;
-    QRCode.toCanvas(text, { width: 192, margin: 1, errorCorrectionLevel: 'M' }, function (err, c) {
-      if (err) { box.textContent = '無法產生 QR'; return; }
-      c.style.width = '192px'; c.style.height = '192px';
-      box.appendChild(c);
-    });
-  }
-
-  function openExport() {
-    if (!state) return;
-    var code = window.SaveIO.encode(state);
-    $('export-code').value = code;
-    drawQr('qrbox', code);
-    showOverlay('overlay-export', true);
-  }
-
-  function openImport() {
-    $('import-code').value = '';
-    stopScan();
-    showOverlay('overlay-import', true);
-  }
-
-  function doImportText(code) {
-    try {
-      var obj = window.SaveIO.decode(code);
-      if (state && window.SaveIO.hasLocal()) {
-        if (!window.confirm('匯入會覆蓋目前的育成進度，確定嗎？')) return;
-      }
-      loadGame(obj.state);
-      hideAllOverlays();
-      toast('存檔已匯入');
-    } catch (e) { toast(e.message || '匯入失敗'); }
-  }
-
-  function startScan() {
-    var video = $('scan');
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      toast('此瀏覽器無法使用相機，請改為貼上存檔碼');
+  function confirmSel() {
+    if (view === 'train') { trainInput('B'); return; }
+    if (view === 'clock') { view = 'play'; return; }
+    if (view === 'status') { statusPage = (statusPage + 1) % statusPages().length; return; }
+    if (view === 'food') { doFeed(); return; }
+    if (view === 'lightMenu') { confirmLight(); return; }
+    if (view === 'album') { confirmAlbum(); return; }
+    if (view === 'albumView' || view === 'albumRecord') { view = 'album'; return; }
+    if (view === 'connect') { confirmConnect(); return; }
+    if (view === 'battleMenu') {
+      var itemsB = battleMenuItems();
+      var pick = itemsB[battleSel];
+      if (pick === '1P' || pick === 'SINGLE') cpuBattle(false);
+      else if (pick === 'TAG') { /* two-pet Tag needs engine; stay on the menu */ }
+      else { fillJogress(); showOverlay('overlay-battle', true); }
       return;
     }
-    video.classList.remove('hidden');
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }).then(function (stream) {
-      scanStream = stream;
-      video.srcObject = stream;
-      video.setAttribute('playsinline', 'true');
-      video.play();
-      var tmp = document.createElement('canvas');
-      var tctx = tmp.getContext('2d');
-      function tickScan() {
-        if (!scanStream) return;
-        if (video.readyState >= 2) {
-          tmp.width = video.videoWidth;
-          tmp.height = video.videoHeight;
-          tctx.drawImage(video, 0, 0);
-          try {
-            var img = tctx.getImageData(0, 0, tmp.width, tmp.height);
-            var r = window.jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
-            if (r && r.data) {
-              stopScan();
-              $('import-code').value = r.data;
-              if (/^DM20B\./.test(r.data.trim())) {
-                $('pvp-in').value = r.data;
-                hideAllOverlays();
-                openBattle();
-                toast('已讀取對戰碼，請按對應按鈕');
-              } else {
-                doImportText(r.data);
-              }
-              return;
-            }
-          } catch (e) {}
-        }
-        scanTimer = requestAnimationFrame(tickScan);
-      }
-      tickScan();
-    }).catch(function () {
-      toast('無法開啟相機（需 HTTPS，或改為貼上存檔碼）');
-    });
+    if (view === 'evo' || view === 'battle' || view === 'dying') return;
+    if (view === 'grave') return;
+    if (!state || view !== 'play') return;
+    if (sel < 0) { view = 'clock'; return; }
+    var id = selectable()[sel];
+    if (id === 'STATUS') openStatus();
+    else if (id === 'FEED') openFood();
+    else if (id === 'TRAIN') startTrain();
+    else if (id === 'BATTLE') openBattleMenu();
+    else if (id === 'FLUSH') doFlush();
+    else if (id === 'LIGHT') doLights();
+    else if (id === 'MEDIC') doHeal();
+    else if (id === 'ALBUM') { albumSel = 0; view = 'album'; }
+    else if (id === 'CONNECT') { connectSel = 0; view = 'connect'; }
   }
 
-  function stopScan() {
-    if (scanTimer) { cancelAnimationFrame(scanTimer); scanTimer = null; }
-    if (scanStream) {
-      scanStream.getTracks().forEach(function (t) { t.stop(); });
-      scanStream = null;
+  function maybeNewEggCombo() {
+    if (view !== 'grave' && !(state && state.dead)) return false;
+    if ((keyA && keyC) || (keyA && keyB)) {
+      hideAllOverlays();
+      fillEggGrid();
+      showOverlay('overlay-egg', true);
+      return true;
     }
-    var v = $('scan');
-    if (v) { v.srcObject = null; v.classList.add('hidden'); }
+    return false;
   }
+
+  function pressA() {
+    lastKeyAt = Date.now();
+    beep();
+    if (anyOverlay()) return;
+    if (maybeNewEggCombo()) return;
+    if (view === 'train') { trainInput('A'); return; }
+    cycleSel();
+  }
+  function pressB() {
+    lastKeyAt = Date.now();
+    beep();
+    if (anyOverlay()) return;
+    if (maybeNewEggCombo()) return;
+    confirmSel();
+  }
+  function pressC() {
+    lastKeyAt = Date.now();
+    beep();
+    if (anyOverlay()) { hideAllOverlays(); return; }
+    if (maybeNewEggCombo()) return;
+    if (view === 'train') {
+      if (window.Engine && window.Engine.cancelTraining) window.Engine.cancelTraining(state);
+      persist();
+      view = 'play';
+      return;
+    }
+    if (isMenuView()) {
+      goHome();
+      return;
+    }
+    if (view === 'play') sel = -1;
+  }
+
+  function loop() {
+    if (shotMode) {
+      draw();
+      requestAnimationFrame(loop);
+      return;
+    }
+    frame++;
+    walkUpdate();
+    if (eatAnim.on) {
+      eatAnim.t++;
+      var maxT = eatAnim.kind === 'protein' ? 18 * 4 : 18 * 5;
+      if (eatAnim.t > maxT) {
+        eatAnim.on = false;
+        playPose('happy', 1200);
+      }
+    }
+    if (flushAnim.on) {
+      flushAnim.off += 1;
+      if (flushAnim.off > 28) flushAnim.on = false;
+    }
+    if (state && (view === 'play' || view === 'train' || view === 'clock' || view === 'status' || view === 'food' || view === 'battleMenu' || view === 'lightMenu' || view === 'album' || view === 'albumView' || view === 'albumRecord' || view === 'connect')) {
+      var prevMon = state.mon;
+      var r = window.Engine.tick(state, Date.now());
+      if (r.evolved) {
+        evoFx = { t: 0, from: prevMon, to: state.mon };
+        view = 'evo';
+        sel = -1;
+      }
+      if (r.died) {
+        dyingT = 0;
+        view = 'dying';
+      }
+      if (Date.now() - lastSave > 2500) persist();
+    }
+    if (view === 'train' && !train.done) {
+      train.t = (train.t || 0) + 1;
+      var mode = train.mode || 'meter';
+      var step = (mode === 'meter_slow') ? 0.009 : 0.018;
+      if (mode === 'meter' || mode === 'meter_slow') {
+        train.pos += train.dir * step;
+        if (train.pos >= 1) { train.pos = 1; train.dir = -1; }
+        if (train.pos <= 0) { train.pos = 0; train.dir = 1; }
+      } else if (mode === 'number') {
+        train.num = ((train.num || 0) + 4) % 104;
+      } else if (mode === 'mash') {
+        if (train.t > 200) resolveTrain();
+      }
+    }
+    if (view === 'evo') {
+      evoFx.t++;
+      if (evoFx.t > 90) view = 'play';
+    }
+    if (view === 'battle') {
+      battleFx.t++;
+      if (battleFx.t > 110) finishBattleFx();
+    }
+    if (view === 'dying') {
+      dyingT++;
+      if (dyingT > 50) view = 'grave';
+    }
+    // Official idle timeout: 60s returns menus 2–8 to home (disassembly 0x0866)
+    if (!anyOverlay() && sel >= 0 && view === 'play' && Date.now() - lastKeyAt > 60000) sel = -1;
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  /* ---- save / steps / pvp (extra functions) ---- */
 
   function stepsStatusHtml() {
     if (!window.Steps) return '';
-    if (!state) {
-      return '<p class="steps-muted">開始育成後會顯示這隻數碼寶貝的步數。</p>';
-    }
+    if (!state) return '<p class="steps-muted">開始育成後會顯示這隻數碼寶貝的步數。</p>';
     window.Steps.ensure(state);
     var sum = window.Steps.todaySummary(state);
     var sync = window.Steps.formatSyncTime(sum.lastHealthSyncAt);
     var dateBit = sum.lastHealthSyncDate ? '，日期 ' + sum.lastHealthSyncDate : '';
     return (
-      '<div class="status-grid">' +
-      '<div>今天入帳 <b>' + sum.credited + '</b></div><div>累計步數 <b>' + sum.lifetime + '</b></div>' +
-      '<div>健康 <b>' + sum.health + '</b></div><div>走路計步 <b>' + sum.motion + '</b>（暫計）</div>' +
-      '</div>' +
+      '<p>今天入帳 <b>' + sum.credited + '</b>　累計 <b>' + sum.lifetime + '</b></p>' +
+      '<p>健康 <b>' + sum.health + '</b>　走路計步 <b>' + sum.motion + '</b>（暫計）</p>' +
       '<p class="steps-muted">上次同步：' + sync + dateBit + '</p>' +
-      '<p class="steps-muted">走路計步是暫計：與「健康」同步後，當天入帳取兩者較高值，只補差額，不會重複計算。每 500 步 +1 訓練（每天最多 8）並 +1 體力（每天最多 2，上限 4）；每 1000 步體重 −1 g（每天最多 3 g，不會低於基礎體重）。幼年期與蛋只累計步數、不套用訓練效果。累計步數會一直跟著這隻數碼寶貝（進化不重置），可作為未來進化條件，目前官方路線還沒有步數門檻。</p>'
+      '<p class="steps-muted">走路計步是暫計：與「健康」同步後，當天入帳取兩者較高值，只補差額，不會重複計算。每 500 步 +1 訓練（每天最多 8）並 +1 體力（每天最多 2，上限 4）；每 1000 步體重 −1 g（每天最多 3 g，不會低於基礎體重）。幼年期與蛋只累計步數。</p>'
     );
   }
 
   function fillStepsPanels() {
     var html = stepsStatusHtml();
-    var a = $('steps-status');
-    if (a) a.innerHTML = html;
     var b = $('steps-settings');
     if (b) b.innerHTML = html;
     document.querySelectorAll('.js-motion-steps').forEach(function (btn) {
@@ -726,20 +1196,10 @@
     });
   }
 
-  function maybePromptSteps() {
-    if (stepsPromptShown || healthAppliedThisSession || !state || !window.Steps) return;
-    var sum = window.Steps.todaySummary(state);
-    var today = window.Steps.localDate(new Date());
-    if (sum.lastHealthSyncDate === today) return;
-    stepsPromptShown = true;
-    showOverlay('overlay-steps-prompt', true);
-  }
-
   function ingestUrl() {
     if (!window.Steps) return;
     var parsed = window.Steps.parseParams(location.search, location.hash);
     if (!parsed.present) return;
-    // Strip first so a re-entrant pageshow / visibilitychange cannot double-apply (and double-toast).
     window.Steps.stripWindowHistory();
     if (!parsed.ok) {
       toast('步數連結無效（' + (parsed.reason === 'too-large' ? '超過每天 100000 步上限' : parsed.reason === 'negative' ? '步數是負的' : parsed.reason === 'bad-date' ? '日期格式不對' : '步數不是有效數字') + '）');
@@ -784,15 +1244,10 @@
     var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     if (!isIOS) {
       toast('請在 iPhone 的「捷徑」App 執行「數碼寶貝步數」');
-      openStepsHelp();
+      showOverlay('overlay-steps-help', true);
       return;
     }
     window.location.href = url;
-  }
-
-  function openStepsHelp() {
-    hideAllOverlays();
-    showOverlay('overlay-steps-help', true);
   }
 
   function onDeviceMotion(e) {
@@ -818,7 +1273,7 @@
       window.addEventListener('devicemotion', onDeviceMotion, true);
       motionOn = true;
       fillStepsPanels();
-      toast('走路計步已開啟。畫面開著、螢幕亮著時會計算搖晃與走路；與健康同步後取較高值，不會重複計算。', 2800);
+      toast('走路計步已開啟。畫面開著、螢幕亮著時會計算搖晃與走路。', 2800);
     }
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
       DeviceMotionEvent.requestPermission().then(function (perm) {
@@ -832,159 +1287,372 @@
     }
   }
 
-  function openSettings() {
-    var sel = $('speed');
-    if (sel && state) sel.value = String(state.speed || 60);
-    fillStepsPanels();
-    showOverlay('overlay-settings', true);
+  function drawQr(elId, text) {
+    var box = $(elId);
+    if (!box) return;
+    box.innerHTML = '';
+    if (!window.QRCode || !text) return;
+    QRCode.toCanvas(text, { width: 192, margin: 1, errorCorrectionLevel: 'M' }, function (err, c) {
+      if (err) { box.textContent = '無法產生 QR'; return; }
+      c.style.width = '192px'; c.style.height = '192px';
+      box.appendChild(c);
+    });
   }
 
-  function openInstall() { showOverlay('overlay-install', true); }
-
-  function confirmMenu() {
-    if (view === 'train') { resolveTrain(); return; }
-    if (view === 'evo' || view === 'battle') return;
-    if (!state || view !== 'play') return;
-    var id = MENU[menuIdx].id;
-    if (id === 'status') openStatus();
-    else if (id === 'food') openFood();
-    else if (id === 'train') startTrain();
-    else if (id === 'battle') openBattle();
-    else if (id === 'flush') doFlush();
-    else if (id === 'lights') doLights();
-    else if (id === 'medicine') doHeal();
-    else if (id === 'settings') openSettings();
+  function openExport() {
+    if (!state) { toast('目前沒有存檔'); return; }
+    var code = window.SaveIO.encode(state);
+    $('export-code').value = code;
+    drawQr('qrbox', code);
+    showOverlay('overlay-export', true);
   }
 
-  function loop(ts) {
-    frame++;
-    if (state && (view === 'play' || view === 'train')) {
-      var r = window.Engine.tick(state, Date.now());
-      if (r.evolved) {
-        var ev = (state.events || []).slice(-1)[0];
-        evoFx = { t: 0, from: '', to: state.mon };
-        view = 'evo';
-        toast((ev && ev.text) || '進化！', 2000);
+  function doImportText(code) {
+    try {
+      var obj = window.SaveIO.decode(code);
+      if (state && window.SaveIO.hasLocal()) {
+        if (!window.confirm('匯入會覆蓋目前的育成進度，確定嗎？')) return;
       }
-      if (r.died) toast('數碼寶貝死亡：' + (state.deadReason || ''), 3000);
-      if (Date.now() - lastSave > 2500) persist();
+      loadGame(obj.state);
+      hideAllOverlays();
+      toast('存檔已匯入');
+    } catch (e) { toast(e.message || '匯入失敗'); }
+  }
+
+  function startScan() {
+    var video = $('scan');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      toast('此瀏覽器無法使用相機，請改為貼上存檔碼');
+      return;
     }
-    if (view === 'train' && !train.done) {
-      train.pos += train.dir * 0.018;
-      if (train.pos >= 1) { train.pos = 1; train.dir = -1; }
-      if (train.pos <= 0) { train.pos = 0; train.dir = 1; }
+    video.classList.remove('hidden');
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }).then(function (stream) {
+      scanStream = stream;
+      video.srcObject = stream;
+      video.setAttribute('playsinline', 'true');
+      video.play();
+      var tmp = document.createElement('canvas');
+      var tctx = tmp.getContext('2d');
+      function tickScan() {
+        if (!scanStream) return;
+        if (video.readyState >= 2) {
+          tmp.width = video.videoWidth;
+          tmp.height = video.videoHeight;
+          tctx.drawImage(video, 0, 0);
+          try {
+            var img = tctx.getImageData(0, 0, tmp.width, tmp.height);
+            var r = window.jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+            if (r && r.data) {
+              stopScan();
+              $('import-code').value = r.data;
+              if (/^DM20B\./.test(r.data.trim())) {
+                $('pvp-in').value = r.data;
+                hideAllOverlays();
+                showOverlay('overlay-battle', true);
+                toast('已讀取對戰碼，請按對應按鈕');
+              } else {
+                doImportText(r.data);
+              }
+              return;
+            }
+          } catch (e) {}
+        }
+        scanTimer = requestAnimationFrame(tickScan);
+      }
+      tickScan();
+    }).catch(function () {
+      toast('無法開啟相機（需 HTTPS，或改為貼上存檔碼）');
+    });
+  }
+
+  function stopScan() {
+    if (scanTimer) { cancelAnimationFrame(scanTimer); scanTimer = null; }
+    if (scanStream) {
+      scanStream.getTracks().forEach(function (t) { t.stop(); });
+      scanStream = null;
     }
-    if (view === 'evo') {
-      evoFx.t++;
-      if (evoFx.t > 90) view = 'play';
+    var v = $('scan');
+    if (v) { v.srcObject = null; v.classList.add('hidden'); }
+  }
+
+  function showOffer() {
+    try {
+      var code = window.Battle.makeOffer(state);
+      $('pvp-out').value = code;
+      drawQr('pvp-qr', code);
+      toast('已產生邀請碼，請對方掃描或貼上');
+    } catch (e) { toast(e.message); }
+  }
+  function acceptOffer() {
+    var code = $('pvp-in').value;
+    try {
+      var r = window.Battle.acceptOffer(code, state);
+      window.Engine.recordBattle(state, r.result);
+      persist();
+      $('pvp-out').value = r.code;
+      drawQr('pvp-qr', r.code);
+      toast(r.result === 'win' ? '你贏了！把結果碼傳回對方' : '你輸了。把結果碼傳回對方');
+    } catch (e) { toast(e.message); }
+  }
+  function applyPvpResult() {
+    var code = $('pvp-in').value;
+    try {
+      var r = window.Battle.applyResult(code, state);
+      window.Engine.recordBattle(state, r.result);
+      persist();
+      toast(r.result === 'win' ? '對方確認：你贏了' : '對方確認：你輸了');
+    } catch (e) { toast(e.message); }
+  }
+
+  function fillEggGrid() {
+    var row = $('egg-row');
+    if (!row || !items()) return;
+    row.innerHTML = '';
+    items().EGG_PICKER.forEach(function (egg) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'egg-card';
+      btn.setAttribute('data-egg', egg.dataEgg);
+      var c = document.createElement('canvas');
+      c.width = 32; c.height = 32;
+      var n = document.createElement('div');
+      n.className = 'n';
+      n.textContent = egg.label;
+      btn.appendChild(c);
+      btn.appendChild(n);
+      row.appendChild(btn);
+      var sp = window.SpriteAtlas && window.SpriteAtlas.SPRITES[egg.id];
+      if (sp) {
+        var src = window.SpriteAtlas.renderToImageData(sp, 'idle0', 1);
+        var cx = c.getContext('2d');
+        cx.imageSmoothingEnabled = false;
+        cx.drawImage(src, 0, 0, 32, 32);
+      }
+    });
+    row.querySelectorAll('[data-egg]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var v = btn.getAttribute('data-egg');
+        confirmOverwrite('將覆蓋目前的育成進度，確定嗎？', function () {
+          if (/^[1-5]$/.test(v)) newEgg(parseInt(v, 10), null, false);
+          else newEgg(1, v, false);
+        });
+      });
+    });
+  }
+
+  function updateSoundBtn() {
+    var b = $('btn-sound');
+    if (b) b.textContent = soundOn ? '音效：開' : '音效：關';
+  }
+
+  function agumonState(extra) {
+    var s = window.Engine.defaultState(1);
+    s.mon = 'agumon';
+    s.hunger = 3;
+    s.strength = 2;
+    s.train = 8;
+    s.battles = 10;
+    s.wins = 7;
+    s.losses = 3;
+    s.weight = 20;
+    s.gameTime = 3 * 86400 + 12 * 3600;
+    s.stageEnteredGame = 2 * 86400;
+    s.poop = 0;
+    s.lights = true;
+    s.sleeping = false;
+    s.injured = false;
+    s.dead = false;
+    s.dp = 3;
+    s.dpMax = 4;
+    s.speed = 1;
+    // 10:34:05 — (clockOffset + gameTime) % 86400. Mid-morning, 5 filled second-triangles.
+    s.clockOffset = 10 * 3600 + 34 * 60 + 5 - 12 * 3600 + 86400;
+    if (extra) for (var k in extra) s[k] = extra[k];
+    return s;
+  }
+
+  function applyShot(name) {
+    shotMode = true;
+    hideAllOverlays();
+    var rh = document.querySelector('.rotate-hint');
+    if (rh) rh.style.display = 'none';
+    state = agumonState();
+    view = 'play';
+    sel = -1;
+    try {
+      var ep = new URLSearchParams(location.search).get('egg');
+      if (ep && DM20_EGGS[ep]) { state.eggKind = ep; state.version = 'special'; }
+      else if (ep && /^[1-5]$/.test(ep)) { state.eggKind = 'ver' + ep; state.version = parseInt(ep, 10); }
+    } catch (eEgg) {}
+    applyShell();
+    walk.x = 36; walk.dir = -1;
+    if (name === 'idle' || name === 'idle1280') {
+      view = 'play';
+    } else if (name === 'menuicon') {
+      sel = 0;
+    } else if (name === 'status' || name === 'status-age') {
+      view = 'status'; statusPage = 0;
+    } else if (name === 'status-hunger') {
+      view = 'status'; statusPage = 1;
+    } else if (name === 'status-strength') {
+      view = 'status'; statusPage = 2;
+    } else if (name === 'status-effort') {
+      view = 'status';
+      var ep = statusPages().indexOf('effort');
+      statusPage = ep >= 0 ? ep : 3;
+    } else if (name === 'status-dp') {
+      view = 'status';
+      var dp = statusPages().indexOf('dp');
+      statusPage = dp >= 0 ? dp : 3;
+    } else if (name === 'status-win') {
+      view = 'status';
+      var wp = statusPages().indexOf('win');
+      statusPage = wp >= 0 ? wp : statusPages().length - 1;
+    } else if (name === 'light') {
+      doLights();
+    } else if (name === 'album') {
+      albumSel = 0; view = 'album';
+    } else if (name === 'eat') {
+      view = 'play';
+      eatAnim = { on: true, t: 40, kind: 'meat', refused: false };
+    } else if (name === 'protein') {
+      view = 'play';
+      eatAnim = { on: true, t: 56, kind: 'protein', refused: false };
+    } else if (name === 'poop') {
+      state.poop = 2;
+    } else if (name === 'flush') {
+      state.poop = 0;
+      flushAnim = { on: true, t: 8, n: 2, off: 14 };
+    } else if (name === 'sleep' || name === 'night') {
+      state.sleeping = true;
+      state.lights = false;
+    } else if (name === 'sick') {
+      state.injured = true;
+    } else if (name === 'train') {
+      startTrain();
+      train.t = 2;
+      train.done = false;
+      view = 'train';
+    } else if (name === 'battle' || name === 'battle-hit') {
+      battleFx = { t: 72, foe: 'gabumon', result: 'win', active: true };
+      view = 'battle';
+    } else if (name === 'grave') {
+      state.dead = true;
+      view = 'grave';
+    } else if (name === 'menu') {
+      showOverlay('overlay-extra', true);
+    } else if (name === 'clock') {
+      view = 'clock';
+    } else if (name === 'food') {
+      view = 'food'; foodSel = 0;
     }
-    if (view === 'battle') {
-      battleFx.t++;
-      if (battleFx.t > 110) finishBattleFx();
-    }
-    draw();
-    requestAnimationFrame(loop);
   }
 
   function bind() {
     canvas = $('screen');
-    canvas.width = W; canvas.height = H;
+    canvas.width = LCD_W;
+    canvas.height = LCD_H;
     ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
+    sizeLcd();
+    window.addEventListener('resize', sizeLcd);
+    window.addEventListener('orientationchange', function () { setTimeout(sizeLcd, 350); });
 
-    function pressA() {
-      if (document.querySelector('.overlay.show')) { hideAllOverlays(); stopScan(); return; }
-      if (view === 'train') { view = 'play'; return; }
-      cycleMenu(-1);
-    }
-    function pressB() { cycleMenu(1); }
-    function pressC() { confirmMenu(); }
+    try { soundOn = localStorage.getItem('digivice-sound') === '1'; } catch (e) {}
+    updateSoundBtn();
+
+    function downA() { keyA = true; maybeNewEggCombo(); }
+    function upA() { keyA = false; }
+    function downB() { keyB = true; maybeNewEggCombo(); }
+    function upB() { keyB = false; }
+    function downC() { keyC = true; maybeNewEggCombo(); }
+    function upC() { keyC = false; }
 
     $('btn-a').addEventListener('click', pressA);
     $('btn-b').addEventListener('click', pressB);
     $('btn-c').addEventListener('click', pressC);
-    canvas.addEventListener('click', function (ev) {
-      if (view !== 'play' || !state) return;
-      var rect = canvas.getBoundingClientRect();
-      var x = (ev.clientX - rect.left) * (W / rect.width);
-      var y = (ev.clientY - rect.top) * (H / rect.height);
-      if (y < 24) {
-        var i = Math.floor((x - 4) / 20);
-        if (i >= 0 && i < MENU.length) { menuIdx = i; confirmMenu(); }
-      }
+    $('btn-a').addEventListener('pointerdown', downA);
+    $('btn-a').addEventListener('pointerup', upA);
+    $('btn-b').addEventListener('pointerdown', downB);
+    $('btn-b').addEventListener('pointerup', upB);
+    $('btn-c').addEventListener('pointerdown', downC);
+    $('btn-c').addEventListener('pointerup', upC);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.repeat) return;
+      var k = e.key;
+      if (k === 'a' || k === 'A' || k === 'ArrowLeft') { keyA = true; pressA(); e.preventDefault(); }
+      else if (k === 'b' || k === 'B' || k === 'Enter' || k === 'ArrowRight') { keyB = true; pressB(); e.preventDefault(); }
+      else if (k === 'c' || k === 'C' || k === 'Escape') { keyC = true; pressC(); e.preventDefault(); }
     });
-    window.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { pressA(); e.preventDefault(); }
-      else if (e.key === 'ArrowRight' || e.key === 'b' || e.key === 'B') { pressB(); e.preventDefault(); }
-      else if (e.key === 'Enter' || e.key === ' ' || e.key === 'c' || e.key === 'C') {
-        if (document.querySelector('.overlay.show')) return;
-        pressC(); e.preventDefault();
-      } else if (e.key === 'Escape') { hideAllOverlays(); stopScan(); if (view === 'train') view = 'play'; }
+    document.addEventListener('keyup', function (e) {
+      var k = e.key;
+      if (k === 'a' || k === 'A' || k === 'ArrowLeft') keyA = false;
+      else if (k === 'b' || k === 'B' || k === 'Enter' || k === 'ArrowRight') keyB = false;
+      else if (k === 'c' || k === 'C' || k === 'Escape') keyC = false;
     });
 
-    document.querySelectorAll('[data-close]').forEach(function (btn) {
-      btn.addEventListener('click', function () { hideAllOverlays(); stopScan(); });
-    });
-
-    $('boot-continue').addEventListener('click', function () {
-      var s = window.SaveIO.loadLocal();
-      if (!s) { toast('沒有找到存檔'); return; }
-      loadGame(s);
-      hideAllOverlays();
-    });
-    $('boot-new').addEventListener('click', function () {
-      if (window.SaveIO.hasLocal() && !window.confirm('開始新育成會覆蓋現有存檔，確定嗎？')) return;
-      hideAllOverlays();
-      showOverlay('overlay-egg', true);
-    });
-    $('boot-import').addEventListener('click', function () { hideAllOverlays(); openImport(); });
-    $('boot-install').addEventListener('click', function () { openInstall(); });
-
-    document.querySelectorAll('[data-egg]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var v = btn.getAttribute('data-egg');
-        if (v === 'random') newEgg(1, null, true);
-        else if (v === 'random_all') newEgg(1, null, true);
-        else if (/^[1-5]$/.test(v)) newEgg(parseInt(v, 10), null, false);
-        else newEgg(1, v, false);
+    document.querySelectorAll('.face-icon').forEach(function (el) {
+      el.addEventListener('click', function () {
+        lastKeyAt = Date.now();
+        beep();
+        var id = el.getAttribute('data-icon');
+        if (id === 'CALL') return;
+        if (anyOverlay()) return;
+        if (view === 'grave' || view === 'dying' || view === 'evo' || view === 'battle') return;
+        var idx = selectable().indexOf(id);
+        if (idx < 0) return;
+        if (sel === idx && view === 'play') confirmSel();
+        else {
+          // jump to that icon (selected); second tap / B confirms
+          view = 'play';
+          sel = idx;
+        }
       });
     });
 
-    $('feed-meat').addEventListener('click', function () {
-      var r = window.Engine.feedMeat(state);
+    $('extra-btn').addEventListener('click', function () {
+      if ($('overlay-extra').classList.contains('show')) hideAllOverlays();
+      else { hideAllOverlays(); fillStepsPanels(); showOverlay('overlay-extra', true); }
+    });
+    document.querySelectorAll('[data-close]').forEach(function (b) {
+      b.addEventListener('click', function () { hideAllOverlays(); });
+    });
+    $('btn-settings').addEventListener('click', function () {
+      hideAllOverlays();
+      if (state) $('speed').value = String(state.speed || 60);
+      updateSoundBtn();
+      showOverlay('overlay-settings', true);
+    });
+    $('btn-help').addEventListener('click', function () {
+      hideAllOverlays();
+      showOverlay('overlay-help', true);
+    });
+    $('btn-export').addEventListener('click', function () { hideAllOverlays(); openExport(); });
+    $('btn-import').addEventListener('click', function () { hideAllOverlays(); showOverlay('overlay-import', true); });
+    $('btn-newgame').addEventListener('click', function () {
+      hideAllOverlays();
+      fillEggGrid();
+      showOverlay('overlay-egg', true);
+    });
+    $('btn-install').addEventListener('click', function () { hideAllOverlays(); showOverlay('overlay-install', true); });
+    $('btn-pvp').addEventListener('click', function () {
+      hideAllOverlays();
+      fillJogress();
+      showOverlay('overlay-battle', true);
+    });
+    $('btn-sound').addEventListener('click', function () {
+      soundOn = !soundOn;
+      try { localStorage.setItem('digivice-sound', soundOn ? '1' : '0'); } catch (e) {}
+      updateSoundBtn();
+      if (soundOn) beep();
+    });
+    $('speed').addEventListener('change', function () {
+      if (!state) return;
+      state.speed = parseInt($('speed').value, 10) || 60;
       persist();
-      if (r.overfeed) { toast('吃太飽，過食 +1'); hideAllOverlays(); playPose('refuse', 1400); }
-      else if (r.ok) { toast('吃了肉'); hideAllOverlays(); playPose('eat', 1400, 'meat'); }
-      else toast(r.reason === 'full' ? '已經吃飽了' : '現在不能吃');
+      toast('時間速度 ×' + state.speed);
     });
-    $('feed-protein').addEventListener('click', function () {
-      var r = window.Engine.feedProtein(state);
-      persist();
-      if (r.ok) { toast('吃了蛋白質'); hideAllOverlays(); playPose('eat', 1400, 'protein'); }
-      else toast('現在不能吃');
-    });
-
-    $('cpu-battle').addEventListener('click', function () { cpuBattle(false); });
-    $('pvp-offer').addEventListener('click', showOffer);
-    $('pvp-accept').addEventListener('click', acceptOffer);
-    $('pvp-result').addEventListener('click', applyPvpResult);
-
-    $('jogress-box').addEventListener('click', function (e) {
-      var ev = e.target.getAttribute && e.target.getAttribute('data-jogress');
-      var ev2 = e.target.getAttribute && e.target.getAttribute('data-jogress-evolve');
-      if (ev) cpuBattle(true);
-      if (ev2) {
-        var r = window.Engine.tryJogress(state, ev2);
-        persist();
-        if (r.ok) { hideAllOverlays(); toast('合體進化成 ' + r.nameZh); evoFx = { t: 0, from: '', to: state.mon }; view = 'evo'; }
-        else if (r.reason === 'need-tags') toast('還需要標籤勝 ' + r.have + ' / ' + r.need);
-        else toast('現在無法合體');
-      }
-    });
-
-    $('btn-export').addEventListener('click', openExport);
-    $('btn-import').addEventListener('click', function () { hideAllOverlays(); openImport(); });
-    $('btn-install').addEventListener('click', openInstall);
     $('copy-export').addEventListener('click', function () {
       var t = $('export-code').value;
       if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { toast('已複製存檔碼'); });
@@ -993,22 +1661,9 @@
     $('do-import').addEventListener('click', function () { doImportText($('import-code').value); });
     $('start-scan').addEventListener('click', startScan);
     $('stop-scan').addEventListener('click', stopScan);
-
-    $('speed').addEventListener('change', function () {
-      if (!state) return;
-      state.speed = parseInt($('speed').value, 10) || 60;
-      persist();
-      toast('時間速度 ×' + state.speed);
-    });
-    $('btn-newgame').addEventListener('click', function () {
-      if (!window.confirm('確定放棄目前進度、重新選蛋？')) return;
-      hideAllOverlays();
-      showOverlay('overlay-egg', true);
-    });
-
-    if (window.SaveIO.hasLocal()) $('boot-continue').disabled = false;
-    else $('boot-continue').disabled = true;
-    showOverlay('overlay-boot', true);
+    $('pvp-offer').addEventListener('click', showOffer);
+    $('pvp-accept').addEventListener('click', acceptOffer);
+    $('pvp-result').addEventListener('click', applyPvpResult);
 
     document.querySelectorAll('.js-sync-steps').forEach(function (btn) {
       btn.addEventListener('click', function () { runShortcut(); });
@@ -1017,8 +1672,44 @@
       btn.addEventListener('click', function () { requestMotion(); });
     });
     document.querySelectorAll('.js-steps-help').forEach(function (btn) {
-      btn.addEventListener('click', function () { openStepsHelp(); });
+      btn.addEventListener('click', function () {
+        hideAllOverlays();
+        showOverlay('overlay-steps-help', true);
+      });
     });
+
+    var jog = $('jogress-box');
+    if (jog) {
+      jog.addEventListener('click', function (e) {
+        var ev = e.target.getAttribute && e.target.getAttribute('data-jogress-evolve');
+        var tg = e.target.getAttribute && e.target.getAttribute('data-jogress');
+        if (ev && window.Engine.tryJogress) {
+          var fromId = state.mon;
+          var r = window.Engine.tryJogress(state, ev);
+          persist();
+          hideAllOverlays();
+          if (r && r.ok) {
+            evoFx = { t: 0, from: fromId, to: state.mon };
+            view = 'evo';
+          }
+        } else if (tg) {
+          hideAllOverlays();
+          cpuBattle(true);
+        }
+      });
+    }
+
+    applyShellLayout();
+    applyShell();
+    window.addEventListener('resize', function () { sizeLcd(); updateRotateHint(); });
+    window.addEventListener('orientationchange', function () {
+      setTimeout(function () { sizeLcd(); updateRotateHint(); tryLockOrient(currentDevice().orient); }, 300);
+    });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { sizeLcd(); });
+    }
+    var shellArt = $('shell-art');
+    if (shellArt) shellArt.addEventListener('load', function () { sizeLcd(); });
 
     ingestUrl();
     window.addEventListener('pageshow', function () { ingestUrl(); });
@@ -1027,12 +1718,30 @@
       if (document.visibilityState === 'visible') ingestUrl();
     });
 
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && !shotMode) {
       navigator.serviceWorker.register('./sw.js').catch(function () {});
+    }
+
+    var params = new URLSearchParams(location.search);
+    var shot = params.get('shot') || params.get('debug');
+    if (shot && shot !== '1') {
+      applyShot(shot);
+    } else if (window.SaveIO.hasLocal()) {
+      try { loadGame(window.SaveIO.loadLocal()); } catch (e) { fillEggGrid(); showOverlay('overlay-egg', true); }
+    } else {
+      fillEggGrid();
+      var cancel = $('egg-cancel');
+      if (cancel) cancel.style.display = 'none';
+      showOverlay('overlay-egg', true);
     }
 
     requestAnimationFrame(loop);
   }
 
   document.addEventListener('DOMContentLoaded', bind);
+
+  window.DigiviceUI = {
+    applyShot: applyShot,
+    SELECTABLE: SELECTABLE
+  };
 })();

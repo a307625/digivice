@@ -1,26 +1,49 @@
 /**
  * CPU battles (opponents from all versions) + code-exchange PvP.
  * Both increment the same battle counters used for evolution.
+ *
+ * 1997 firmware: initiator wins iff M(A3) ≥ threshold, chance (16−t)/16,
+ * from the measured 12×12 slot table (Humulos / firmware 0x0D7A) plus boost
+ * difference. Boost is supplied by the engine:
+ *   ⌊max(min(overdoses,4) + strengthHearts − min(CM,4), 0) / 2⌋
+ * There is no 1997 attribute triangle and no hit-count formula.
+ *
+ * SAME STAGE: official table + boost, clamped to 1–16 sixteenths.
+ *
+ * CROSS-STAGE (documented choice): KEEP the stage-gap UPSET rule
+ * (lower stage wins at most 8% / 2% / 0.5% for a 1 / 2 / 3+ stage gap).
+ * When both pets have slots, the official table+boost chance is computed
+ * first, then CLAMPED so the lower stage's win probability is at most
+ * UPSET[gap]. (Not replaced wholesale with the gap odds — the table still
+ * applies, then the cap.) Pairings with no slot use gap odds only
+ * (cross-stage) or a labelled 0.5 placeholder (same-stage).
+ *
+ * CPU fights alternate initiator (player first). PvP: the offerer initiates.
  */
 (function (root) {
   'use strict';
   var data = root.EvolutionData;
 
-  var RANK_VAL = { B: 0, A: 1, S: 2, M: 3, X: 4 };
   var STAGE_VAL = { rookie: 1, champion: 2, ultimate: 3, mega: 4, super: 5 };
 
-  function tribeBeats(a, b) {
-    if (!a || !b || a === b) return 0;
-    if (a === 'A' && b === 'B') return 1;
-    if (b === 'A' && a === 'B') return -1;
-    if (a === 'B' && b === 'C') return 1;
-    if (b === 'B' && a === 'C') return -1;
-    if (a === 'C' && b === 'A') return 1;
-    if (b === 'C' && a === 'A') return -1;
-    return 0;
-  }
+  // Official initiator wins / 16. Rows = initiator A–L, columns = opponent.
+  // Source: rules-audit appendix B = Humulos battle chart = firmware 0x0D7A.
+  var TABLE = {
+    A: { A: 8, B: 8, C: 2, D: 3, E: 2, F: 3, G: 2, H: 3, I: 2, J: 1, K: 1, L: 1 },
+    B: { A: 8, B: 8, C: 2, D: 3, E: 2, F: 3, G: 2, H: 3, I: 2, J: 1, K: 1, L: 1 },
+    C: { A: 14, B: 13, C: 9, D: 9, E: 9, F: 9, G: 9, H: 9, I: 9, J: 2, K: 3, L: 2 },
+    D: { A: 14, B: 13, C: 9, D: 9, E: 9, F: 9, G: 9, H: 9, I: 9, J: 2, K: 3, L: 2 },
+    E: { A: 14, B: 13, C: 9, D: 9, E: 9, F: 9, G: 9, H: 9, I: 9, J: 2, K: 3, L: 2 },
+    F: { A: 14, B: 13, C: 9, D: 9, E: 9, F: 9, G: 9, H: 9, I: 9, J: 2, K: 3, L: 2 },
+    G: { A: 14, B: 13, C: 9, D: 9, E: 9, F: 9, G: 9, H: 9, I: 9, J: 2, K: 3, L: 2 },
+    H: { A: 14, B: 13, C: 9, D: 9, E: 9, F: 9, G: 9, H: 9, I: 9, J: 2, K: 3, L: 2 },
+    I: { A: 9, B: 9, C: 3, D: 5, E: 3, F: 5, G: 3, H: 5, I: 3, J: 1, K: 1, L: 1 },
+    J: { A: 15, B: 15, C: 14, D: 11, E: 14, F: 11, G: 14, H: 11, I: 14, J: 5, K: 5, L: 5 },
+    K: { A: 15, B: 15, C: 14, D: 11, E: 14, F: 11, G: 14, H: 11, I: 14, J: 5, K: 5, L: 5 },
+    L: { A: 15, B: 15, C: 14, D: 11, E: 14, F: 11, G: 14, H: 11, I: 14, J: 5, K: 5, L: 5 }
+  };
 
-  // Win chance of the LOWER stage by stage gap (1, 2, 3+).
+  // Win chance of the LOWER stage by stage gap (1, 2, 3+). Kept by user decision.
   var UPSET = [0.5, 0.08, 0.02, 0.005];
 
   function stageGap(self, foe) {
@@ -28,13 +51,69 @@
     return (STAGE_VAL[self.stage] || 1) - (STAGE_VAL[foe.stage] || 1);
   }
 
-  function strengthOf(id, extra) {
-    var m = data.MONSTERS[id];
-    if (!m) return 1;
-    var s = (STAGE_VAL[m.stage] || 1) * 10 + (RANK_VAL[m.rank] || 1) * 3;
-    if (extra && extra.strength) s += extra.strength;
-    if (extra && extra.effort) s += Math.min(4, extra.effort);
-    return s;
+  function slotOf(m) {
+    return m && m.slot ? m.slot : null;
+  }
+
+  function tableCell(initSlot, foeSlot) {
+    if (!initSlot || !foeSlot || !TABLE[initSlot]) return null;
+    var v = TABLE[initSlot][foeSlot];
+    return v == null ? null : v;
+  }
+
+  /**
+   * Official initiator wins out of 16, after boost, clamped 1–16.
+   * Returns null if the pairing has no table cell.
+   */
+  function initiatorWinsOutOf16(initSlot, foeSlot, boostDiff) {
+    var cell = tableCell(initSlot, foeSlot);
+    if (cell == null) return null;
+    var w = cell + (boostDiff || 0);
+    if (w < 1) w = 1;
+    if (w > 16) w = 16;
+    return w;
+  }
+
+  function boostOf(extra) {
+    if (!extra) return 0;
+    if (extra.enhancement != null) return extra.enhancement;
+    return 0;
+  }
+
+  /**
+   * Player (self) win probability.
+   * selfExtra.initiator === false means the opponent initiates (default: self initiates).
+   */
+  function selfWinChance(self, foe, selfExtra, foeExtra) {
+    var gap = stageGap(self, foe);
+    var underMax = UPSET[Math.min(Math.abs(gap), 3)];
+    var selfInit = !(selfExtra && selfExtra.initiator === false);
+    var sb = boostOf(selfExtra);
+    var fb = boostOf(foeExtra);
+    var ss = slotOf(self);
+    var fs = slotOf(foe);
+    var official = null;
+    if (ss && fs) {
+      if (selfInit) {
+        var w = initiatorWinsOutOf16(ss, fs, sb - fb);
+        if (w != null) official = w / 16;
+      } else {
+        var w2 = initiatorWinsOutOf16(fs, ss, fb - sb);
+        if (w2 != null) official = 1 - w2 / 16;
+      }
+    }
+    if (gap === 0) {
+      if (official != null) return official;
+      // Same-stage, no slot: labelled placeholder, not a firmware value.
+      return 0.5;
+    }
+    // Cross-stage: clamp official to UPSET (documented choice above).
+    if (official != null) {
+      if (gap < 0) return Math.min(official, underMax);
+      return Math.max(official, 1 - underMax);
+    }
+    // No table: gap odds only.
+    return gap > 0 ? 1 - underMax : underMax;
   }
 
   /**
@@ -44,21 +123,7 @@
     var self = data.MONSTERS[selfId];
     var foe = data.MONSTERS[foeId];
     var rng = mulberry(seed);
-    var sa = strengthOf(selfId, selfExtra);
-    var sb = strengthOf(foeId, foeExtra);
-    var gap = stageGap(self, foe);
-    var chance;
-    if (gap === 0) {
-      chance = 0.5 + (sa - sb) * 0.04;
-      if (self && foe && self.rank === foe.rank) {
-        chance += tribeBeats(self.tribe, foe.tribe) * 0.15;
-      }
-      chance = Math.max(0.12, Math.min(0.88, chance));
-    } else {
-      // Different stages: the lower stage almost never wins.
-      var under = UPSET[Math.min(Math.abs(gap), 3)];
-      chance = gap > 0 ? 1 - under : under;
-    }
+    var chance = selfWinChance(self, foe, selfExtra, foeExtra);
     return rng() < chance ? 'win' : 'loss';
   }
 
@@ -87,32 +152,43 @@
   }
 
   function snapshot(state) {
+    var m = data.MONSTERS[state.mon] || {};
+    var enhancement = 0;
+    if (root.Engine && root.Engine.enhancement) {
+      enhancement = root.Engine.enhancement(state);
+    } else if (state.enhancement != null) {
+      enhancement = state.enhancement;
+    }
     return {
       mon: state.mon,
       strength: state.strength,
       weight: state.weight,
-      stage: (data.MONSTERS[state.mon] || {}).stage
+      stage: m.stage,
+      slot: m.slot || null,
+      enhancement: enhancement,
+      initiator: state.initiator
     };
   }
 
   function makeOffer(state) {
     var seed = (Date.now() ^ (Math.random() * 0xffffffff)) >>> 0;
-    var body = { t: 'offer', seed: seed, you: snapshot(state), at: Date.now() };
+    var you = snapshot(state);
+    you.initiator = true; // offerer is the initiator
+    var body = { t: 'offer', seed: seed, you: you, at: Date.now() };
     return pack('O', body);
   }
 
   function acceptOffer(code, state) {
     var body = unpack(code);
     if (!body || body.t !== 'offer') throw new Error('不是有效的對戰邀請碼');
-    var result = resolveBattle(state.mon, body.you.mon, body.seed, snapshot(state), body.you);
-    // result is from acceptor's perspective vs offerer. Offer encoded self as "you".
-    // Acceptor fights offerer: self=state.mon, foe=body.you.mon
+    var selfSnap = snapshot(state);
+    selfSnap.initiator = false; // acceptor is not the initiator
+    var result = resolveBattle(state.mon, body.you.mon, body.seed, selfSnap, body.you);
     var reply = {
       t: 'result',
       seed: body.seed,
       offer: body.you,
-      accept: snapshot(state),
-      // winner from offerer's view:
+      accept: selfSnap,
       offerWin: result === 'loss',
       at: Date.now()
     };
@@ -152,6 +228,12 @@
     makeOffer: makeOffer,
     acceptOffer: acceptOffer,
     applyResult: applyResult,
-    snapshot: snapshot
+    snapshot: snapshot,
+    selfWinChance: selfWinChance,
+    initiatorWinsOutOf16: initiatorWinsOutOf16,
+    TABLE: TABLE,
+    UPSET: UPSET,
+    STAGE_VAL: STAGE_VAL
   };
+  if (typeof module !== 'undefined' && module.exports) module.exports = root.Battle;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -175,35 +175,41 @@ console.log('\n6) Care effects and daily caps');
   var s = fresh({ train: 0, strength: 1, weight: 20 });
   // 499: no block crossed
   Steps.applyHealth(s, { ok: true, steps: 499, date: '2026-11-12' }, 1);
-  eq(s.train, 0, '499 steps: no effort');
+  eq(s.train, 0, '499 steps: official train unchanged');
+  eq(s.steps.dayEffort, 0, '499 steps: no dayEffort');
   eq(s.weight, 20, '499 steps: no weight loss');
 
   Steps.applyHealth(s, { ok: true, steps: 500, date: '2026-11-12' }, 2);
-  eq(s.train, 1, '500 steps: +1 effort');
+  eq(s.train, 0, '500 steps: walking does not increment official train');
+  eq(s.steps.dayEffort, 1, '500 steps: +1 dayEffort');
   eq(s.strength, 2, '500 steps: +1 strength');
   eq(s.weight, 20, '500 steps: no weight (needs 1000)');
 
   Steps.applyHealth(s, { ok: true, steps: 1000, date: '2026-11-12' }, 3);
-  eq(s.train, 2, '1000 steps: +2 effort total');
+  eq(s.train, 0, '1000 steps: official train still 0');
+  eq(s.steps.dayEffort, 2, '1000 steps: +2 dayEffort total');
   eq(s.weight, 19, '1000 steps: −1 g');
 
   // 4000 steps = 8 effort blocks — at the daily cap
   var c = fresh({ train: 0, strength: 0, weight: 30 });
   Steps.applyHealth(c, { ok: true, steps: 4000, date: '2026-11-12' }, 1);
-  eq(c.train, 8, '4000 steps: +8 effort (cap)');
+  eq(c.train, 0, '4000 steps: official train not incremented');
+  eq(c.steps.dayEffort, 8, '4000 steps: +8 dayEffort (cap)');
   eq(c.steps.dayEffort, 8, 'dayEffort at cap');
   eq(c.strength, 2, 'strength daily cap 2');
   eq(c.weight, 27, '4000 steps would be −4 g but daily cap is 3 g');
 
   // more the same day: no more effort
   Steps.applyHealth(c, { ok: true, steps: 8000, date: '2026-11-12' }, 2);
-  eq(c.train, 8, 'same day past cap: no more effort');
+  eq(c.train, 0, 'same day past cap: official train unchanged');
+  eq(c.steps.dayEffort, 8, 'same day past cap: no more dayEffort');
   eq(c.weight, 27, 'same day past weight cap: no more loss');
   eq(c.steps.lifetime, 8000, 'lifetime still counts every credited step');
 
   // new day: caps reset, new blocks grant again
   Steps.applyHealth(c, { ok: true, steps: 500, date: '2026-11-13' }, 3);
-  eq(c.train, 9, 'new day: a new 500-block grants +1');
+  eq(c.train, 0, 'new day: official train still not incremented');
+  eq(c.steps.dayEffort, 1, 'new day: a new 500-block grants +1 dayEffort');
   eq(c.steps.dayEffort, 1, 'new day effort counter reset');
 
   // weight floor
@@ -243,7 +249,8 @@ console.log('\n8) Ledger carry on new egg (no re-credit)');
 {
   var oldM = fresh();
   Steps.applyHealth(oldM, { ok: true, steps: 8000, date: '2026-11-12' }, 1);
-  eq(oldM.train, 8, 'old monster received capped effort');
+  eq(oldM.train, 0, 'old monster official train unchanged by steps');
+  eq(oldM.steps.dayEffort, 8, 'old monster received capped dayEffort');
 
   var newM = fresh({ train: 0, strength: 2, weight: 20 });
   var delta = Steps.carryLedger(oldM, newM);
@@ -257,7 +264,8 @@ console.log('\n8) Ledger carry on new egg (no re-credit)');
   var more = Steps.applyHealth(newM, { ok: true, steps: 8500, date: '2026-11-12' }, 2);
   eq(more.delta, 500, 'later Health increase goes to the new monster');
   eq(newM.steps.lifetime, 500, 'new lifetime is only the new delta');
-  eq(newM.train, 1, 'new monster gets effort from the new 500');
+  eq(newM.train, 0, 'new monster official train unchanged');
+  eq(newM.steps.dayEffort, 1, 'new monster gets dayEffort from the new 500');
 }
 
 // ---------- pending reading (no monster yet) ----------
@@ -275,7 +283,8 @@ console.log('\n9) Health import before first egg');
   var d = Steps.carryLedger(stub, egg);
   eq(d, 3000, 'first egg receives pending Health total');
   eq(egg.steps.lifetime, 3000, 'first egg lifetime');
-  eq(egg.train, 6, 'first egg effort from 3000 steps');
+  eq(egg.train, 0, 'first egg official train not set by steps');
+  eq(egg.steps.dayEffort, 6, 'first egg dayEffort from 3000 steps');
 }
 
 // ---------- URL strip ----------
@@ -318,7 +327,8 @@ console.log('\n11) Save export/import');
   ok(loaded.steps && loaded.steps.lifetime === 0 && loaded.steps.days, 'ensure migrates old save');
   var r = Steps.applyHealth(loaded, { ok: true, steps: 500, date: '2026-11-12' }, 1);
   eq(r.delta, 500, 'migrated save can import Health');
-  eq(loaded.train, 3, 'effects apply on migrated save (2+1)');
+  eq(loaded.train, 2, 'official train on migrated save is unchanged (stays 2)');
+  eq(loaded.steps.dayEffort, 1, 'dayEffort applies on migrated save');
 }
 
 // ---------- Pedometer peak detection ----------

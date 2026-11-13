@@ -1,6 +1,9 @@
 /**
  * Pure evolution resolver for Digital Monster Ver.1–5 + 20th Anniversary mega.
  * Works in both Node and the browser. No DOM / no timers.
+ * Perfect (Champion→Ultimate) eligibility is decided by the engine
+ * (15+ battles, win-score rolls at III→IV and IV→V) and passed in as
+ * stats.perfectEligible. This file does not apply an 80% win-rate gate.
  */
 (function (root) {
   'use strict';
@@ -22,7 +25,8 @@
   /**
    * @param {object} rule
    * @param {object} stats
-   *   calls, train, overfeed, sleepDist, weight, battles, wins, winRate, timeInStage, lifeSteps
+   *   calls, train, overfeed, sleepDist, weight, battles, wins, winRate,
+   *   timeInStage, lifeSteps, eggKind, perfectEligible
    */
   function matchesRule(rule, stats) {
     if (rule.leftover) return true;
@@ -33,6 +37,7 @@
     if (winRate == null) {
       winRate = battles > 0 && wins != null ? wins / battles : 0;
     }
+    if (rule.perfectRoll && !stats.perfectEligible) return false;
     return (
       inRange(num(stats.calls, 0), rule.calls) &&
       inRange(num(stats.train, 0), rule.train) &&
@@ -110,6 +115,10 @@
       timeInStage: time
     };
     if (rule.eggKind) stats.eggKind = rule.eggKind;
+    if (rule.perfectRoll) {
+      stats.perfectEligible = true;
+      if (stats.battles < 15) stats.battles = 15;
+    }
     if (rule.winRate) {
       stats.winRate = mid(rule.winRate);
       if (stats.winRate > 1) stats.winRate = stats.winRate / 100;

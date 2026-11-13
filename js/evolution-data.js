@@ -280,145 +280,145 @@
       { to: "raremon", leftover: true, stay: false },
     ],
     greymon: [
-      { to: "metalgreymon_va", leftover: false, stay: false, eggKind: "anime_agumon", battles: [15, null], winRate: [0.8, 1.0] },
-      { to: "metalgreymon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "metalgreymon_va", leftover: false, stay: false, eggKind: "anime_agumon", perfectRoll: true },
+      { to: "metalgreymon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     devimon: [
-      { to: "metalgreymon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "metalgreymon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     airdramon: [
-      { to: "metalgreymon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "metalgreymon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     tyranomon: [
-      { to: "mamemon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "mamemon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     meramon: [
-      { to: "mamemon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "mamemon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     seadramon: [
-      { to: "mamemon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "mamemon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     numemon: [
-      { to: "monzaemon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "monzaemon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     kabuterimon: [
-      { to: "skullgreymon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "skullgreymon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     angemon: [
-      { to: "skullgreymon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "skullgreymon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     birdramon: [
-      { to: "skullgreymon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "skullgreymon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     garurumon: [
-      { to: "weregarurumon", leftover: false, stay: false, eggKind: "anime_gabumon", battles: [15, null], winRate: [0.8, 1.0] },
-      { to: "metalmamemon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "weregarurumon", leftover: false, stay: false, eggKind: "anime_gabumon", perfectRoll: true },
+      { to: "metalmamemon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     yukidarumon: [
-      { to: "metalmamemon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "metalmamemon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     whamon: [
-      { to: "metalmamemon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "metalmamemon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     vegimon: [
-      { to: "vademon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "vademon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     unimon: [
-      { to: "andromon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "andromon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     ogremon: [
-      { to: "andromon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "andromon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     shellmon: [
-      { to: "andromon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "andromon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     centalmon: [
-      { to: "giromon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "giromon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     bakemon: [
-      { to: "giromon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "giromon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     drimogemon: [
-      { to: "giromon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "giromon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     sukamon: [
-      { to: "etemon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "etemon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     monochromon: [
-      { to: "megadramon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "megadramon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     leomon: [
-      { to: "megadramon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "megadramon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     coelamon: [
-      { to: "megadramon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "megadramon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     cockatrimon: [
-      { to: "piccolomon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "piccolomon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     kuwagamon: [
-      { to: "piccolomon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "piccolomon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     mojyamon: [
-      { to: "piccolomon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "piccolomon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     nanimon: [
-      { to: "digitamamon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "digitamamon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     darktyranomon: [
-      { to: "metaltyranomon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "metaltyranomon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     devidramon: [
-      { to: "metaltyranomon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "metaltyranomon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     flymon: [
-      { to: "metaltyranomon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "metaltyranomon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     cyclomon: [
-      { to: "nanomon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "nanomon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     tuskmon: [
-      { to: "nanomon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "nanomon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     deltamon: [
-      { to: "nanomon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "nanomon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     raremon: [
-      { to: "extyranomon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "extyranomon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     metalgreymon: [
@@ -525,7 +525,7 @@
       { to: "zubaeagermon", leftover: false, stay: false },
     ],
     zubaeagermon: [
-      { to: "duramon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "duramon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     duramon: [
@@ -536,7 +536,7 @@
       { to: "baohackmon", leftover: false, stay: false },
     ],
     baohackmon: [
-      { to: "saviorhackmon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "saviorhackmon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     saviorhackmon: [
@@ -554,7 +554,7 @@
       { to: "coredramon_green", leftover: false, stay: false, eggKind: "dra_green" },
     ],
     coredramon_blue: [
-      { to: "wingdramon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "wingdramon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     wingdramon: [
@@ -563,7 +563,7 @@
       { to: null, leftover: true, stay: true, reason: "mega-requirements-not-met" },
     ],
     coredramon_green: [
-      { to: "groundramon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "groundramon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     groundramon: [
@@ -581,7 +581,7 @@
       { to: "dorugamon", leftover: false, stay: false },
     ],
     dorugamon: [
-      { to: "doruguremon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "doruguremon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     doruguremon: [
@@ -599,7 +599,7 @@
       { to: "firamon", leftover: false, stay: false },
     ],
     firamon: [
-      { to: "flaremon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "flaremon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     flaremon: [
@@ -610,7 +610,7 @@
       { to: "lekismon", leftover: false, stay: false },
     ],
     lekismon: [
-      { to: "crescemon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "crescemon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     crescemon: [
@@ -627,7 +627,7 @@
       { to: "meicoomon", leftover: false, stay: false },
     ],
     meicoomon: [
-      { to: "meicrackmon", leftover: false, stay: false, battles: [15, null], winRate: [0.8, 1.0] },
+      { to: "meicrackmon", leftover: false, stay: false, perfectRoll: true },
       { to: null, leftover: true, stay: true, reason: "ultimate-requirements-not-met" },
     ],
     meicrackmon: [
@@ -648,8 +648,182 @@
     luna: { nameZh: "露娜數碼蛋（20th限定）", nameEn: "Luna Digitama (20th exclusive)", eggId: "egg_luna", hatch: "pichimon", unlock: "與 5 個不同訓練師名稱的 20th 通信", line: ["pichimon", "pukamon", "lunamon", "lekismon", "crescemon", "dianamon"], note: "阿爾法獸配色機限定蛋。" },
     meicoo: { nameZh: "梅可可數碼蛋（20th限定）", nameEn: "Meicoo Digitama (20th exclusive)", eggId: "egg_meicoo", hatch: "yukimibotamon", unlock: "與 5 個不同訓練師名稱的 20th 通信", line: ["yukimibotamon", "nyaromon", "plotmon", "meicoomon", "meicrackmon", "rasielmon"], note: "茲巴獸配色機限定蛋。完全體 Mega 為拉結爾獸（Rasielmon），不是病毒種的 Raguelmon。" }
   };
-  var NOTES = { sources: ["Rookie and Champion branches: Wikimon Digital Monster Ver.1–Ver.5 (original 1997–1998 device conditions), including sleep disturbances, training counts, overfeed, and care mistakes (calls).", "Ver.1 training: any training session counts (even fail/cancel). Ver.2–5: only successful training counts (Wikimon).", "Care mistakes (calls): 0–3 = regular / 4+ = irregular on the original devices. A hunger+strength double call still counts as one mistake. Lights left on 20 minutes after sleep also counts.", "Counters (calls, train, overfeed, sleep disturbances, injuries, and the internal battle record used for evolution) RESET when the Digimon evolves. The status screen also shows lifetime battle totals (original device 通算成績), which do not decide evolution.", "Champion → Ultimate (完全體): 15 or more battles during the Champion stage AND a win rate of 80% or higher. CPU and online PvP both increment the same counters. If the check fails, the Digimon stays Champion.", "Ultimate → Mega (究極體): Digital Monster Ver.20th official conditions — 育成ミス 2回以下 (0–2 care mistakes) during the Ultimate stage. Japanese 20th guide wording is used (2回以下). Wikimon’s English “less than 2” would be 0–1; this table follows 2回以下 = 0–2. Battle count is not required for these standard Ver.1–5 megas.", "These ultimates have no Mega in Ver.20th: Monzaemon, Vademon, Giromon, Piccolomon, Nanomon.", "Standard Ver.1 Mega is BlitzGreymon (not WarGreymon). Standard Ver.2 Mega from MetalMamemon is CresGarurumon (not MetalGarurumon). WarGreymon / MetalGarurumon appear on optional 20th exclusive anime Digitama.", "Jogress (optional): tag-battle 5 wins with the official partner (BlitzGreymon+CresGarurumon→Omegamon Alter-S; Aegisdramon+Mugendramon→LastTyranomon/RustTyranomon; WarGreymon+MetalGarurumon→Omegamon; Slayerdramon+Breakdramon→Examon; Apollomon+Dianamon→GraceNovamon).", "20th special Digitama (Zuba/Hack/Slayerdra/Breakdra/Doru) and exclusive Digitama (anime Agumon/Gabumon, Corona, Luna, Meicoo) use eggKind on shared babies. Special-line Rookie→Champion is unconditional; Champion→Ultimate uses the standard 15 battles / 80%+ win rate; Ultimate→Mega is 0–2 care mistakes. Hidden: Wingdramon→WarGreymon and Groundramon→MetalGarurumon if 3–4 care mistakes and 100+ battles (Japan wave-2 colors only; overseas / NEW WAVE all colors).", "20th official raisable count is 134 (nhoko / Humulos IDs 0–133). Colosseum-only and Digital Monster Color-only forms are documented in roster-audit.md and are not in this table.", "Weight is reserved in the condition schema; official Ver.1–5 and 20th Ver.1–5 egg lines do not use weight as an evolution gate.", "Stage times in this table are defaults for the simulator (egg 10 min, Baby I 60 min, Baby II 24 h, Rookie 72 h, Champion 72 h, Ultimate 48 h). Original individual lifespans varied by species (e.g. Koromon often cited ~44 h)."] };
-  var data = { STAGES: STAGES, VERSIONS: VERSIONS, MONSTERS: MONSTERS, BRANCHES: BRANCHES, JOGRESS: JOGRESS, SPECIAL_EGGS: SPECIAL_EGGS, NOTES: NOTES };
+  var NOTES = { sources: [
+    "1997 Digital Monster Ver.1–5 firmware (E0C6200, measured disassembly) is the source of truth for care, timers, battles, and Perfect evolution. DM20 rules are used only for Mega, Jogress, and 20th-exclusive eggs.",
+    "Rookie (Child) branches: Wikimon / firmware-agreed conditions (care mistakes, training, overfeed, sleep disturbances). Ver.1 Agumon/Betamon overfeed splits and Ver.2 Elecmon's 16-training split are firmware-measured. Ver.3–5 analogous 16-splits are kept as community/counterpart tables and are labelled unverified as firmware-measured only for Elecmon.",
+    "Ver.1 training: any training session counts (even fail or cancel). Ver.2–5: only successful training counts (Wikimon).",
+    "Care mistakes (calls): firmware 20-minute call (0x08C3). Hunger and strength empty together produce ONE call and at most one mistake. After a mistake the call does not retrigger until the meter is filled. Lights left on 20 minutes after falling asleep also counts, once per night. Calls cap at 15.",
+    "Counters (calls, train, overfeed, sleep disturbances, injuries, protein overdose / power-up, boost care-down) RESET when the Digimon evolves. Battles, wins, losses, win score (0–15), and the Perfect-qualified bit CARRY from Child (Rookie) into Adult (Champion). proteinRemainder (0–3) also carries. The status screen's lifetime battle totals (通算成績) are separate and do not decide evolution.",
+    "Champion → Ultimate (完全體 / Perfect): firmware — 15 or more battles (carried from Child), then a win-score roll at both III→IV and IV→V. Win score 0–4 / 5–8 / 9–15 rolls 1/8, 1/4, 1/2 (die 0–15, assumed die < 2 / 4 / 8). Either success is enough (combined cap 75%, never 100%). If both fail, or battles < 15 at the Adult window, the Digimon stays Champion. This is NOT an 80% win-rate gate and NOT a 100% NHOKO table.",
+    "Lifespan is a per-species 8-hour dice window rolled at stage entry (firmware §17), not a flat 72 h / 24 h. Old-age death is the 5th care mistake after the window elapsed, not lifespan×1.6. Baby I is 50–59 minutes, or 60–69 if a tens die is ≥ 5.",
+    "Ultimate → Mega (究極體): Digital Monster Ver.20th — 育成ミス 2回以下 (0–2 care mistakes) during the Ultimate stage, after 48 hours AWAKE (timers pause in DM20 sleep). Japanese 20th guide wording (2回以下) is used. Battle count is not required for standard Ver.1–5 megas.",
+    "These ultimates have no Mega in Ver.20th: Monzaemon, Vademon, Giromon, Piccolomon, Nanomon. They use the 1997 Perfect lifespan window, then 5 care mistakes.",
+    "Standard Ver.1 Mega is BlitzGreymon (not WarGreymon). Standard Ver.2 Mega from MetalMamemon is CresGarurumon (not MetalGarurumon). WarGreymon / MetalGarurumon appear on optional 20th exclusive anime Digitama.",
+    "Jogress (optional, DM20): tag-battle 5 wins with the official partner (BlitzGreymon+CresGarurumon→Omegamon Alter-S; Aegisdramon+Mugendramon→LastTyranomon/RustTyranomon; WarGreymon+MetalGarurumon→Omegamon; Slayerdramon+Breakdramon→Examon; Apollomon+Dianamon→GraceNovamon).",
+    "20th special Digitama (Zuba/Hack/Slayerdra/Breakdra/Doru) and exclusive Digitama (anime Agumon/Gabumon, Corona, Luna, Meicoo) use eggKind on shared babies. Special-line Rookie→Champion is unconditional; Champion→Ultimate uses the firmware Perfect roll (not 80% WR); Ultimate→Mega is 0–2 care mistakes after 48 h awake. Hidden: Wingdramon→WarGreymon and Groundramon→MetalGarurumon if 3–4 care mistakes and 100+ battles (Japan wave-2 colors only; overseas / NEW WAVE all colors).",
+    "20th official raisable count is 134 (nhoko / Humulos IDs 0–133). Colosseum-only and Digital Monster Color-only forms are documented in roster-audit.md and are not in this table.",
+    "Weight is reserved in the condition schema; official Ver.1–5 and 20th Ver.1–5 egg lines do not use weight as an evolution gate.",
+    "Per-species care (sleep hours, 満腹, parameter cycle, Energy/体力, injury base, heal doses) comes from firmware windows where measured, otherwise the NHOKO community table (rules-audit appendix A), labelled. Some Ver.3–5 windows are extrapolated ±4 h from an NHOKO midpoint and are labelled. 20th-only forms without a measured row keep a labelled placeholder (see CARE apply).",
+    "1997 battles use the official 12×12 slot table (appendix B) plus boost, within the same stage only. Cross-stage fights clamp that result so the lower stage wins at most the stage-gap UPSET (8% / 2% / 0.5%). There is no 1997 attribute triangle."
+  ] };
+
+  // Per-species 1997 care. Firmware windows win where measured.
+  // Other fields: NHOKO community table (rules-audit appendix A), labelled.
+  // lifespanMin/Max are minutes. sleepStart = bedtime hour, sleepEnd = wake hour.
+  // dpMax is NHOKO 体力 (community Energy pool), not a visible 4-heart bar.
+  // injuryBase: firmware slot bases (Ver.2–5 slot-mates identical). healDoses: NHOKO 治療.
+  var CARE = {
+    /* Baby I: firmware 50–59 or 60–69; sleep 不定; NHOKO cycle 3, 満腹 4 */
+    botamon:  { lifespanMin:50, lifespanMax:69, lifespanMode:"baby1-dice", lifespanSource:"firmware", sleepStart:null, sleepEnd:null, sleepSource:"firmware-不定", cycleMin:3, cycleSource:"nhoko", satiety:4, satietySource:"nhoko", weight:5, weightSource:"nhoko", dpMax:0, injuryBase:null, healDoses:null, slot:null },
+    punimon:  { lifespanMin:50, lifespanMax:69, lifespanMode:"baby1-dice", lifespanSource:"firmware", sleepStart:null, sleepEnd:null, sleepSource:"firmware-不定", cycleMin:3, cycleSource:"nhoko", satiety:4, satietySource:"nhoko", weight:5, weightSource:"nhoko", dpMax:0, injuryBase:null, healDoses:null, slot:null },
+    poyomon:  { lifespanMin:50, lifespanMax:69, lifespanMode:"baby1-dice", lifespanSource:"firmware", sleepStart:null, sleepEnd:null, sleepSource:"firmware-不定", cycleMin:3, cycleSource:"nhoko", satiety:4, satietySource:"nhoko", weight:5, weightSource:"nhoko", dpMax:0, injuryBase:null, healDoses:null, slot:null },
+    yuramon:  { lifespanMin:50, lifespanMax:69, lifespanMode:"baby1-dice", lifespanSource:"firmware", sleepStart:null, sleepEnd:null, sleepSource:"firmware-不定", cycleMin:3, cycleSource:"nhoko", satiety:4, satietySource:"nhoko", weight:5, weightSource:"nhoko", dpMax:0, injuryBase:null, healDoses:null, slot:null },
+    zurumon:  { lifespanMin:50, lifespanMax:69, lifespanMode:"baby1-dice", lifespanSource:"firmware", sleepStart:null, sleepEnd:null, sleepSource:"firmware-不定", cycleMin:3, cycleSource:"nhoko", satiety:4, satietySource:"nhoko", weight:4, weightSource:"nhoko", dpMax:0, injuryBase:null, healDoses:null, slot:null },
+    /* Baby II */
+    koromon:  { lifespanMin:2400, lifespanMax:2880, lifespanSource:"firmware", sleepStart:19, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:16, satietySource:"nhoko", weight:10, weightSource:"nhoko", dpMax:0, injuryBase:null, healDoses:null, slot:null },
+    tsunomon: { lifespanMin:1920, lifespanMax:2400, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:12, satietySource:"nhoko", weight:10, weightSource:"nhoko", dpMax:0, injuryBase:null, healDoses:null, slot:null },
+    tokomon:  { lifespanMin:1920, lifespanMax:2400, lifespanSource:"firmware-tsunomon-slot-unverified", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:12, satietySource:"nhoko", weight:10, weightSource:"nhoko", dpMax:0, injuryBase:null, healDoses:null, slot:null },
+    tanemon:  { lifespanMin:1440, lifespanMax:1920, lifespanSource:"nhoko-mid-28h-extrapolated-±4h", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:12, satietySource:"nhoko", weight:10, weightSource:"nhoko", dpMax:0, injuryBase:null, healDoses:null, slot:null },
+    pagumon:  { lifespanMin:960, lifespanMax:1440, lifespanSource:"nhoko-mid-20h-extrapolated-±4h", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:42, cycleSource:"nhoko", satiety:12, satietySource:"nhoko", weight:8, weightSource:"nhoko", dpMax:0, injuryBase:null, healDoses:null, slot:null },
+    /* Child / Rookie */
+    agumon:   { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:19, sleepEnd:8, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware", healDoses:2, healSource:"nhoko", slot:"A" },
+    betamon:  { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:9, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:3, injurySource:"firmware", healDoses:2, healSource:"nhoko", slot:"B" },
+    gabumon:  { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"A" },
+    elecmon:  { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:9, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:20, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:3, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"B" },
+    patamon:  { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"A" },
+    kunemon:  { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:9, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:20, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:3, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"B" },
+    piyomon:  { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:15, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"A" },
+    palmon:   { lifespanMin:3840, lifespanMax:4320, lifespanSource:"nhoko-mid-68h-extrapolated-±4h", sleepStart:20, sleepEnd:9, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:20, satietySource:"nhoko", weight:15, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:3, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"B" },
+    gazimon:  { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:15, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"A" },
+    gizamon:  { lifespanMin:3840, lifespanMax:4320, lifespanSource:"nhoko-mid-68h-extrapolated-±4h", sleepStart:20, sleepEnd:9, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:20, satietySource:"nhoko", weight:15, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:3, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"B" },
+    /* Adults — Tyranomon / Meramon / Seadramon lines 72–80; Greymon-slot 120–128; Devimon / Airdramon 104–112; Numemon 40–48 */
+    greymon:     { lifespanMin:7200, lifespanMax:7680, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:28, satietySource:"nhoko", weight:30, weightSource:"nhoko", dpMax:30, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware", healDoses:1, healSource:"nhoko", slot:"C" },
+    tyranomon:   { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:28, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware", healDoses:2, healSource:"nhoko", slot:"D" },
+    devimon:     { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:21, sleepEnd:9, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware", healDoses:1, healSource:"nhoko", slot:"E" },
+    meramon:     { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:30, weightSource:"nhoko", dpMax:30, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware", healDoses:2, healSource:"nhoko", slot:"F" },
+    airdramon:   { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:30, weightSource:"nhoko", dpMax:30, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware", healDoses:1, healSource:"nhoko", slot:"G" },
+    seadramon:   { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:22, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:28, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware", healDoses:2, healSource:"nhoko", slot:"H" },
+    numemon:     { lifespanMin:2400, lifespanMax:2880, lifespanSource:"firmware", sleepStart:20, sleepEnd:10, sleepSource:"nhoko", cycleMin:42, cycleSource:"nhoko", satiety:16, satietySource:"nhoko", weight:10, weightSource:"nhoko", dpMax:10, dpSource:"nhoko-体力", injuryBase:3, injurySource:"firmware", healDoses:3, healSource:"nhoko", slot:"I" },
+    kabuterimon: { lifespanMin:7200, lifespanMax:7680, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:28, satietySource:"nhoko", weight:30, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"C" },
+    garurumon:   { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:28, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"D" },
+    angemon:     { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:20, sleepEnd:7, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:20, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:38, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"E" },
+    yukidarumon: { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:30, weightSource:"nhoko", dpMax:30, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"F" },
+    birdramon:   { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:30, weightSource:"nhoko", dpMax:36, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"G" },
+    whamon:      { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:28, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"H" },
+    vegimon:     { lifespanMin:2400, lifespanMax:2880, lifespanSource:"firmware", sleepStart:23, sleepEnd:10, sleepSource:"nhoko", cycleMin:42, cycleSource:"nhoko", satiety:16, satietySource:"nhoko", weight:10, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:3, injurySource:"firmware-slot", healDoses:3, healSource:"nhoko", slot:"I" },
+    unimon:      { lifespanMin:7200, lifespanMax:7680, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:28, satietySource:"nhoko", weight:30, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"C" },
+    centalmon:   { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:28, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"D" },
+    ogremon:     { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:20, sleepEnd:7, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:20, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:38, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"E" },
+    bakemon:     { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:30, weightSource:"nhoko", dpMax:30, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"F" },
+    shellmon:    { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:30, weightSource:"nhoko", dpMax:36, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"G" },
+    drimogemon:  { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:28, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"H" },
+    sukamon:     { lifespanMin:2400, lifespanMax:2880, lifespanSource:"firmware", sleepStart:23, sleepEnd:10, sleepSource:"nhoko", cycleMin:42, cycleSource:"nhoko", satiety:16, satietySource:"nhoko", weight:10, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:3, injurySource:"firmware-slot", healDoses:3, healSource:"nhoko", slot:"I" },
+    monochromon: { lifespanMin:7200, lifespanMax:7680, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"C" },
+    cockatrimon: { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:28, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"D" },
+    leomon:      { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:20, sleepEnd:7, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:20, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:38, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"E" },
+    kuwagamon:   { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:30, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"F" },
+    coelamon:    { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:36, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"G" },
+    mojyamon:    { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:28, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"H" },
+    nanimon:     { lifespanMin:2400, lifespanMax:2880, lifespanSource:"firmware", sleepStart:23, sleepEnd:10, sleepSource:"nhoko", cycleMin:42, cycleSource:"nhoko", satiety:16, satietySource:"nhoko", weight:10, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:3, injurySource:"firmware-slot", healDoses:3, healSource:"nhoko", slot:"I" },
+    darktyranomon:{lifespanMin:7200, lifespanMax:7680, lifespanSource:"firmware", sleepStart:21, sleepEnd:7, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"C" },
+    cyclomon:    { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:35, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"D" },
+    devidramon:  { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:20, sleepEnd:7, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:40, satietySource:"nhoko", weight:30, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"E" },
+    tuskmon:     { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:40, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:35, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"F" },
+    flymon:      { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:16, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"G" },
+    deltamon:    { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:20, sleepEnd:8, sleepSource:"nhoko", cycleMin:57, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:30, weightSource:"nhoko", dpMax:35, dpSource:"nhoko-体力", injuryBase:2, injurySource:"firmware-slot", healDoses:2, healSource:"nhoko", slot:"H" },
+    raremon:     { lifespanMin:2400, lifespanMax:2880, lifespanSource:"firmware", sleepStart:23, sleepEnd:10, sleepSource:"nhoko", cycleMin:42, cycleSource:"nhoko", satiety:16, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:20, dpSource:"nhoko-体力", injuryBase:3, injurySource:"firmware-slot", healDoses:3, healSource:"nhoko", slot:"I" },
+    /* Perfects */
+    metalgreymon:{ lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:40, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware", healDoses:1, healSource:"nhoko", slot:"J", megaAwakeMin:2880, megaAwakeSource:"DM20" },
+    mamemon:     { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:19, sleepEnd:7, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:5, weightSource:"nhoko", dpMax:45, dpSource:"nhoko-体力", injuryBase:0, injurySource:"firmware", healDoses:1, healSource:"nhoko", slot:"K", megaAwakeMin:2880, megaAwakeSource:"DM20" },
+    monzaemon:   { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:19, sleepEnd:9, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:50, dpSource:"nhoko-体力", injuryBase:0, injurySource:"firmware", healDoses:1, healSource:"nhoko", slot:"L" },
+    skullgreymon:{ lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:36, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"J", megaAwakeMin:2880, megaAwakeSource:"DM20" },
+    metalmamemon:{ lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:19, sleepEnd:7, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:12, satietySource:"nhoko", weight:5, weightSource:"nhoko", dpMax:45, dpSource:"nhoko-体力", injuryBase:0, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"K", megaAwakeMin:2880, megaAwakeSource:"DM20" },
+    vademon:     { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:19, sleepEnd:9, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:16, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:50, dpSource:"nhoko-体力", injuryBase:0, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"L" },
+    andromon:    { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:36, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"J", megaAwakeMin:2880, megaAwakeSource:"DM20" },
+    giromon:     { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:19, sleepEnd:7, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:12, satietySource:"nhoko", weight:5, weightSource:"nhoko", dpMax:45, dpSource:"nhoko-体力", injuryBase:0, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"K" },
+    etemon:      { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:19, sleepEnd:9, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:16, satietySource:"nhoko", weight:20, weightSource:"nhoko", dpMax:50, dpSource:"nhoko-体力", injuryBase:0, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"L", megaAwakeMin:2880, megaAwakeSource:"DM20" },
+    megadramon:  { lifespanMin:6240, lifespanMax:6720, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:40, satietySource:"nhoko", weight:50, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"J", megaAwakeMin:2880, megaAwakeSource:"DM20" },
+    piccolomon:  { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:19, sleepEnd:7, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:12, satietySource:"nhoko", weight:5, weightSource:"nhoko", dpMax:45, dpSource:"nhoko-体力", injuryBase:0, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"K" },
+    digitamamon: { lifespanMin:6720, lifespanMax:7200, lifespanSource:"nhoko-mid-116h-extrapolated-±4h", sleepStart:21, sleepEnd:9, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:16, satietySource:"nhoko", weight:10, weightSource:"nhoko", dpMax:50, dpSource:"nhoko-体力", injuryBase:0, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"L", megaAwakeMin:2880, megaAwakeSource:"DM20" },
+    metaltyranomon:{lifespanMin:6240,lifespanMax:6720, lifespanSource:"firmware", sleepStart:21, sleepEnd:8, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:32, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:40, dpSource:"nhoko-体力", injuryBase:1, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"J", megaAwakeMin:2880, megaAwakeSource:"DM20" },
+    nanomon:     { lifespanMin:4320, lifespanMax:4800, lifespanSource:"firmware", sleepStart:19, sleepEnd:7, sleepSource:"nhoko", cycleMin:89, cycleSource:"nhoko", satiety:12, satietySource:"nhoko", weight:5, weightSource:"nhoko", dpMax:45, dpSource:"nhoko-体力", injuryBase:0, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"K" },
+    extyranomon: { lifespanMin:6720, lifespanMax:7200, lifespanSource:"nhoko-mid-116h-extrapolated-±4h", sleepStart:21, sleepEnd:9, sleepSource:"nhoko", cycleMin:73, cycleSource:"nhoko", satiety:24, satietySource:"nhoko", weight:40, weightSource:"nhoko", dpMax:50, dpSource:"nhoko-体力", injuryBase:0, injurySource:"firmware-slot", healDoses:1, healSource:"nhoko", slot:"L", megaAwakeMin:2880, megaAwakeSource:"DM20" }
+  };
+  /* Anime exclusive Perfects copy 1997 counterparts (labelled). */
+  CARE.metalgreymon_va = Object.assign({}, CARE.metalgreymon, { lifespanSource:"counterpart-metalgreymon" });
+  CARE.weregarurumon = Object.assign({}, CARE.metalmamemon, { lifespanSource:"counterpart-metalmamemon-slot-K", slot:"K" });
+
+  function applyCareTable() {
+    Object.keys(CARE).forEach(function (id) {
+      if (!MONSTERS[id]) return;
+      var c = CARE[id], m = MONSTERS[id], k;
+      for (k in c) if (Object.prototype.hasOwnProperty.call(c, k) && c[k] !== undefined) m[k] = c[k];
+    });
+    /* Eggs: 10 minutes (NHOKO / current). */
+    Object.keys(MONSTERS).forEach(function (id) {
+      var m = MONSTERS[id];
+      if (m.stage === 'egg') {
+        if (m.lifespanMin == null) m.lifespanMin = 10;
+        if (m.lifespanMax == null) m.lifespanMax = m.lifespanMin;
+        if (m.cycleMin == null) { m.cycleMin = 10; m.cycleSource = 'placeholder'; }
+        m.sleepStart = null; m.sleepEnd = null;
+        if (m.dpMax == null) m.dpMax = 0;
+        if (m.satiety == null) m.satiety = 4;
+        return;
+      }
+      if (m.stage === 'baby1') {
+        if (m.lifespanMode !== 'baby1-dice') {
+          m.lifespanMin = 50; m.lifespanMax = 69; m.lifespanMode = 'baby1-dice';
+          m.lifespanSource = m.lifespanSource || 'counterpart-baby1-dice-placeholder';
+        }
+        if (m.cycleMin == null) { m.cycleMin = 3; m.cycleSource = 'nhoko-counterpart'; }
+        if (m.satiety == null) { m.satiety = 4; m.satietySource = 'nhoko-counterpart'; }
+        m.sleepStart = null; m.sleepEnd = null;
+        if (m.sleepSource == null) m.sleepSource = 'firmware-不定';
+        if (m.dpMax == null) m.dpMax = 0;
+        return;
+      }
+      if (m.stage === 'baby2' && m.lifespanMax == null) {
+        /* 20th Baby II and any unlisted: keep current 24 h, labelled placeholder. */
+        m.lifespanMin = m.lifespanMin || 1440;
+        m.lifespanMax = 1440;
+        m.lifespanSource = 'placeholder-24h-current';
+        if (m.sleepStart == null) { m.sleepStart = 21; m.sleepEnd = 8; m.sleepSource = 'placeholder-21-08'; }
+        if (m.cycleMin == null) { m.cycleMin = 57; m.cycleSource = 'placeholder-57'; }
+        if (m.satiety == null) { m.satiety = 12; m.satietySource = 'placeholder'; }
+        if (m.dpMax == null) m.dpMax = 0;
+        return;
+      }
+      if (m.lifespanMax == null) {
+        var lo = m.lifespanMin || (m.stage === 'champion' ? 4320 : m.stage === 'ultimate' ? 2880 : 4320);
+        m.lifespanMin = lo;
+        m.lifespanMax = lo;
+        m.lifespanSource = m.lifespanSource || 'placeholder-flat-current';
+      }
+      if (m.sleepStart == null && m.stage !== 'baby1') {
+        m.sleepStart = 21; m.sleepEnd = 8; m.sleepSource = m.sleepSource || 'placeholder-21-08';
+      }
+      if (m.cycleMin == null) { m.cycleMin = 57; m.cycleSource = m.cycleSource || 'placeholder-57'; }
+      if (m.satiety == null) { m.satiety = 24; m.satietySource = 'placeholder'; }
+      if (m.dpMax == null) {
+        if (m.stage === 'mega' || m.stage === 'super') {
+          m.dpMax = 4; m.dpSource = 'placeholder-not-DM20-14';
+        } else if (m.canBattle) {
+          m.dpMax = 4; m.dpSource = 'placeholder-4';
+        } else {
+          m.dpMax = 0;
+        }
+      }
+      if ((m.stage === 'ultimate' || m.stage === 'champion') && m.megaAwakeMin == null) {
+        var rules = BRANCHES[id] || [];
+        var hasMega = rules.some(function (r) { return r.to && !r.stay && !r.perfectRoll; });
+        if (hasMega) { m.megaAwakeMin = 2880; m.megaAwakeSource = 'DM20'; }
+      }
+    });
+  }
+  applyCareTable();
+
+  var data = { STAGES: STAGES, CARE: CARE, VERSIONS: VERSIONS, MONSTERS: MONSTERS, BRANCHES: BRANCHES, JOGRESS: JOGRESS, SPECIAL_EGGS: SPECIAL_EGGS, NOTES: NOTES };
   if (typeof module !== 'undefined' && module.exports) { module.exports = data; }
   root.EvolutionData = data;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -8,19 +8,22 @@ Digital Monster Ver.1–Ver.5 official branches, plus Ver.20th Anniversary Mega 
 
 ## 資料來源與規則摘要
 
-- Rookie and Champion branches: Wikimon Digital Monster Ver.1–Ver.5 (original 1997–1998 device conditions), including sleep disturbances, training counts, overfeed, and care mistakes (calls).
-- Ver.1 training: any training session counts (even fail/cancel). Ver.2–5: only successful training counts (Wikimon).
-- Care mistakes (calls): 0–3 = regular / 4+ = irregular on the original devices. A hunger+strength double call still counts as one mistake. Lights left on 20 minutes after sleep also counts.
-- Counters (calls, train, overfeed, sleep disturbances, injuries, and the internal battle record used for evolution) RESET when the Digimon evolves. The status screen also shows lifetime battle totals (original device 通算成績), which do not decide evolution.
-- Champion → Ultimate (完全體): 15 or more battles during the Champion stage AND a win rate of 80% or higher. CPU and online PvP both increment the same counters. If the check fails, the Digimon stays Champion.
-- Ultimate → Mega (究極體): Digital Monster Ver.20th official conditions — 育成ミス 2回以下 (0–2 care mistakes) during the Ultimate stage. Japanese 20th guide wording is used (2回以下). Wikimon’s English “less than 2” would be 0–1; this table follows 2回以下 = 0–2. Battle count is not required for these standard Ver.1–5 megas.
-- These ultimates have no Mega in Ver.20th: Monzaemon, Vademon, Giromon, Piccolomon, Nanomon.
+- 1997 Digital Monster Ver.1–5 firmware (E0C6200, measured disassembly) is the source of truth for care, timers, battles, and Perfect evolution. DM20 rules are used only for Mega, Jogress, and 20th-exclusive eggs.
+- Rookie (Child) branches: Wikimon / firmware-agreed conditions (care mistakes, training, overfeed, sleep disturbances). Ver.1 Agumon/Betamon overfeed splits and Ver.2 Elecmon's 16-training split are firmware-measured. Ver.3–5 analogous 16-splits are kept as community/counterpart tables and are labelled unverified as firmware-measured only for Elecmon.
+- Ver.1 training: any training session counts (even fail or cancel). Ver.2–5: only successful training counts (Wikimon).
+- Care mistakes (calls): firmware 20-minute call (0x08C3). Hunger and strength empty together produce ONE call and at most one mistake. After a mistake the call does not retrigger until the meter is filled. Lights left on 20 minutes after falling asleep also counts, once per night. Calls cap at 15.
+- Counters (calls, train, overfeed, sleep disturbances, injuries, protein overdose / power-up, boost care-down) RESET when the Digimon evolves. Battles, wins, losses, win score (0–15), and the Perfect-qualified bit CARRY from Child (Rookie) into Adult (Champion). proteinRemainder (0–3) also carries. The status screen's lifetime battle totals (通算成績) are separate and do not decide evolution.
+- Champion → Ultimate (完全體 / Perfect): firmware — 15 or more battles (carried from Child), then a win-score roll at both III→IV and IV→V. Win score 0–4 / 5–8 / 9–15 rolls 1/8, 1/4, 1/2 (die 0–15, assumed die < 2 / 4 / 8). Either success is enough (combined cap 75%, never 100%). If both fail, or battles < 15 at the Adult window, the Digimon stays Champion. This is NOT an 80% win-rate gate and NOT a 100% NHOKO table.
+- Lifespan is a per-species 8-hour dice window rolled at stage entry (firmware §17), not a flat 72 h / 24 h. Old-age death is the 5th care mistake after the window elapsed, not lifespan×1.6. Baby I is 50–59 minutes, or 60–69 if a tens die is ≥ 5.
+- Ultimate → Mega (究極體): Digital Monster Ver.20th — 育成ミス 2回以下 (0–2 care mistakes) during the Ultimate stage, after 48 hours AWAKE (timers pause in DM20 sleep). Japanese 20th guide wording (2回以下) is used. Battle count is not required for standard Ver.1–5 megas.
+- These ultimates have no Mega in Ver.20th: Monzaemon, Vademon, Giromon, Piccolomon, Nanomon. They use the 1997 Perfect lifespan window, then 5 care mistakes.
 - Standard Ver.1 Mega is BlitzGreymon (not WarGreymon). Standard Ver.2 Mega from MetalMamemon is CresGarurumon (not MetalGarurumon). WarGreymon / MetalGarurumon appear on optional 20th exclusive anime Digitama.
-- Jogress (optional): tag-battle 5 wins with the official partner (BlitzGreymon+CresGarurumon→Omegamon Alter-S; Aegisdramon+Mugendramon→LastTyranomon/RustTyranomon; WarGreymon+MetalGarurumon→Omegamon; Slayerdramon+Breakdramon→Examon; Apollomon+Dianamon→GraceNovamon).
-- 20th special Digitama (Zuba/Hack/Slayerdra/Breakdra/Doru) and exclusive Digitama (anime Agumon/Gabumon, Corona, Luna, Meicoo) use eggKind on shared babies. Special-line Rookie→Champion is unconditional; Champion→Ultimate uses the standard 15 battles / 80%+ win rate; Ultimate→Mega is 0–2 care mistakes. Hidden: Wingdramon→WarGreymon and Groundramon→MetalGarurumon if 3–4 care mistakes and 100+ battles (Japan wave-2 colors only; overseas / NEW WAVE all colors).
+- Jogress (optional, DM20): tag-battle 5 wins with the official partner (BlitzGreymon+CresGarurumon→Omegamon Alter-S; Aegisdramon+Mugendramon→LastTyranomon/RustTyranomon; WarGreymon+MetalGarurumon→Omegamon; Slayerdramon+Breakdramon→Examon; Apollomon+Dianamon→GraceNovamon).
+- 20th special Digitama (Zuba/Hack/Slayerdra/Breakdra/Doru) and exclusive Digitama (anime Agumon/Gabumon, Corona, Luna, Meicoo) use eggKind on shared babies. Special-line Rookie→Champion is unconditional; Champion→Ultimate uses the firmware Perfect roll (not 80% WR); Ultimate→Mega is 0–2 care mistakes after 48 h awake. Hidden: Wingdramon→WarGreymon and Groundramon→MetalGarurumon if 3–4 care mistakes and 100+ battles (Japan wave-2 colors only; overseas / NEW WAVE all colors).
 - 20th official raisable count is 134 (nhoko / Humulos IDs 0–133). Colosseum-only and Digital Monster Color-only forms are documented in roster-audit.md and are not in this table.
 - Weight is reserved in the condition schema; official Ver.1–5 and 20th Ver.1–5 egg lines do not use weight as an evolution gate.
-- Stage times in this table are defaults for the simulator (egg 10 min, Baby I 60 min, Baby II 24 h, Rookie 72 h, Champion 72 h, Ultimate 48 h). Original individual lifespans varied by species (e.g. Koromon often cited ~44 h).
+- Per-species care (sleep hours, 満腹, parameter cycle, Energy/体力, injury base, heal doses) comes from firmware windows where measured, otherwise the NHOKO community table (rules-audit appendix A), labelled. Some Ver.3–5 windows are extrapolated ±4 h from an NHOKO midpoint and are labelled. 20th-only forms without a measured row keep a labelled placeholder (see CARE apply).
+- 1997 battles use the official 12×12 slot table (appendix B) plus boost, within the same stage only. Cross-stage fights clamp that result so the lower stage wins at most the stage-gap UPSET (8% / 2% / 0.5%). There is no 1997 attribute triangle.
 
 ## 階段對照
 
@@ -57,13 +60,13 @@ flowchart TD
   betamon["比特獸\nBetamon"] -->|育成失誤 4+ 次；訓練 8–31 次；過食 0–3 次；睡眠打擾 9+ 次| airdramon["飛龍獸\nAirdramon"]
   betamon["比特獸\nBetamon"] -->|育成失誤 4+ 次；訓練 8–31 次；過食 4+ 次；睡眠打擾 0–8 次| seadramon["海龍獸\nSeadramon"]
   betamon["比特獸\nBetamon"] -->|其他條件皆不符合時（官方 leftover）| numemon["鼻涕獸\nNumemon"]
-  greymon["暴龍獸\nGreymon"] -->|對戰 15+ 次；勝率 80%+| metalgreymon["機械暴龍獸 (病毒種)\nMetalGreymon (Virus)"]
-  tyranomon["巨龍獸\nTyranomon"] -->|對戰 15+ 次；勝率 80%+| mamemon["豆豆獸\nMamemon"]
-  devimon["惡魔獸\nDevimon"] -->|對戰 15+ 次；勝率 80%+| metalgreymon["機械暴龍獸 (病毒種)\nMetalGreymon (Virus)"]
-  meramon["火焰獸\nMeramon"] -->|對戰 15+ 次；勝率 80%+| mamemon["豆豆獸\nMamemon"]
-  airdramon["飛龍獸\nAirdramon"] -->|對戰 15+ 次；勝率 80%+| metalgreymon["機械暴龍獸 (病毒種)\nMetalGreymon (Virus)"]
-  seadramon["海龍獸\nSeadramon"] -->|對戰 15+ 次；勝率 80%+| mamemon["豆豆獸\nMamemon"]
-  numemon["鼻涕獸\nNumemon"] -->|對戰 15+ 次；勝率 80%+| monzaemon["熊仔獸\nMonzaemon"]
+  greymon["暴龍獸\nGreymon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| metalgreymon["機械暴龍獸 (病毒種)\nMetalGreymon (Virus)"]
+  tyranomon["巨龍獸\nTyranomon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| mamemon["豆豆獸\nMamemon"]
+  devimon["惡魔獸\nDevimon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| metalgreymon["機械暴龍獸 (病毒種)\nMetalGreymon (Virus)"]
+  meramon["火焰獸\nMeramon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| mamemon["豆豆獸\nMamemon"]
+  airdramon["飛龍獸\nAirdramon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| metalgreymon["機械暴龍獸 (病毒種)\nMetalGreymon (Virus)"]
+  seadramon["海龍獸\nSeadramon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| mamemon["豆豆獸\nMamemon"]
+  numemon["鼻涕獸\nNumemon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| monzaemon["熊仔獸\nMonzaemon"]
   metalgreymon["機械暴龍獸 (病毒種)\nMetalGreymon (Virus)"] -->|育成失誤 0–2 次| blitzgreymon["電光暴龍獸\nBlitzGreymon"]
   mamemon["豆豆獸\nMamemon"] -->|育成失誤 0–2 次| banchomamemon["番長豆豆獸\nBanchoMamemon"]
 ```
@@ -89,21 +92,21 @@ flowchart TD
 | **比特獸** / Betamon `betamon`（成長期 / Rookie） | 3 | **飛龍獸** / Airdramon `airdramon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 8–31 次；過食 0–3 次；睡眠打擾 9+ 次 |
 | **比特獸** / Betamon `betamon`（成長期 / Rookie） | 4 | **海龍獸** / Seadramon `seadramon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 8–31 次；過食 4+ 次；睡眠打擾 0–8 次 |
 | **比特獸** / Betamon `betamon`（成長期 / Rookie） | 5 | **鼻涕獸** / Numemon `numemon`（成熟期 / Champion） | 其他條件皆不符合時（官方 leftover） |
-| **暴龍獸** / Greymon `greymon`（成熟期 / Champion） | 1 | **機械暴龍獸 (疫苗種)** / MetalGreymon (Vaccine) `metalgreymon_va`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **暴龍獸** / Greymon `greymon`（成熟期 / Champion） | 2 | **機械暴龍獸 (病毒種)** / MetalGreymon (Virus) `metalgreymon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **暴龍獸** / Greymon `greymon`（成熟期 / Champion） | 3 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **巨龍獸** / Tyranomon `tyranomon`（成熟期 / Champion） | 1 | **豆豆獸** / Mamemon `mamemon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **巨龍獸** / Tyranomon `tyranomon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **惡魔獸** / Devimon `devimon`（成熟期 / Champion） | 1 | **機械暴龍獸 (病毒種)** / MetalGreymon (Virus) `metalgreymon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **惡魔獸** / Devimon `devimon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **火焰獸** / Meramon `meramon`（成熟期 / Champion） | 1 | **豆豆獸** / Mamemon `mamemon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **火焰獸** / Meramon `meramon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **飛龍獸** / Airdramon `airdramon`（成熟期 / Champion） | 1 | **機械暴龍獸 (病毒種)** / MetalGreymon (Virus) `metalgreymon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **飛龍獸** / Airdramon `airdramon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **海龍獸** / Seadramon `seadramon`（成熟期 / Champion） | 1 | **豆豆獸** / Mamemon `mamemon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **海龍獸** / Seadramon `seadramon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **鼻涕獸** / Numemon `numemon`（成熟期 / Champion） | 1 | **熊仔獸** / Monzaemon `monzaemon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **鼻涕獸** / Numemon `numemon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
+| **暴龍獸** / Greymon `greymon`（成熟期 / Champion） | 1 | **機械暴龍獸 (疫苗種)** / MetalGreymon (Vaccine) `metalgreymon_va`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **暴龍獸** / Greymon `greymon`（成熟期 / Champion） | 2 | **機械暴龍獸 (病毒種)** / MetalGreymon (Virus) `metalgreymon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **暴龍獸** / Greymon `greymon`（成熟期 / Champion） | 3 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **巨龍獸** / Tyranomon `tyranomon`（成熟期 / Champion） | 1 | **豆豆獸** / Mamemon `mamemon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **巨龍獸** / Tyranomon `tyranomon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **惡魔獸** / Devimon `devimon`（成熟期 / Champion） | 1 | **機械暴龍獸 (病毒種)** / MetalGreymon (Virus) `metalgreymon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **惡魔獸** / Devimon `devimon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **火焰獸** / Meramon `meramon`（成熟期 / Champion） | 1 | **豆豆獸** / Mamemon `mamemon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **火焰獸** / Meramon `meramon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **飛龍獸** / Airdramon `airdramon`（成熟期 / Champion） | 1 | **機械暴龍獸 (病毒種)** / MetalGreymon (Virus) `metalgreymon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **飛龍獸** / Airdramon `airdramon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **海龍獸** / Seadramon `seadramon`（成熟期 / Champion） | 1 | **豆豆獸** / Mamemon `mamemon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **海龍獸** / Seadramon `seadramon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **鼻涕獸** / Numemon `numemon`（成熟期 / Champion） | 1 | **熊仔獸** / Monzaemon `monzaemon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **鼻涕獸** / Numemon `numemon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
 | **機械暴龍獸 (病毒種)** / MetalGreymon (Virus) `metalgreymon`（完全體 / Ultimate） | 1 | **電光暴龍獸** / BlitzGreymon `blitzgreymon`（究極體 / Mega） | 育成失誤 0–2 次 |
 | **機械暴龍獸 (病毒種)** / MetalGreymon (Virus) `metalgreymon`（完全體 / Ultimate） | 2 | （停留） | 未達條件則停留在完全體 |
 | **豆豆獸** / Mamemon `mamemon`（完全體 / Ultimate） | 1 | **番長豆豆獸** / BanchoMamemon `banchomamemon`（究極體 / Mega） | 育成失誤 0–2 次 |
@@ -132,13 +135,13 @@ flowchart TD
   elecmon["艾力獸\nElecmon"] -->|育成失誤 4+ 次；訓練 8–15 次；過食 0–5 次；睡眠打擾 5+ 次| yukidarumon["雪人獸\nYukidarumon"]
   elecmon["艾力獸\nElecmon"] -->|育成失誤 4+ 次；訓練 16+ 次；過食 6+ 次；睡眠打擾 0–4 次| whamon["巨鯨獸\nWhamon"]
   elecmon["艾力獸\nElecmon"] -->|其他條件皆不符合時（官方 leftover）| vegimon["鼻屎獸\nVegimon"]
-  kabuterimon["比多獸\nKabuterimon"] -->|對戰 15+ 次；勝率 80%+| skullgreymon["喪屍暴龍獸\nSkullGreymon"]
-  garurumon["加魯魯獸\nGarurumon"] -->|對戰 15+ 次；勝率 80%+| metalmamemon["鋼鐵豆豆獸\nMetalMamemon"]
-  angemon["天使獸\nAngemon"] -->|對戰 15+ 次；勝率 80%+| skullgreymon["喪屍暴龍獸\nSkullGreymon"]
-  yukidarumon["雪人獸\nYukidarumon"] -->|對戰 15+ 次；勝率 80%+| metalmamemon["鋼鐵豆豆獸\nMetalMamemon"]
-  birdramon["巴多拉獸\nBirdramon"] -->|對戰 15+ 次；勝率 80%+| skullgreymon["喪屍暴龍獸\nSkullGreymon"]
-  whamon["巨鯨獸\nWhamon"] -->|對戰 15+ 次；勝率 80%+| metalmamemon["鋼鐵豆豆獸\nMetalMamemon"]
-  vegimon["鼻屎獸\nVegimon"] -->|對戰 15+ 次；勝率 80%+| vademon["入侵者獸\nVademon"]
+  kabuterimon["比多獸\nKabuterimon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| skullgreymon["喪屍暴龍獸\nSkullGreymon"]
+  garurumon["加魯魯獸\nGarurumon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| metalmamemon["鋼鐵豆豆獸\nMetalMamemon"]
+  angemon["天使獸\nAngemon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| skullgreymon["喪屍暴龍獸\nSkullGreymon"]
+  yukidarumon["雪人獸\nYukidarumon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| metalmamemon["鋼鐵豆豆獸\nMetalMamemon"]
+  birdramon["巴多拉獸\nBirdramon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| skullgreymon["喪屍暴龍獸\nSkullGreymon"]
+  whamon["巨鯨獸\nWhamon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| metalmamemon["鋼鐵豆豆獸\nMetalMamemon"]
+  vegimon["鼻屎獸\nVegimon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| vademon["入侵者獸\nVademon"]
   skullgreymon["喪屍暴龍獸\nSkullGreymon"] -->|育成失誤 0–2 次| skullmammon["喪屍長毛象獸\nSkullMammon"]
   metalmamemon["鋼鐵豆豆獸\nMetalMamemon"] -->|育成失誤 0–2 次| cresgarurumon["偃月加魯魯獸\nCresGarurumon"]
 ```
@@ -164,21 +167,21 @@ flowchart TD
 | **艾力獸** / Elecmon `elecmon`（成長期 / Rookie） | 3 | **雪人獸** / Yukidarumon `yukidarumon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 8–15 次；過食 0–5 次；睡眠打擾 5+ 次 |
 | **艾力獸** / Elecmon `elecmon`（成長期 / Rookie） | 4 | **巨鯨獸** / Whamon `whamon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 16+ 次；過食 6+ 次；睡眠打擾 0–4 次 |
 | **艾力獸** / Elecmon `elecmon`（成長期 / Rookie） | 5 | **鼻屎獸** / Vegimon `vegimon`（成熟期 / Champion） | 其他條件皆不符合時（官方 leftover） |
-| **比多獸** / Kabuterimon `kabuterimon`（成熟期 / Champion） | 1 | **喪屍暴龍獸** / SkullGreymon `skullgreymon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **比多獸** / Kabuterimon `kabuterimon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **加魯魯獸** / Garurumon `garurumon`（成熟期 / Champion） | 1 | **獸人加魯魯獸** / WereGarurumon `weregarurumon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **加魯魯獸** / Garurumon `garurumon`（成熟期 / Champion） | 2 | **鋼鐵豆豆獸** / MetalMamemon `metalmamemon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **加魯魯獸** / Garurumon `garurumon`（成熟期 / Champion） | 3 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **天使獸** / Angemon `angemon`（成熟期 / Champion） | 1 | **喪屍暴龍獸** / SkullGreymon `skullgreymon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **天使獸** / Angemon `angemon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **雪人獸** / Yukidarumon `yukidarumon`（成熟期 / Champion） | 1 | **鋼鐵豆豆獸** / MetalMamemon `metalmamemon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **雪人獸** / Yukidarumon `yukidarumon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **巴多拉獸** / Birdramon `birdramon`（成熟期 / Champion） | 1 | **喪屍暴龍獸** / SkullGreymon `skullgreymon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **巴多拉獸** / Birdramon `birdramon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **巨鯨獸** / Whamon `whamon`（成熟期 / Champion） | 1 | **鋼鐵豆豆獸** / MetalMamemon `metalmamemon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **巨鯨獸** / Whamon `whamon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **鼻屎獸** / Vegimon `vegimon`（成熟期 / Champion） | 1 | **入侵者獸** / Vademon `vademon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **鼻屎獸** / Vegimon `vegimon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
+| **比多獸** / Kabuterimon `kabuterimon`（成熟期 / Champion） | 1 | **喪屍暴龍獸** / SkullGreymon `skullgreymon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **比多獸** / Kabuterimon `kabuterimon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **加魯魯獸** / Garurumon `garurumon`（成熟期 / Champion） | 1 | **獸人加魯魯獸** / WereGarurumon `weregarurumon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **加魯魯獸** / Garurumon `garurumon`（成熟期 / Champion） | 2 | **鋼鐵豆豆獸** / MetalMamemon `metalmamemon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **加魯魯獸** / Garurumon `garurumon`（成熟期 / Champion） | 3 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **天使獸** / Angemon `angemon`（成熟期 / Champion） | 1 | **喪屍暴龍獸** / SkullGreymon `skullgreymon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **天使獸** / Angemon `angemon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **雪人獸** / Yukidarumon `yukidarumon`（成熟期 / Champion） | 1 | **鋼鐵豆豆獸** / MetalMamemon `metalmamemon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **雪人獸** / Yukidarumon `yukidarumon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **巴多拉獸** / Birdramon `birdramon`（成熟期 / Champion） | 1 | **喪屍暴龍獸** / SkullGreymon `skullgreymon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **巴多拉獸** / Birdramon `birdramon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **巨鯨獸** / Whamon `whamon`（成熟期 / Champion） | 1 | **鋼鐵豆豆獸** / MetalMamemon `metalmamemon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **巨鯨獸** / Whamon `whamon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **鼻屎獸** / Vegimon `vegimon`（成熟期 / Champion） | 1 | **入侵者獸** / Vademon `vademon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **鼻屎獸** / Vegimon `vegimon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
 | **喪屍暴龍獸** / SkullGreymon `skullgreymon`（完全體 / Ultimate） | 1 | **喪屍長毛象獸** / SkullMammon `skullmammon`（究極體 / Mega） | 育成失誤 0–2 次 |
 | **喪屍暴龍獸** / SkullGreymon `skullgreymon`（完全體 / Ultimate） | 2 | （停留） | 未達條件則停留在完全體 |
 | **鋼鐵豆豆獸** / MetalMamemon `metalmamemon`（完全體 / Ultimate） | 1 | **偃月加魯魯獸** / CresGarurumon `cresgarurumon`（究極體 / Mega） | 育成失誤 0–2 次 |
@@ -205,13 +208,13 @@ flowchart TD
   kunemon["古尼獸\nKunemon"] -->|育成失誤 4+ 次；訓練 8–15 次；過食 0–5 次；睡眠打擾 5+ 次| bakemon["猛鬼獸\nBakemon"]
   kunemon["古尼獸\nKunemon"] -->|育成失誤 4+ 次；訓練 16+ 次；過食 6+ 次；睡眠打擾 0–4 次| drimogemon["鑽地獸\nDrimogemon"]
   kunemon["古尼獸\nKunemon"] -->|其他條件皆不符合時（官方 leftover）| sukamon["大便獸\nSukamon"]
-  unimon["獨角馬獸\nUnimon"] -->|對戰 15+ 次；勝率 80%+| andromon["安杜路獸\nAndromon"]
-  centalmon["人馬獸\nCentalmon"] -->|對戰 15+ 次；勝率 80%+| giromon["砲彈獸\nGiromon"]
-  ogremon["奧加獸\nOgremon"] -->|對戰 15+ 次；勝率 80%+| andromon["安杜路獸\nAndromon"]
-  bakemon["猛鬼獸\nBakemon"] -->|對戰 15+ 次；勝率 80%+| giromon["砲彈獸\nGiromon"]
-  shellmon["貝殼獸\nShellmon"] -->|對戰 15+ 次；勝率 80%+| andromon["安杜路獸\nAndromon"]
-  drimogemon["鑽地獸\nDrimogemon"] -->|對戰 15+ 次；勝率 80%+| giromon["砲彈獸\nGiromon"]
-  sukamon["大便獸\nSukamon"] -->|對戰 15+ 次；勝率 80%+| etemon["悟空獸\nEtemon"]
+  unimon["獨角馬獸\nUnimon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| andromon["安杜路獸\nAndromon"]
+  centalmon["人馬獸\nCentalmon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| giromon["砲彈獸\nGiromon"]
+  ogremon["奧加獸\nOgremon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| andromon["安杜路獸\nAndromon"]
+  bakemon["猛鬼獸\nBakemon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| giromon["砲彈獸\nGiromon"]
+  shellmon["貝殼獸\nShellmon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| andromon["安杜路獸\nAndromon"]
+  drimogemon["鑽地獸\nDrimogemon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| giromon["砲彈獸\nGiromon"]
+  sukamon["大便獸\nSukamon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| etemon["悟空獸\nEtemon"]
   andromon["安杜路獸\nAndromon"] -->|育成失誤 0–2 次| hiandromon["高級安杜路獸\nHiAndromon"]
   etemon["悟空獸\nEtemon"] -->|育成失誤 0–2 次| kingetemon["大王悟空獸\nKingEtemon"]
 ```
@@ -235,20 +238,20 @@ flowchart TD
 | **古尼獸** / Kunemon `kunemon`（成長期 / Rookie） | 3 | **猛鬼獸** / Bakemon `bakemon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 8–15 次；過食 0–5 次；睡眠打擾 5+ 次 |
 | **古尼獸** / Kunemon `kunemon`（成長期 / Rookie） | 4 | **鑽地獸** / Drimogemon `drimogemon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 16+ 次；過食 6+ 次；睡眠打擾 0–4 次 |
 | **古尼獸** / Kunemon `kunemon`（成長期 / Rookie） | 5 | **大便獸** / Sukamon `sukamon`（成熟期 / Champion） | 其他條件皆不符合時（官方 leftover） |
-| **獨角馬獸** / Unimon `unimon`（成熟期 / Champion） | 1 | **安杜路獸** / Andromon `andromon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **獨角馬獸** / Unimon `unimon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **人馬獸** / Centalmon `centalmon`（成熟期 / Champion） | 1 | **砲彈獸** / Giromon `giromon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **人馬獸** / Centalmon `centalmon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **奧加獸** / Ogremon `ogremon`（成熟期 / Champion） | 1 | **安杜路獸** / Andromon `andromon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **奧加獸** / Ogremon `ogremon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **猛鬼獸** / Bakemon `bakemon`（成熟期 / Champion） | 1 | **砲彈獸** / Giromon `giromon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **猛鬼獸** / Bakemon `bakemon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **貝殼獸** / Shellmon `shellmon`（成熟期 / Champion） | 1 | **安杜路獸** / Andromon `andromon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **貝殼獸** / Shellmon `shellmon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **鑽地獸** / Drimogemon `drimogemon`（成熟期 / Champion） | 1 | **砲彈獸** / Giromon `giromon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **鑽地獸** / Drimogemon `drimogemon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **大便獸** / Sukamon `sukamon`（成熟期 / Champion） | 1 | **悟空獸** / Etemon `etemon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **大便獸** / Sukamon `sukamon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
+| **獨角馬獸** / Unimon `unimon`（成熟期 / Champion） | 1 | **安杜路獸** / Andromon `andromon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **獨角馬獸** / Unimon `unimon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **人馬獸** / Centalmon `centalmon`（成熟期 / Champion） | 1 | **砲彈獸** / Giromon `giromon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **人馬獸** / Centalmon `centalmon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **奧加獸** / Ogremon `ogremon`（成熟期 / Champion） | 1 | **安杜路獸** / Andromon `andromon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **奧加獸** / Ogremon `ogremon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **猛鬼獸** / Bakemon `bakemon`（成熟期 / Champion） | 1 | **砲彈獸** / Giromon `giromon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **猛鬼獸** / Bakemon `bakemon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **貝殼獸** / Shellmon `shellmon`（成熟期 / Champion） | 1 | **安杜路獸** / Andromon `andromon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **貝殼獸** / Shellmon `shellmon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **鑽地獸** / Drimogemon `drimogemon`（成熟期 / Champion） | 1 | **砲彈獸** / Giromon `giromon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **鑽地獸** / Drimogemon `drimogemon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **大便獸** / Sukamon `sukamon`（成熟期 / Champion） | 1 | **悟空獸** / Etemon `etemon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **大便獸** / Sukamon `sukamon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
 | **安杜路獸** / Andromon `andromon`（完全體 / Ultimate） | 1 | **高級安杜路獸** / HiAndromon `hiandromon`（究極體 / Mega） | 育成失誤 0–2 次 |
 | **安杜路獸** / Andromon `andromon`（完全體 / Ultimate） | 2 | （停留） | 未達條件則停留在完全體 |
 | **砲彈獸** / Giromon `giromon`（完全體 / Ultimate） | 1 | （停留） | 無究極體（停留在完全體） |
@@ -275,13 +278,13 @@ flowchart TD
   palmon["巴魯獸\nPalmon"] -->|育成失誤 4+ 次；訓練 8–15 次；過食 0–5 次；睡眠打擾 5+ 次| kuwagamon["古加獸\nKuwagamon"]
   palmon["巴魯獸\nPalmon"] -->|育成失誤 4+ 次；訓練 16+ 次；過食 6+ 次；睡眠打擾 0–4 次| mojyamon["毛人獸\nMojyamon"]
   palmon["巴魯獸\nPalmon"] -->|其他條件皆不符合時（官方 leftover）| nanimon["亞伯獸\nNanimon"]
-  monochromon["角龍獸\nMonochromon"] -->|對戰 15+ 次；勝率 80%+| megadramon["超蛇龍獸\nMegadramon"]
-  cockatrimon["巨雞獸\nCockatrimon"] -->|對戰 15+ 次；勝率 80%+| piccolomon["妖精獸\nPiccolomon"]
-  leomon["獅子獸\nLeomon"] -->|對戰 15+ 次；勝率 80%+| megadramon["超蛇龍獸\nMegadramon"]
-  kuwagamon["古加獸\nKuwagamon"] -->|對戰 15+ 次；勝率 80%+| piccolomon["妖精獸\nPiccolomon"]
-  coelamon["西拉獸\nCoelamon"] -->|對戰 15+ 次；勝率 80%+| megadramon["超蛇龍獸\nMegadramon"]
-  mojyamon["毛人獸\nMojyamon"] -->|對戰 15+ 次；勝率 80%+| piccolomon["妖精獸\nPiccolomon"]
-  nanimon["亞伯獸\nNanimon"] -->|對戰 15+ 次；勝率 80%+| digitamamon["蛋蛋獸\nDigitamamon"]
+  monochromon["角龍獸\nMonochromon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| megadramon["超蛇龍獸\nMegadramon"]
+  cockatrimon["巨雞獸\nCockatrimon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| piccolomon["妖精獸\nPiccolomon"]
+  leomon["獅子獸\nLeomon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| megadramon["超蛇龍獸\nMegadramon"]
+  kuwagamon["古加獸\nKuwagamon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| piccolomon["妖精獸\nPiccolomon"]
+  coelamon["西拉獸\nCoelamon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| megadramon["超蛇龍獸\nMegadramon"]
+  mojyamon["毛人獸\nMojyamon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| piccolomon["妖精獸\nPiccolomon"]
+  nanimon["亞伯獸\nNanimon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| digitamamon["蛋蛋獸\nDigitamamon"]
   megadramon["超蛇龍獸\nMegadramon"] -->|育成失誤 0–2 次| aegisdramon["聖盾龍獸\nAegisdramon"]
   digitamamon["蛋蛋獸\nDigitamamon"] -->|育成失誤 0–2 次| titamon["泰坦獸\nTitamon"]
 ```
@@ -305,20 +308,20 @@ flowchart TD
 | **巴魯獸** / Palmon `palmon`（成長期 / Rookie） | 3 | **古加獸** / Kuwagamon `kuwagamon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 8–15 次；過食 0–5 次；睡眠打擾 5+ 次 |
 | **巴魯獸** / Palmon `palmon`（成長期 / Rookie） | 4 | **毛人獸** / Mojyamon `mojyamon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 16+ 次；過食 6+ 次；睡眠打擾 0–4 次 |
 | **巴魯獸** / Palmon `palmon`（成長期 / Rookie） | 5 | **亞伯獸** / Nanimon `nanimon`（成熟期 / Champion） | 其他條件皆不符合時（官方 leftover） |
-| **角龍獸** / Monochromon `monochromon`（成熟期 / Champion） | 1 | **超蛇龍獸** / Megadramon `megadramon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **角龍獸** / Monochromon `monochromon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **巨雞獸** / Cockatrimon `cockatrimon`（成熟期 / Champion） | 1 | **妖精獸** / Piccolomon `piccolomon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **巨雞獸** / Cockatrimon `cockatrimon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **獅子獸** / Leomon `leomon`（成熟期 / Champion） | 1 | **超蛇龍獸** / Megadramon `megadramon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **獅子獸** / Leomon `leomon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **古加獸** / Kuwagamon `kuwagamon`（成熟期 / Champion） | 1 | **妖精獸** / Piccolomon `piccolomon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **古加獸** / Kuwagamon `kuwagamon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **西拉獸** / Coelamon `coelamon`（成熟期 / Champion） | 1 | **超蛇龍獸** / Megadramon `megadramon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **西拉獸** / Coelamon `coelamon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **毛人獸** / Mojyamon `mojyamon`（成熟期 / Champion） | 1 | **妖精獸** / Piccolomon `piccolomon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **毛人獸** / Mojyamon `mojyamon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **亞伯獸** / Nanimon `nanimon`（成熟期 / Champion） | 1 | **蛋蛋獸** / Digitamamon `digitamamon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **亞伯獸** / Nanimon `nanimon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
+| **角龍獸** / Monochromon `monochromon`（成熟期 / Champion） | 1 | **超蛇龍獸** / Megadramon `megadramon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **角龍獸** / Monochromon `monochromon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **巨雞獸** / Cockatrimon `cockatrimon`（成熟期 / Champion） | 1 | **妖精獸** / Piccolomon `piccolomon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **巨雞獸** / Cockatrimon `cockatrimon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **獅子獸** / Leomon `leomon`（成熟期 / Champion） | 1 | **超蛇龍獸** / Megadramon `megadramon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **獅子獸** / Leomon `leomon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **古加獸** / Kuwagamon `kuwagamon`（成熟期 / Champion） | 1 | **妖精獸** / Piccolomon `piccolomon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **古加獸** / Kuwagamon `kuwagamon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **西拉獸** / Coelamon `coelamon`（成熟期 / Champion） | 1 | **超蛇龍獸** / Megadramon `megadramon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **西拉獸** / Coelamon `coelamon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **毛人獸** / Mojyamon `mojyamon`（成熟期 / Champion） | 1 | **妖精獸** / Piccolomon `piccolomon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **毛人獸** / Mojyamon `mojyamon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **亞伯獸** / Nanimon `nanimon`（成熟期 / Champion） | 1 | **蛋蛋獸** / Digitamamon `digitamamon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **亞伯獸** / Nanimon `nanimon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
 | **超蛇龍獸** / Megadramon `megadramon`（完全體 / Ultimate） | 1 | **聖盾龍獸** / Aegisdramon `aegisdramon`（究極體 / Mega） | 育成失誤 0–2 次 |
 | **超蛇龍獸** / Megadramon `megadramon`（完全體 / Ultimate） | 2 | （停留） | 未達條件則停留在完全體 |
 | **妖精獸** / Piccolomon `piccolomon`（完全體 / Ultimate） | 1 | （停留） | 無究極體（停留在完全體） |
@@ -345,13 +348,13 @@ flowchart TD
   gizamon["基剎獸\nGizamon"] -->|育成失誤 4+ 次；訓練 8–15 次；過食 0–5 次；睡眠打擾 5+ 次| tuskmon["大角獸\nTuskmon"]
   gizamon["基剎獸\nGizamon"] -->|育成失誤 4+ 次；訓練 32+ 次；過食 6+ 次；睡眠打擾 0–4 次| deltamon["三頭龍獸\nDeltamon"]
   gizamon["基剎獸\nGizamon"] -->|其他條件皆不符合時（官方 leftover）| raremon["爛泥獸\nRaremon"]
-  darktyranomon["黑暗巨龍獸\nDarkTyranomon"] -->|對戰 15+ 次；勝率 80%+| metaltyranomon["鋼鐵巨龍獸\nMetalTyranomon"]
-  cyclomon["獨眼龍獸\nCyclomon"] -->|對戰 15+ 次；勝率 80%+| nanomon["分子獸\nNanomon"]
-  devidramon["邪龍獸\nDevidramon"] -->|對戰 15+ 次；勝率 80%+| metaltyranomon["鋼鐵巨龍獸\nMetalTyranomon"]
-  tuskmon["大角獸\nTuskmon"] -->|對戰 15+ 次；勝率 80%+| nanomon["分子獸\nNanomon"]
-  flymon["黃蜂獸\nFlymon"] -->|對戰 15+ 次；勝率 80%+| metaltyranomon["鋼鐵巨龍獸\nMetalTyranomon"]
-  deltamon["三頭龍獸\nDeltamon"] -->|對戰 15+ 次；勝率 80%+| nanomon["分子獸\nNanomon"]
-  raremon["爛泥獸\nRaremon"] -->|對戰 15+ 次；勝率 80%+| extyranomon["巨龍獸EX\nExTyranomon"]
+  darktyranomon["黑暗巨龍獸\nDarkTyranomon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| metaltyranomon["鋼鐵巨龍獸\nMetalTyranomon"]
+  cyclomon["獨眼龍獸\nCyclomon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| nanomon["分子獸\nNanomon"]
+  devidramon["邪龍獸\nDevidramon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| metaltyranomon["鋼鐵巨龍獸\nMetalTyranomon"]
+  tuskmon["大角獸\nTuskmon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| nanomon["分子獸\nNanomon"]
+  flymon["黃蜂獸\nFlymon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| metaltyranomon["鋼鐵巨龍獸\nMetalTyranomon"]
+  deltamon["三頭龍獸\nDeltamon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| nanomon["分子獸\nNanomon"]
+  raremon["爛泥獸\nRaremon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| extyranomon["巨龍獸EX\nExTyranomon"]
   metaltyranomon["鋼鐵巨龍獸\nMetalTyranomon"] -->|育成失誤 0–2 次| mugendramon["機械邪龍獸\nMugendramon"]
   extyranomon["巨龍獸EX\nExTyranomon"] -->|育成失誤 0–2 次| pinochimon["木偶獸\nPinochimon"]
 ```
@@ -375,20 +378,20 @@ flowchart TD
 | **基剎獸** / Gizamon `gizamon`（成長期 / Rookie） | 3 | **大角獸** / Tuskmon `tuskmon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 8–15 次；過食 0–5 次；睡眠打擾 5+ 次 |
 | **基剎獸** / Gizamon `gizamon`（成長期 / Rookie） | 4 | **三頭龍獸** / Deltamon `deltamon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 32+ 次；過食 6+ 次；睡眠打擾 0–4 次 |
 | **基剎獸** / Gizamon `gizamon`（成長期 / Rookie） | 5 | **爛泥獸** / Raremon `raremon`（成熟期 / Champion） | 其他條件皆不符合時（官方 leftover） |
-| **黑暗巨龍獸** / DarkTyranomon `darktyranomon`（成熟期 / Champion） | 1 | **鋼鐵巨龍獸** / MetalTyranomon `metaltyranomon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **黑暗巨龍獸** / DarkTyranomon `darktyranomon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **獨眼龍獸** / Cyclomon `cyclomon`（成熟期 / Champion） | 1 | **分子獸** / Nanomon `nanomon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **獨眼龍獸** / Cyclomon `cyclomon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **邪龍獸** / Devidramon `devidramon`（成熟期 / Champion） | 1 | **鋼鐵巨龍獸** / MetalTyranomon `metaltyranomon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **邪龍獸** / Devidramon `devidramon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **大角獸** / Tuskmon `tuskmon`（成熟期 / Champion） | 1 | **分子獸** / Nanomon `nanomon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **大角獸** / Tuskmon `tuskmon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **黃蜂獸** / Flymon `flymon`（成熟期 / Champion） | 1 | **鋼鐵巨龍獸** / MetalTyranomon `metaltyranomon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **黃蜂獸** / Flymon `flymon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **三頭龍獸** / Deltamon `deltamon`（成熟期 / Champion） | 1 | **分子獸** / Nanomon `nanomon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **三頭龍獸** / Deltamon `deltamon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
-| **爛泥獸** / Raremon `raremon`（成熟期 / Champion） | 1 | **巨龍獸EX** / ExTyranomon `extyranomon`（完全體 / Ultimate） | 對戰 15+ 次；勝率 80%+ |
-| **爛泥獸** / Raremon `raremon`（成熟期 / Champion） | 2 | （停留） | 未達 15 戰／勝率 80% 則停留在成熟期 |
+| **黑暗巨龍獸** / DarkTyranomon `darktyranomon`（成熟期 / Champion） | 1 | **鋼鐵巨龍獸** / MetalTyranomon `metaltyranomon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **黑暗巨龍獸** / DarkTyranomon `darktyranomon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **獨眼龍獸** / Cyclomon `cyclomon`（成熟期 / Champion） | 1 | **分子獸** / Nanomon `nanomon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **獨眼龍獸** / Cyclomon `cyclomon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **邪龍獸** / Devidramon `devidramon`（成熟期 / Champion） | 1 | **鋼鐵巨龍獸** / MetalTyranomon `metaltyranomon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **邪龍獸** / Devidramon `devidramon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **大角獸** / Tuskmon `tuskmon`（成熟期 / Champion） | 1 | **分子獸** / Nanomon `nanomon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **大角獸** / Tuskmon `tuskmon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **黃蜂獸** / Flymon `flymon`（成熟期 / Champion） | 1 | **鋼鐵巨龍獸** / MetalTyranomon `metaltyranomon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **黃蜂獸** / Flymon `flymon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **三頭龍獸** / Deltamon `deltamon`（成熟期 / Champion） | 1 | **分子獸** / Nanomon `nanomon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **三頭龍獸** / Deltamon `deltamon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
+| **爛泥獸** / Raremon `raremon`（成熟期 / Champion） | 1 | **巨龍獸EX** / ExTyranomon `extyranomon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
+| **爛泥獸** / Raremon `raremon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |
 | **鋼鐵巨龍獸** / MetalTyranomon `metaltyranomon`（完全體 / Ultimate） | 1 | **機械邪龍獸** / Mugendramon `mugendramon`（究極體 / Mega） | 育成失誤 0–2 次 |
 | **鋼鐵巨龍獸** / MetalTyranomon `metaltyranomon`（完全體 / Ultimate） | 2 | （停留） | 未達條件則停留在完全體 |
 | **分子獸** / Nanomon `nanomon`（完全體 / Ultimate） | 1 | （停留） | 無究極體（停留在完全體） |

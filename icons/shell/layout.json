@@ -1,0 +1,102 @@
+{
+  "art_w": 1494,
+  "art_h": 1037,
+  "aspect": 1.440694,
+  "source": "official face-v1.png measurements; icons merged from printed silhouettes",
+  "lcd": {
+    "left": 12.249,
+    "top": 39.634,
+    "width": 33.4,
+    "height": 23.819
+  },
+  "buttons": {
+    "a": {
+      "cx": 81.459,
+      "cy": 26.422,
+      "w": 11.379,
+      "h": 16.393
+    },
+    "b": {
+      "cx": 81.459,
+      "cy": 50.53,
+      "w": 11.379,
+      "h": 16.393
+    },
+    "c": {
+      "cx": 81.459,
+      "cy": 72.71,
+      "w": 11.379,
+      "h": 16.393
+    },
+    "reset": {
+      "cx": 75.435,
+      "cy": 61.62,
+      "w": 4.819,
+      "h": 6.943
+    }
+  },
+  "icons_top": [
+    {
+      "left": 14.19,
+      "top": 29.315,
+      "width": 6.493,
+      "height": 7.425
+    },
+    {
+      "left": 21.754,
+      "top": 29.219,
+      "width": 6.627,
+      "height": 7.522
+    },
+    {
+      "left": 30.254,
+      "top": 29.026,
+      "width": 5.154,
+      "height": 7.811
+    },
+    {
+      "left": 37.751,
+      "top": 29.026,
+      "width": 5.288,
+      "height": 7.907
+    }
+  ],
+  "icons_bot": [
+    {
+      "left": 14.659,
+      "top": 66.249,
+      "width": 5.556,
+      "height": 7.811
+    },
+    {
+      "left": 23.025,
+      "top": 66.152,
+      "width": 4.016,
+      "height": 8.004
+    },
+    {
+      "left": 29.987,
+      "top": 66.056,
+      "width": 5.689,
+      "height": 8.1
+    },
+    {
+      "left": 37.483,
+      "top": 66.635,
+      "width": 6.225,
+      "height": 6.461
+    }
+  ],
+  "icon_names_top": [
+    "STATUS",
+    "FEED",
+    "TRAIN",
+    "BATTLE"
+  ],
+  "icon_names_bot": [
+    "FLUSH",
+    "LIGHT",
+    "MEDIC",
+    "CALL"
+  ]
+}

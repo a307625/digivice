@@ -96,37 +96,43 @@ const positives = [
   { from: 'gizamon', stats: { calls: 4, train: 32, overfeed: 6, sleepDist: 0, timeInStage: 99999 }, to: 'deltamon' },
   { from: 'koromon', stats: { calls: 3, timeInStage: 99999 }, to: 'agumon' },
   { from: 'koromon', stats: { calls: 4, timeInStage: 99999 }, to: 'betamon' },
+  // Firmware: Betamon 4+ CM, 8–31 train, OF 0–3 (including 3, not 4), 9+ sleep → Airdramon
+  { from: 'betamon', stats: { calls: 5, train: 20, overfeed: 3, sleepDist: 9, timeInStage: 99999 }, to: 'airdramon' },
+  // Elecmon 16-split (firmware): 16–31 otherwise → Vegimon; 8–15, OF 0–5, sleep 5+ → Yukidarumon
+  { from: 'elecmon', stats: { calls: 5, train: 20, overfeed: 0, sleepDist: 0, timeInStage: 99999 }, to: 'vegimon' },
+  { from: 'elecmon', stats: { calls: 5, train: 10, overfeed: 2, sleepDist: 5, timeInStage: 99999 }, to: 'yukidarumon' },
+  { from: 'elecmon', stats: { calls: 5, train: 16, overfeed: 6, sleepDist: 0, timeInStage: 99999 }, to: 'whamon' },
 ];
 for (const c of positives) {
   const r = resolve(c.from, c.stats);
   ok(r.to === c.to, `positive ${c.from} → ${c.to} (got ${r.to})`);
 }
 
-// ---------- 3. Champion → Ultimate: 15 battles / 80% WR; else stay ----------
-console.log('\n3) Champion → Ultimate battle rules (15+, 80%+)');
-const champCases = [
-  { from: 'greymon', battles: 15, wins: 12, to: 'metalgreymon' }, // 80%
-  { from: 'greymon', battles: 15, wins: 11, stay: true }, // 73.3%
-  { from: 'greymon', battles: 14, wins: 14, stay: true },
-  { from: 'greymon', battles: 20, wins: 16, to: 'metalgreymon' }, // 80%
-  { from: 'numemon', battles: 15, wins: 12, to: 'monzaemon' },
-  { from: 'tyranomon', battles: 15, wins: 12, to: 'mamemon' },
-  { from: 'devimon', battles: 15, wins: 12, to: 'metalgreymon' },
-  { from: 'airdramon', battles: 15, wins: 12, to: 'metalgreymon' },
-  { from: 'kabuterimon', battles: 15, wins: 12, to: 'skullgreymon' },
-  { from: 'vegimon', battles: 16, wins: 13, to: 'vademon' },
-  { from: 'sukamon', battles: 15, wins: 12, to: 'etemon' },
-  { from: 'nanimon', battles: 15, wins: 12, to: 'digitamamon' },
-  { from: 'raremon', battles: 15, wins: 12, to: 'extyranomon' },
-  { from: 'leomon', battles: 15, wins: 12, to: 'megadramon' },
-];
-for (const c of champCases) {
-  const stats = { calls: 0, train: 0, overfeed: 0, sleepDist: 0, battles: c.battles, wins: c.wins, winRate: c.wins / c.battles, timeInStage: 99999 };
-  const r = resolve(c.from, stats);
-  if (c.stay) {
-    ok(r.stayed && r.to === c.from, `${c.from} stays Champion at ${c.wins}/${c.battles} (got ${r.to}, stayed=${r.stayed})`);
-  } else {
-    ok(!r.stayed && r.to === c.to, `${c.from} → ${c.to} at ${c.wins}/${c.battles} (got ${r.to})`);
+// ---------- 3. Champion → Ultimate: firmware Perfect eligibility (NOT 80% WR) ----------
+console.log('\n3) Champion → Ultimate (perfectEligible bit; 80% WR is not a rule)');
+{
+  const stayStats = { calls: 0, train: 0, overfeed: 0, sleepDist: 0, battles: 20, wins: 20, winRate: 1, timeInStage: 99999 };
+  const stay = resolve('greymon', stayStats);
+  ok(stay.stayed, 'Greymon without perfectEligible stays, even at 20/20 (80% WR is not the gate)');
+  const stay14 = resolve('greymon', Object.assign({}, stayStats, { battles: 14, wins: 14 }));
+  ok(stay14.stayed, 'Greymon without perfectEligible stays at 14/14');
+  const champCases = [
+    { from: 'greymon', to: 'metalgreymon' },
+    { from: 'numemon', to: 'monzaemon' },
+    { from: 'tyranomon', to: 'mamemon' },
+    { from: 'devimon', to: 'metalgreymon' },
+    { from: 'airdramon', to: 'metalgreymon' },
+    { from: 'kabuterimon', to: 'skullgreymon' },
+    { from: 'vegimon', to: 'vademon' },
+    { from: 'sukamon', to: 'etemon' },
+    { from: 'nanimon', to: 'digitamamon' },
+    { from: 'raremon', to: 'extyranomon' },
+    { from: 'leomon', to: 'megadramon' },
+  ];
+  for (const c of champCases) {
+    const stats = { calls: 0, train: 0, overfeed: 0, sleepDist: 0, battles: 15, wins: 12, winRate: 0.8, perfectEligible: true, timeInStage: 99999, perfectEligible: true };
+    const r = resolve(c.from, stats);
+    ok(!r.stayed && r.to === c.to, `${c.from} → ${c.to} when perfectEligible (got ${r.to})`);
   }
 }
 
@@ -213,7 +219,7 @@ for (const j of data.JOGRESS) {
 // ---------- 8. CPU/PvP are not distinguished in the resolver (same counters) ----------
 console.log('\n8) Battle source is irrelevant to the resolver (CPU and PvP share counters)');
 {
-  const stats = { battles: 15, wins: 12, winRate: 0.8, timeInStage: 99999, source: 'cpu' };
+  const stats = { battles: 15, wins: 12, winRate: 0.8, perfectEligible: true, timeInStage: 99999, source: 'cpu', perfectEligible: true };
   const a = resolve('greymon', stats);
   const b = resolve('greymon', Object.assign({}, stats, { source: 'pvp' }));
   ok(a.to === 'metalgreymon' && b.to === 'metalgreymon', 'CPU and PvP stats resolve identically');
@@ -266,21 +272,21 @@ ev('koromon', { eggKind: 'anime_agumon', calls: 9 }, 'agumon', 'anime Koromon ig
 ev('koromon', { eggKind: 'ver1', calls: 5 }, 'betamon', 'Ver.1 Koromon 4+ calls still Betamon');
 ev('agumon', { eggKind: 'anime_agumon', calls: 5, train: 0 }, 'greymon', 'anime Agumon is linear to Greymon');
 ev('agumon', { eggKind: 'ver1', calls: 0, train: 40 }, 'greymon', 'Ver.1 Agumon regular + train still Greymon');
-ev('greymon', { eggKind: 'anime_agumon', battles: 15, wins: 12, winRate: 0.8 }, 'metalgreymon_va', 'anime Greymon → MetalGreymon (Vaccine)');
-ev('greymon', { eggKind: 'ver1', battles: 15, wins: 12, winRate: 0.8 }, 'metalgreymon', 'Ver.1 Greymon → MetalGreymon (Virus)');
+ev('greymon', { eggKind: 'anime_agumon', battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'metalgreymon_va', 'anime Greymon → MetalGreymon (Vaccine)');
+ev('greymon', { eggKind: 'ver1', battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'metalgreymon', 'Ver.1 Greymon → MetalGreymon (Virus)');
 ev('gabumon', { eggKind: 'anime_gabumon', calls: 0, train: 0 }, 'garurumon', 'anime Gabumon is linear to Garurumon');
-ev('garurumon', { eggKind: 'anime_gabumon', battles: 15, wins: 12, winRate: 0.8 }, 'weregarurumon', 'anime Garurumon → WereGarurumon');
-ev('garurumon', { eggKind: 'ver2', battles: 15, wins: 12, winRate: 0.8 }, 'metalmamemon', 'Ver.2 Garurumon → MetalMamemon');
+ev('garurumon', { eggKind: 'anime_gabumon', battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'weregarurumon', 'anime Garurumon → WereGarurumon');
+ev('garurumon', { eggKind: 'ver2', battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'metalmamemon', 'Ver.2 Garurumon → MetalMamemon');
 
 // Champion → Ultimate / Ultimate → Mega on specials
-ev('zubaeagermon', { battles: 15, wins: 12, winRate: 0.8 }, 'duramon', 'ZubaEagermon ultimate');
+ev('zubaeagermon', { battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'duramon', 'ZubaEagermon ultimate');
 ev('duramon', { calls: 1 }, 'durandamon', 'Duramon mega 0–2 mistakes');
-ev('baohackmon', { battles: 15, wins: 12, winRate: 0.8 }, 'saviorhackmon', 'BaoHuckmon ultimate');
+ev('baohackmon', { battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'saviorhackmon', 'BaoHuckmon ultimate');
 ev('saviorhackmon', { calls: 0 }, 'jesmon', 'SaviorHuckmon mega');
-ev('coredramon_blue', { battles: 15, wins: 12, winRate: 0.8 }, 'wingdramon', 'Coredramon Blue ultimate');
+ev('coredramon_blue', { battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'wingdramon', 'Coredramon Blue ultimate');
 ev('wingdramon', { calls: 0 }, 'slayerdramon', 'Wingdramon → Slayerdramon');
 ev('wingdramon', { calls: 3, battles: 100 }, 'wargreymon', 'hidden Wingdramon → WarGreymon');
-ev('coredramon_green', { battles: 15, wins: 12, winRate: 0.8 }, 'groundramon', 'Coredramon Green ultimate');
+ev('coredramon_green', { battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'groundramon', 'Coredramon Green ultimate');
 ev('groundramon', { calls: 2 }, 'breakdramon', 'Groundramon → Breakdramon');
 ev('groundramon', { calls: 4, battles: 100 }, 'metalgarurumon', 'hidden Groundramon → MetalGarurumon');
 {
@@ -289,13 +295,13 @@ ev('groundramon', { calls: 4, battles: 100 }, 'metalgarurumon', 'hidden Groundra
   const stay2 = resolve('wingdramon', { calls: 3, battles: 99, timeInStage: 99999 });
   ok(stay2.stayed, 'Wingdramon hidden mega requires 100 battles');
 }
-ev('dorugamon', { battles: 15, wins: 12, winRate: 0.8 }, 'doruguremon', 'DORUgamon ultimate');
+ev('dorugamon', { battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'doruguremon', 'DORUgamon ultimate');
 ev('doruguremon', { calls: 2 }, 'alphamon', 'DORUguremon mega');
-ev('firamon', { battles: 15, wins: 12, winRate: 0.8 }, 'flaremon', 'Firamon ultimate');
+ev('firamon', { battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'flaremon', 'Firamon ultimate');
 ev('flaremon', { calls: 0 }, 'apollomon', 'Flaremon mega');
-ev('lekismon', { battles: 15, wins: 12, winRate: 0.8 }, 'crescemon', 'Lekismon ultimate');
+ev('lekismon', { battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'crescemon', 'Lekismon ultimate');
 ev('crescemon', { calls: 1 }, 'dianamon', 'Crescemon mega');
-ev('meicoomon', { battles: 15, wins: 12, winRate: 0.8 }, 'meicrackmon', 'Meicoomon ultimate');
+ev('meicoomon', { battles: 15, wins: 12, winRate: 0.8, perfectEligible: true }, 'meicrackmon', 'Meicoomon ultimate');
 ev('meicrackmon', { calls: 0 }, 'rasielmon', 'Meicrackmon → Rasielmon (not Raguelmon)');
 
 const newMegas = ['durandamon', 'jesmon', 'slayerdramon', 'breakdramon', 'alphamon', 'apollomon', 'dianamon', 'rasielmon'];

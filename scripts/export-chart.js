@@ -17,7 +17,7 @@ function fmtRule(rule) {
   if (rule.stay && rule.leftover) {
     if (rule.reason === 'no-mega-from-this-ultimate') return '無究極體（停留在完全體）';
     if (rule.reason === 'mega-requirements-not-met') return '未達條件則停留在完全體';
-    if (rule.reason === 'ultimate-requirements-not-met') return '未達 15 戰／勝率 80% 則停留在成熟期';
+    if (rule.reason === 'ultimate-requirements-not-met') return '未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期';
     return '未達條件則停留';
   }
   if (rule.leftover) return '其他條件皆不符合時（官方 leftover）';
@@ -27,6 +27,7 @@ function fmtRule(rule) {
   if (rule.overfeed) parts.push(`過食 ${fmtRange(rule.overfeed)} 次`);
   if (rule.sleepDist) parts.push(`睡眠打擾 ${fmtRange(rule.sleepDist)} 次`);
   if (rule.weight) parts.push(`體重 ${fmtRange(rule.weight, 'g')}`);
+  if (rule.perfectRoll) parts.push('完全體檢定（15 戰以上，勝分骰；非勝率 80%）');
   if (rule.battles) parts.push(`對戰 ${fmtRange(rule.battles)} 次`);
   if (rule.winRate) {
     const pct = (v) => (v == null ? '' : Math.round(v * 100) + '%');

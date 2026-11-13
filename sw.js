@@ -1,5 +1,5 @@
 /* Offline cache for 數碼怪獸對打機 */
-var CACHE = 'digivice-v19';
+var CACHE = 'digivice-v21';
 var ASSETS = [
   './',
   './index.html',
@@ -8,7 +8,25 @@ var ASSETS = [
   './js/evolution-data.js',
   './js/evolution.js',
   './js/sprites.js',
+  './js/items.js',
   './js/save.js',
+  './icons/shell/dm1997-v1.png',
+  './icons/shell/dm1997-v2.png',
+  './icons/shell/dm1997-v3.png',
+  './icons/shell/dm1997-v4.png',
+  './icons/shell/dm1997-v5.png',
+  './icons/shell/dm20-zuba.png',
+  './icons/shell/dm20-omega.png',
+  './icons/shell/dm20-alpha.png',
+  './icons/shell/dm20-brown.png',
+  './icons/bezel/status.png',
+  './icons/bezel/feed.png',
+  './icons/bezel/train.png',
+  './icons/bezel/battle.png',
+  './icons/bezel/flush.png',
+  './icons/bezel/light.png',
+  './icons/bezel/medic.png',
+  './icons/bezel/call.png',
   './js/battle.js',
   './js/steps.js',
   './js/engine.js',
