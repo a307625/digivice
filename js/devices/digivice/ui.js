@@ -148,14 +148,33 @@
     text(ctx, str, Math.floor((LW - w) / 2), cy, s);
   }
 
+  // Official 26×34 sprites cannot sit at 1:1 in a 36-dot circle together
+  // with the clock (y=3–8) without overflowing the bottom of the window.
+  // FIT_S scales each original sprite pixel; 0.70 keeps the body inside a
+  // r≈17.5 circle under the clock, matching how the real 1999 screen frames
+  // the mon with a margin.
+  var FIT_S = 0.70;
+
   function blitMon(ctx, id, cxDot, baselineDot) {
     var S = Spr();
     if (!S || !id) return;
-    // 26×34 sprite, scale 4 already inside blit (SCALE=4) if we pass scale.
-    // Position: left = cxDot - 13, top = baselineDot - 33 (1-dot pad at bottom of GIF).
-    var x = (cxDot - 13) * DOT;
-    var y = (baselineDot - 33) * DOT;
-    S.blit(ctx, id, x, y, DOT, INK);
+    var px = DOT * FIT_S;               // canvas px per original sprite pixel
+    var destW = 26 * px, destH = 34 * px;
+    var x = cxDot * DOT - destW / 2;
+    // Prefer a vertical centre that sits below the clock and inside the
+    // circle. baselineDot is kept as a mild bias for battle/map layouts.
+    var cy = 20;                        // default centre in dots (below clock)
+    if (typeof baselineDot === 'number' && baselineDot < 32) {
+      // Callers pass a baseline (feet). Convert to a fitted centre, then
+      // clamp so the sprite's AABB stays in the safe circle.
+      cy = baselineDot - 17 * FIT_S;
+    }
+    var top = cy - 17 * FIT_S;
+    if (top < 8.2) cy = 8.2 + 17 * FIT_S;   // keep under the clock
+    var bot = cy + 17 * FIT_S;
+    if (bot > 33.2) cy = 33.2 - 17 * FIT_S;
+    var y = cy * DOT - destH / 2;
+    S.blit(ctx, id, x, y, px, INK);
   }
 
   function currentScreen(state) {
@@ -212,8 +231,7 @@
     // was clipped by the circular window.
     textC(ctx, hh + ':' + mm, 3, 1);
     if (p) {
-      // Frame top at y=2 so the GIF's top padding sits under the clock;
-      // baseline = 2+33 = 35.
+      // Fitted sprite (see blitMon); baseline 35 is clamped inside the circle.
       blitMon(ctx, p.mon, 18, 35);
       if (p.injured) text(ctx, 'X', 28, 7, 1);
       if (p.unhappy) text(ctx, '!', 2, 7, 1);
@@ -441,6 +459,7 @@
     if (scr === 'pick') {
       E.pickPartner(state, state.partnerPick || 0);
       U.screen = 'setClock';
+      if (host.applyShell) host.applyShell();
       if (host.persist) host.persist();
       return true;
     }

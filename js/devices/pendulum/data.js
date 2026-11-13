@@ -35,26 +35,26 @@
   // Percentages measured on the punched photo shell. No front pendulum window
   // (the clacker is internal); chamber is null and the HTML overlay stays hidden.
   var LAYOUT = {
-    aspectW: 2000,
-    aspectH: 1304,
-    lcd: { left: 20.5, top: 38.113, width: 24.75, height: 24.08 },
+    aspectW: 1334,
+    aspectH: 985,
+    lcd: { left: 22.789, top: 30.761, width: 28.786, height: 25.584 },
     buttons: {
-      a: { cx: 75.057, cy: 26.24, w: 12.499, h: 19.17 },
-      b: { cx: 75.567, cy: 47.396, w: 11.978, h: 18.372 },
-      c: { cx: 76.086, cy: 69.352, w: 12.499, h: 19.17 },
-      reset: { cx: 66.832, cy: 57.625, w: 4.687, h: 7.189 }
+      a: { cx: 86.184, cy: 24.162, w: 10.045, h: 13.503 },
+      b: { cx: 86.761, cy: 45.249, w: 10.345, h: 13.503 },
+      c: { cx: 87.361, cy: 66.873, w: 10.42, h: 13.807 },
+      reset: { cx: 79.243, cy: 56.122, w: 3.898, h: 5.381 }
     },
     icons_top: [
-      { left: 19.756, top: 28.996, width: 5.951, height: 7.842 },
-      { left: 26.518, top: 28.996, width: 5.951, height: 7.842 },
-      { left: 33.281, top: 28.996, width: 5.951, height: 7.842 },
-      { left: 40.043, top: 28.996, width: 5.951, height: 7.842 }
+      { left: 22.489, top: 25.685, width: 6.447, height: 4.873 },
+      { left: 29.686, top: 25.685, width: 6.447, height: 4.873 },
+      { left: 36.882, top: 25.685, width: 6.447, height: 4.873 },
+      { left: 44.078, top: 25.685, width: 6.447, height: 4.873 }
     ],
     icons_bot: [
-      { left: 19.756, top: 63.111, width: 5.951, height: 7.058 },
-      { left: 26.518, top: 63.111, width: 5.951, height: 7.058 },
-      { left: 33.281, top: 63.111, width: 5.951, height: 7.058 },
-      { left: 40.043, top: 63.111, width: 5.951, height: 7.058 }
+      { left: 22.489, top: 56.548, width: 6.447, height: 4.873 },
+      { left: 29.686, top: 56.548, width: 6.447, height: 4.873 },
+      { left: 36.882, top: 56.548, width: 6.447, height: 4.873 },
+      { left: 44.078, top: 56.548, width: 6.447, height: 4.873 }
     ],
     names_top: ['STATUS', 'FEED', 'TRAIN', 'CONNECT'],
     names_bot: ['FLUSH', 'LIGHT', 'MEDIC', 'CALL'],

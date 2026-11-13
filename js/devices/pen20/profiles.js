@@ -7,28 +7,28 @@
   'use strict';
 
   var LAYOUT = {
-    aspectW: 2000,
-    aspectH: 1304,
-    lcd: { left: 20.5, top: 38.113, width: 24.75, height: 24.08 },
+    aspectW: 1016,
+    aspectH: 676,
+    lcd: { left: 16.339, top: 31.953, width: 29.823, height: 30.621 },
     buttons: {
-      a: { cx: 75.057, cy: 26.24, w: 12.499, h: 19.17 },
-      b: { cx: 75.567, cy: 47.396, w: 11.978, h: 18.372 },
-      c: { cx: 76.086, cy: 69.352, w: 12.499, h: 19.17 },
-      reset: { cx: 66.832, cy: 57.625, w: 4.687, h: 7.189 }
+      a: { cx: 75.994, cy: 26.124, w: 12.106, h: 18.195 },
+      b: { cx: 75.971, cy: 47.796, w: 12.106, h: 18.047 },
+      c: { cx: 75.960, cy: 69.112, w: 12.106, h: 18.195 },
+      reset: { cx: 69.046, cy: 58.121, w: 4.626, h: 6.805 }
     },
     icons_top: [
-      { left: 19.62, top: 28.996, width: 4.869, height: 7.842 },
-      { left: 25.03, top: 28.996, width: 4.869, height: 7.842 },
-      { left: 30.44, top: 28.996, width: 4.869, height: 7.842 },
-      { left: 35.85, top: 28.996, width: 4.869, height: 7.842 },
-      { left: 41.261, top: 28.996, width: 4.869, height: 7.842 }
+      { left: 16.0, top: 24.704, width: 5.366, height: 6.805 },
+      { left: 22.165, top: 24.704, width: 5.366, height: 6.805 },
+      { left: 28.331, top: 24.704, width: 5.366, height: 6.805 },
+      { left: 34.496, top: 24.704, width: 5.366, height: 6.805 },
+      { left: 40.661, top: 24.704, width: 5.366, height: 6.805 }
     ],
     icons_bot: [
-      { left: 19.62, top: 63.111, width: 4.869, height: 7.058 },
-      { left: 25.03, top: 63.111, width: 4.869, height: 7.058 },
-      { left: 30.44, top: 63.111, width: 4.869, height: 7.058 },
-      { left: 35.85, top: 63.111, width: 4.869, height: 7.058 },
-      { left: 41.261, top: 63.111, width: 4.869, height: 7.058 }
+      { left: 16.0, top: 62.87, width: 5.366, height: 6.805 },
+      { left: 22.165, top: 62.87, width: 5.366, height: 6.805 },
+      { left: 28.331, top: 62.87, width: 5.366, height: 6.805 },
+      { left: 34.496, top: 62.87, width: 5.366, height: 6.805 },
+      { left: 40.661, top: 62.87, width: 5.366, height: 6.805 }
     ],
     names_top: ['STATUS', 'FEED', 'TRAIN', 'COLOSSEUM', 'FLUSH'],
     names_bot: ['LIGHT', 'MEDIC', 'ALBUM', 'CONNECT', 'CALL'],

@@ -248,11 +248,24 @@
     el.classList.toggle('show', !ok);
   }
 
+  var DV_PARTNER_SHELL = {
+    agumon: 'digivice-v1', gabumon: 'digivice-yamato',
+    piyomon: 'digivice-sora', tentomon: 'digivice-koushiro',
+    palmon: 'digivice-mimi', gomamon: 'digivice-jou',
+    patamon: 'digivice-takeru', tailmon: 'digivice-v2'
+  };
+
   function applyShell() {
     var d = currentDevice();
     var dev = $('device');
     var img = $('shell-art');
-    var src = './icons/shell/' + d.shell + '.png';
+    var shellName = d.shell;
+    if (d && d.family === 'digivice' && state && window.DigiviceEngine) {
+      var partner = window.DigiviceEngine.active(state);
+      var starter = partner && (partner.starter || partner.mon);
+      if (starter && DV_PARTNER_SHELL[starter]) shellName = DV_PARTNER_SHELL[starter];
+    }
+    var src = './icons/shell/' + shellName + '.webp';
     if (img && img.getAttribute('src') !== src) img.setAttribute('src', src);
     if (dev) {
       dev.setAttribute('data-model', d.family);
@@ -888,6 +901,7 @@
       walk: walk, eatAnim: eatAnim, eatFoodSprite: eatFoodSprite, poseFx: poseFx, evoFx: evoFx,
       shotMode: shotMode,
       persist: persist,
+      applyShell: applyShell,
       playPose: playPose,
       toast: toast,
       isSoundOn: function () { return soundEnabled(); },
@@ -1935,7 +1949,16 @@
           state = window.DigiviceEngine.defaultState(eggDv);
           // Shot setup: pick first partner (Agumon line), SET done, Child form,
           // mid-area so map/battle shots have something to show.
-          window.DigiviceEngine.pickPartner(state, 0);
+          if (eggDv === 'dv1999_v2' && window.DigiviceEngine.joinSpecial) {
+            // Ver.2 is Hikari's pink unit; Tailmon so the partner shell matches.
+            state.party = [];
+            state.recruited = {};
+            window.DigiviceEngine.joinSpecial(state, 'tailmon');
+            state.active = 0;
+            state.phase = 'setClock';
+          } else {
+            window.DigiviceEngine.pickPartner(state, 0);
+          }
           state.clock = { h12: 10, min: 34, pm: false, field: 'h' };
           window.DigiviceEngine.confirmClock(state);
           state.gameTime = window.DigiviceData ? window.DigiviceData.CHILD_EVOLVE_SEC + 1 : 301;

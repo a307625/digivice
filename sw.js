@@ -1,5 +1,5 @@
 /* Offline cache for 數碼怪獸對打機 */
-var CACHE = 'digivice-v29';
+var CACHE = 'digivice-v30';
 var ASSETS = [
   './',
   './index.html',
@@ -10,15 +10,6 @@ var ASSETS = [
   './js/sprites.js',
   './js/items.js',
   './js/save.js',
-  './icons/shell/dm1997-v1.png',
-  './icons/shell/dm1997-v2.png',
-  './icons/shell/dm1997-v3.png',
-  './icons/shell/dm1997-v4.png',
-  './icons/shell/dm1997-v5.png',
-  './icons/shell/dm20-zuba.png',
-  './icons/shell/dm20-omega.png',
-  './icons/shell/dm20-alpha.png',
-  './icons/shell/dm20-brown.png',
   './icons/bezel/status.png',
   './icons/bezel/feed.png',
   './icons/bezel/train.png',
@@ -53,21 +44,6 @@ var ASSETS = [
   './js/devices/digivice/ui.js',
   './js/engine.js',
   './js/ui.js',
-  './icons/shell/pen-20th-sk.png',
-  './icons/shell/pen-20th-sb.png',
-  './icons/shell/digivice-v1.png',
-  './icons/shell/digivice-v2.png',
-  './icons/shell/pen-1-0.png',
-  './icons/shell/pen-1-5.png',
-  './icons/shell/pen-2-0.png',
-  './icons/shell/pen-2-5.png',
-  './icons/shell/pen-3-0.png',
-  './icons/shell/pen-3-5.png',
-  './icons/shell/pen-4-0.png',
-  './icons/shell/pen-4-5.png',
-  './icons/shell/pen-5-0.png',
-  './icons/shell/pen-5-5.png',
-  './icons/shell/pen-zero.png',
   './vendor/lz-string.min.js',
   './vendor/qrcode.min.js',
   './vendor/jsQR.min.js',
@@ -81,6 +57,8 @@ var ASSETS = [
   './icons/splash-1290x2796.png'
 ];
 
+// Shell WebPs are NOT precached (too heavy for iPhone 7). The fetch
+// handler lazy-caches the current device's shell on first use.
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE).then(function (cache) {
