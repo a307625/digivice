@@ -1025,7 +1025,14 @@
     state = (window.Devices && window.Devices.migrate) ? window.Devices.migrate(s)
       : ((window.Engine && window.Engine.migrateState) ? window.Engine.migrateState(s) : s);
     settlePendingSteps(state);
-    state.lastReal = Date.now();
+    // v31: keep lastReal from the save so the first tick catches up the time
+    // the app was closed (was reset to now, which froze the clock and the
+    // pet at the moment the app was last closed). Reset only if missing or
+    // in the future (device clock moved backwards).
+    var nowLoad = Date.now();
+    if (typeof state.lastReal !== 'number' || !isFinite(state.lastReal) || state.lastReal > nowLoad) {
+      state.lastReal = nowLoad;
+    }
     view = state.dead ? 'grave' : 'play';
     sel = -1;
     openFirstClockSetIfNeeded();
@@ -1486,10 +1493,26 @@
     if (view === 'play') sel = -1;
   }
 
+  var lastFrameAt = 0;
   function loop() {
+    frameStep();
+    requestAnimationFrame(loop);
+  }
+
+  // Catch up simulation + clock right now (resume, pageshow, watchdog).
+  function catchUpNow() {
+    if (!state || shotMode) return;
+    try {
+      var r = (window.Devices && window.Devices.tick) ? window.Devices.tick(state, Date.now()) : window.Engine.tick(state, Date.now());
+      if (r && r.died && view !== 'dying' && view !== 'grave') { dyingT = 0; view = 'dying'; }
+      draw();
+    } catch (e) {}
+  }
+
+  function frameStep() {
+    lastFrameAt = Date.now();
     if (shotMode) {
       draw();
-      requestAnimationFrame(loop);
       return;
     }
     frame++;
@@ -1584,7 +1607,6 @@
     if (!anyOverlay() && sel >= 0 && view === 'play' && Date.now() - lastKeyAt > 60000) sel = -1;
 
     draw();
-    requestAnimationFrame(loop);
   }
 
   /* ---- save / steps / pvp (extra functions) ---- */
@@ -2550,15 +2572,36 @@
     // pageshow fires on iOS for the initial load, bfcache restore, coming
     // back from shortcuts://, and some resumes. Only ingest ?steps= here —
     // never reopen the launch prompt (that is cold-launch only, below).
-    window.addEventListener('pageshow', function () { ingestUrl(); });
+    window.addEventListener('pageshow', function () { catchUpNow(); ingestUrl(); });
     window.addEventListener('hashchange', function () { ingestUrl(); });
     document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible') ingestUrl();
+      if (document.visibilityState === 'visible') { catchUpNow(); ingestUrl(); }
+      else persist();
     });
+    // v31: iOS 15 standalone may freeze rAF/timers in the background or
+    // kill the page. Save on hide, catch up immediately on resume, and keep
+    // a 1 s watchdog in case rAF stalls after a resume.
+    window.addEventListener('pagehide', function () { persist(); });
+    window.addEventListener('focus', function () { catchUpNow(); });
+    setInterval(function () {
+      if (document.visibilityState === 'hidden') return;
+      if (Date.now() - lastFrameAt > 1500) frameStep();
+    }, 1000);
 
     if ('serviceWorker' in navigator && !shotMode) {
       navigator.serviceWorker.register('./sw.js').catch(function () {});
+      try {
+        if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});
+      } catch (eP) {}
     }
+    window.VpetDebug = {
+      clockSeconds: function () {
+        return (window.Devices && window.Devices.clockSeconds) ? window.Devices.clockSeconds(state) : null;
+      },
+      family: function () { return state && state.family; },
+      gameTime: function () { return state ? (state.gameTime || 0) : 0; },
+      dead: function () { return !!(state && state.dead); }
+    };
 
     var params = new URLSearchParams(location.search);
     var shot = params.get('shot') || params.get('debug');

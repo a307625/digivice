@@ -1,5 +1,16 @@
-/* Offline cache for 數碼怪獸對打機 */
-var CACHE = 'digivice-v30';
+/* Offline cache for 數碼怪獸對打機 — v31
+ * - Precaches every file index.html loads plus ALL device shells (WebP,
+ *   ~2.4 MB), so any device works on an offline first launch.
+ * - Precache requests bypass the HTTP cache (cache: 'reload'), so a new
+ *   version never stores stale files from GitHub Pages' 10-minute cache.
+ * - Lookups ignore query strings (?source=pwa, ?steps=…, ?egg=…).
+ * - Navigations fall back to the cached app shell when the network fails,
+ *   whatever the URL (start_url ./index.html, ./, or with a query).
+ * - Only same-origin, non-redirected, 200 'basic' responses are cached.
+ * - Old caches are deleted only after the new one is complete.
+ */
+var CACHE = 'digivice-v31';
+var APP_SHELL = './index.html';
 var ASSETS = [
   './',
   './index.html',
@@ -54,15 +65,49 @@ var ASSETS = [
   './icons/apple-touch-icon.png',
   './icons/favicon.png',
   './icons/splash-1280x800.png',
-  './icons/splash-1290x2796.png'
+  './icons/splash-1290x2796.png',
+  './icons/shell/digivice-jou.webp',
+  './icons/shell/digivice-koushiro.webp',
+  './icons/shell/digivice-mimi.webp',
+  './icons/shell/digivice-sora.webp',
+  './icons/shell/digivice-takeru.webp',
+  './icons/shell/digivice-v1.webp',
+  './icons/shell/digivice-v2.webp',
+  './icons/shell/digivice-yamato.webp',
+  './icons/shell/dm1997-v1.webp',
+  './icons/shell/dm1997-v2.webp',
+  './icons/shell/dm1997-v3.webp',
+  './icons/shell/dm1997-v4.webp',
+  './icons/shell/dm1997-v5.webp',
+  './icons/shell/dm20-alpha.webp',
+  './icons/shell/dm20-brown.webp',
+  './icons/shell/dm20-omega.webp',
+  './icons/shell/dm20-zuba.webp',
+  './icons/shell/pen-1-0.webp',
+  './icons/shell/pen-1-5.webp',
+  './icons/shell/pen-2-0.webp',
+  './icons/shell/pen-2-5.webp',
+  './icons/shell/pen-20th-sb.webp',
+  './icons/shell/pen-20th-sk.webp',
+  './icons/shell/pen-3-0.webp',
+  './icons/shell/pen-3-5.webp',
+  './icons/shell/pen-4-0.webp',
+  './icons/shell/pen-4-5.webp',
+  './icons/shell/pen-5-0.webp',
+  './icons/shell/pen-5-5.webp',
+  './icons/shell/pen-zero.webp'
 ];
 
-// Shell WebPs are NOT precached (too heavy for iPhone 7). The fetch
-// handler lazy-caches the current device's shell on first use.
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE).then(function (cache) {
-      return cache.addAll(ASSETS);
+      return Promise.all(ASSETS.map(function (url) {
+        var req = new Request(url, { cache: 'reload' });
+        return fetch(req).then(function (res) {
+          if (!res || !res.ok) throw new Error('precache ' + url + ' ' + (res && res.status));
+          return Promise.resolve(cleanResponse(res)).then(function (clean) { return cache.put(url, clean); });
+        });
+      }));
     }).then(function () { return self.skipWaiting(); })
   );
 });
@@ -70,27 +115,63 @@ self.addEventListener('install', function (event) {
 self.addEventListener('activate', function (event) {
   event.waitUntil(
     caches.keys().then(function (keys) {
-      return Promise.all(keys.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); }));
+      return Promise.all(keys.filter(function (k) {
+        return k !== CACHE && k.indexOf('digivice-') === 0;
+      }).map(function (k) { return caches.delete(k); }));
     }).then(function () { return self.clients.claim(); })
   );
 });
+
+// iOS Safari refuses to serve a redirected response to a navigation
+// ("Response served by service worker has redirections"). Re-wrap it.
+function cleanResponse(res) {
+  if (!res.redirected) return res;
+  return res.blob().then(function (body) {
+    return new Response(body, { status: res.status, statusText: res.statusText, headers: res.headers });
+  });
+}
+
+function cacheable(res) {
+  return res && res.status === 200 && res.type === 'basic' && !res.redirected;
+}
+
+function appShell() {
+  return caches.match(APP_SHELL, { ignoreSearch: true }).then(function (r) {
+    return r || caches.match('./', { ignoreSearch: true });
+  });
+}
 
 self.addEventListener('fetch', function (event) {
   var req = event.request;
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  var isNav = req.mode === 'navigate' || (req.destination === 'document');
+  if (isNav) {
+    // Cached app shell first (works offline with any query string). The
+    // HTML only changes with a new sw.js version, which re-precaches it
+    // together with matching JS, so HTML and JS never mix versions.
+    event.respondWith(
+      appShell().then(function (cached) {
+        if (cached) return cached;
+        return fetch(req).catch(function () {
+          return new Response('<h1>Offline</h1>', { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+        });
+      })
+    );
+    return;
+  }
   event.respondWith(
-    caches.match(req).then(function (cached) {
+    caches.match(req, { ignoreSearch: true }).then(function (cached) {
       if (cached) return cached;
       return fetch(req).then(function (res) {
-        if (res && res.status === 200 && res.type === 'basic') {
+        if (cacheable(res)) {
           var copy = res.clone();
           caches.open(CACHE).then(function (cache) { cache.put(req, copy); });
         }
         return res;
       }).catch(function () {
-        if (req.mode === 'navigate') return caches.match('./index.html');
+        return new Response('', { status: 504, statusText: 'offline' });
       });
     })
   );

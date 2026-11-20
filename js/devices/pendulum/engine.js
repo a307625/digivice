@@ -33,7 +33,6 @@
   }
 
   function defaultState(eggKind) {
-    var clock = new Date();
     var D = data();
     var meta = verMeta(eggKind);
     var egg = (D && D.monster && D.monster('pen_egg', meta.key)) || (D && D.MONSTERS && D.MONSTERS.pen_egg) || {};
@@ -48,7 +47,9 @@
       stageEnteredGame: 0,
       gameTime: 0,
       lastReal: now(),
-      clockOffset: clock.getHours() * 3600 + clock.getMinutes() * 60 + clock.getSeconds(),
+      // Device reset default AM 12:00 (not the phone's clock); the player
+      // sets the time with SET and it then runs at real speed.
+      clockOffset: 0,
       speed: 1,
       speedMigrated: true,
       clockInitialized: false,

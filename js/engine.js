@@ -60,7 +60,6 @@
       eggKind = "ver" + (eggVersion || 1);
       version = eggVersion || 1;
     }
-    var clock = new Date();
     var state = {
       mon: monId,
       version: version,
@@ -71,7 +70,9 @@
       gameTime: 0,
       lastReal: now(),
       tagWins: 0,
-      clockOffset: clock.getHours() * 3600 + clock.getMinutes() * 60 + clock.getSeconds(),
+      // Device reset default AM 12:00 (not the phone's clock); the player
+      // sets the time with SET and it then runs at real speed.
+      clockOffset: 0,
       speed: 1,
       speedMigrated: true,
       clockInitialized: false,

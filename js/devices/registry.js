@@ -205,10 +205,75 @@
     return root.Engine;
   }
 
+  /* v31 device clock: user-set time that runs at real speed.
+     The time of day is NOT the phone's clock. It is the value the player
+     entered with the device's own SET operation (or the device's reset
+     default), advanced by real elapsed time:
+
+         clock = clockAnchor.value + (Date.now() - clockAnchor.at) / 1000
+
+     Engines still read time of day as clockOffset + gameTime (sleep, wake,
+     lights, calls, midnight age), so after every tick clockOffset is
+     re-derived from the anchor. gameTime is simulation time and may be
+     capped during a long catch-up; the clock is not.
+     - SET confirm / clock jumps change clockOffset → detected (it no longer
+       equals clockSyncOffset) → re-anchored at the new value, now.
+     - While SET is open the edited value is shown (original behaviour);
+       the anchor is untouched until confirm.
+     - Old saves without an anchor: anchored at their last known clock at
+       their lastReal, so the time they were closed is caught up.
+     - Debug speeds > 1 run the clock at game speed (re-anchored each tick). */
+  function mod86400(x) { return ((x % 86400) + 86400) % 86400; }
+  function rawClock(state) { return mod86400((state.clockOffset || 0) + (state.gameTime || 0)); }
+
+  function syncClock(state, before, realNow) {
+    if (!state || typeof state !== 'object') return;
+    if (state.clockSet && state.clockSet.on) return;
+    var a = state.clockAnchor;
+    var external = before && before.syncOffset != null &&
+      Math.abs(mod86400((before.offset || 0) - before.syncOffset + 43200) - 43200) > 0.5;
+    if (!a || typeof a.value !== 'number' || typeof a.at !== 'number' || external) {
+      // Anchor at the clock as it stood before this tick, at the time it was valid.
+      var at = (before && !external && typeof before.lastReal === 'number') ? before.lastReal : realNow;
+      var val = before ? mod86400((before.offset || 0) + (before.gameTime || 0)) : rawClock(state);
+      if (external && before) at = realNow;
+      a = state.clockAnchor = { value: val, at: at };
+    }
+    if ((state.speed || 1) !== 1) {
+      // Debug fast-forward: clock follows game time; keep the anchor current.
+      state.clockAnchor = { value: rawClock(state), at: realNow };
+    } else {
+      var target = mod86400(a.value + (realNow - a.at) / 1000);
+      state.clockOffset = mod86400(target - (state.gameTime || 0));
+    }
+    state.clockSyncOffset = state.clockOffset;
+  }
+
   function tick(state, realNow) {
     var eng = engineFor(state);
-    if (eng && typeof eng.tick === 'function') return eng.tick(state, realNow);
-    return { ok: false };
+    if (!eng || typeof eng.tick !== 'function') return { ok: false };
+    if (realNow == null) realNow = Date.now();
+    var before = state ? {
+      lastReal: (typeof state.lastReal === 'number' && state.lastReal <= realNow) ? state.lastReal : realNow,
+      gameTime: state.gameTime || 0,
+      offset: state.clockOffset || 0,
+      syncOffset: state.clockSyncOffset
+    } : null;
+    var r = eng.tick(state, realNow);
+    syncClock(state, before, realNow);
+    return r;
+  }
+
+  function clockSeconds(state) {
+    if (!state) return 0;
+    var eng = engineFor(state);
+    if (state.family === 'digivice' && eng && eng.clockH24) {
+      var c = eng.clockH24(state);
+      return c.h24 * 3600 + c.min * 60 + (c.sec || 0);
+    }
+    if (eng && eng.clockSeconds) return eng.clockSeconds(state);
+    if (eng && eng.runningClockSeconds) return eng.runningClockSeconds(state);
+    return ((((state.clockOffset || 0) + (state.gameTime || 0)) % 86400) + 86400) % 86400;
   }
 
   function migrate(state) {
@@ -259,6 +324,8 @@
     isDigiviceEgg: isDigiviceEgg,
     engineFor: engineFor,
     tick: tick,
+    syncClock: syncClock,
+    clockSeconds: clockSeconds,
     migrate: migrate,
     hatchEgg: hatchEgg,
     allProfiles: function () {
