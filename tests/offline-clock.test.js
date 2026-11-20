@@ -17,13 +17,13 @@ function ok(cond, msg) {
 function eq(a, b, msg) { ok(a === b, msg + ' (got ' + JSON.stringify(a) + ', expected ' + JSON.stringify(b) + ')'); }
 
 /* ---------------- 1) Service worker covers everything offline ---------------- */
-console.log('1) sw.js precaches every file the app loads, all shells, v33');
+console.log('1) sw.js precaches every file the app loads, all shells, v34');
 const sw = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
 const block = sw.slice(sw.indexOf('var ASSETS = ['), sw.indexOf('];', sw.indexOf('var ASSETS = [')));
 const assets = new Set((block.match(/'([^']+)'/g) || []).map((s) => s.slice(1, -1)));
-eq((sw.match(/var CACHE = '([^']+)'/) || [])[1], 'digivice-v33', 'cache name bumped to digivice-v33');
+eq((sw.match(/var CACHE = '([^']+)'/) || [])[1], 'digivice-v34', 'cache name bumped to digivice-v34');
 const refs = [];
 html.replace(/(?:src|href)="(\.\/[^"#?]+)"/g, (m, u) => { refs.push(u); return m; });
 ok(refs.length > 40, 'index.html local refs parsed (' + refs.length + ')');
