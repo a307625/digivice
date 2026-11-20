@@ -85,7 +85,7 @@ console.log('1) Ver.1.5 Nature Spirits swaps; 1.0 unchanged');
   // live adult evo
   const a = form('pen_1_5', 'tentomon', { careMistakes: 0, trainSuccess: 39, evoDueAt: 24 });
   a.gameTime = 24 * 3600;
-  a.lastReal = Date.now() - 1000;
+  a.lastReal = Date.now() - 60000;
   Eng.tick(a, Date.now());
   eq(a.mon, 'tailmon', 'live 1.5 Tentomon → Tailmon');
 }

@@ -123,7 +123,7 @@ console.log('2) Stage II care mistakes pick the Child (Humulos chart)');
     s.pets[0].cm = cm;
     s.pets[0].stageEnteredGame = s.gameTime;
     const want = s.pets[0].cm;
-    advanceCared(s, 12 * 3600 + 10);
+    advanceCared(s, 12 * 3600 + 70);
     // care must not have added CM
     if (s.pets[0].cm !== want && s.pets[0].mon !== 'tento' && s.pets[0].mon !== 'gottsu' && s.pets[0].mon !== 'otama') {
       /* evo already reset CM */
@@ -144,7 +144,7 @@ console.log('3) Stage III unlocks two-pet + NSO/MEM eggs; C switches; second egg
   s.pets[0].cm = 0;
   s.pets[0].stageEnteredGame = s.gameTime;
   eq(s.twoPetUnlocked, false, 'not yet');
-  advanceCared(s, 12 * 3600 + 10);
+  advanceCared(s, 12 * 3600 + 70);
   eq(s.pets[0].mon, 'tento', 'Tentomon (Child)');
   eq(s.twoPetUnlocked, true, 'two-pet unlocked after first Stage III');
   eq(s.pendingEgg, true, 'second egg offered');
@@ -159,7 +159,7 @@ console.log('3) Stage III unlocks two-pet + NSO/MEM eggs; C switches; second egg
   eq(pk.ok, true, 'pick NSO egg in slot 1');
   eq(s.pets[1].mon, 'egg', 'slot 1 is an egg');
   eq(s.pets[1].eggId, 'digitama_nso', 'NSO egg id');
-  advance(s, 70);
+  advance(s, 130);
   eq(s.pets[1].mon, 'moku', 'NSO hatches Mokumon');
   // both grow while not visible
   const g0 = s.pets[0].stageEnteredGame;
@@ -191,7 +191,7 @@ console.log('4) Tentomon Adult evos: CM + Effort hearts (4 trainings = 1 heart, 
   p.cm = 0;
   p.effortQ = 16;
   p.stageEnteredGame = s.gameTime;
-  advanceCared(s, 24 * 3600 + 10);
+  advanceCared(s, 24 * 3600 + 70);
   eq(s.pets[0].mon, 'kabuteri', '0-1 CM, 4 Effort → Kabuterimon');
 }
 
@@ -278,7 +278,7 @@ console.log('7) Clean: 4 piles → sick (stricter than OG 8); Heal dots/skull; d
   Eng.tick(s, Date.now());
   // checkDeath is inside tickPet — injuryCount 20 should start dying
   // Need to invoke check: advance 1s
-  advance(s, 2);
+  advance(s, 60);
   eq(p.dying, true, '20 injuries → dying (1-minute shake window)');
   eq(p.dead, false, 'not dead yet');
   const sh = Eng.shakeSave(s);
@@ -288,7 +288,7 @@ console.log('7) Clean: 4 piles → sick (stricter than OG 8); Heal dots/skull; d
   eq(p.dying, false, 'no longer dying');
   eq(p.dead, false, 'saved pet is alive');
   // Same 20 injuries do not immediately restart the cry (already saved).
-  advance(s, 2);
+  advance(s, 60);
   eq(p.dying, false, 'same counts after a save do not re-trigger dying');
   // A fresh pet, 20 injuries, no shake → dies and becomes a computer.
   const s2 = sk();
@@ -296,7 +296,7 @@ console.log('7) Clean: 4 piles → sick (stricter than OG 8); Heal dots/skull; d
   Eng.applyMon(s2.pets[0], 'tento', s2.gameTime);
   const q = s2.pets[0];
   q.injuryCount = 20;
-  advance(s2, 2);
+  advance(s2, 60);
   eq(q.dying, true, 'fresh pet, 20 injuries → dying');
   eq(q.dead, false, 'not dead yet (1-minute window)');
   advance(s2, 61);
@@ -400,7 +400,7 @@ console.log('10) Passwords, album unlock at 5/20/35, Colosseum 100 unlocks, WR f
   q.battles = 15;
   q.last15 = new Array(15).fill(true);
   q.stageEnteredGame = s2.gameTime;
-  advanceCared(s2, 40 * 3600 + 10);
+  advanceCared(s2, 40 * 3600 + 70);
   eq(s2.pets[0].mon, 'atlurkabuteri', '0 CM, 15 battles, 15 wins → Atlur after 40h');
 }
 

@@ -27,8 +27,26 @@
   var STARVE_DEATH = 12 * 3600;
   var MAX_INJURIES = 20;
   var OVERFEED_LOCK = 3600;
-  // Raised past 12 h so a single catch-up can fire the official 6 h / 12 h deaths.
-  var MAX_CATCHUP = 13 * 3600;
+  // v32: no catch-up cap. The whole closed period is simulated on a fixed
+  // 60-second game-time grid (SIM_GRID), so a long close gives exactly the
+  // same result as leaving the app open (same calls, mistakes, poop, sleep,
+  // evolution and death times). 3 days = 4320 cheap steps.
+  var SIM_GRID = 60;
+  // DM20 (Ver.20th) rules for the 20th-exclusive eggs (Dracomon, Huckmon, ...):
+  // Humulos DM20 manual / NHOKO Ver.20th / Bandai English manual.
+  var DM20_CALL_TIMEOUT = 10 * 60;   // call light goes out after 10 min → 1 mistake (Humulos, NHOKO, Wikimon)
+  var DM20_WAKE_SEC = 15 * 60;       // Bandai manual: LIGHTS wake = stay up an extra 15 minutes
+  var DM20_WAKE_HOUR = 7;            // Humulos: "All Digimon will wake up at 7:00 AM"
+  var DM20_DEATH_CM_FORM = 20;       // Humulos: 20 care mistakes in one form
+  var DM20_OLD_AGE_AWAKE = 48 * 3600;// Humulos: 5 mistakes upon/after 48 h awake in the current stage
+  var DM20_OLD_AGE_CM = 5;
+  // Humulos DM20 "Evolution" table, minutes, counted only while awake.
+  var DM20_STAGE_MIN = { baby1: 10, baby2: 6 * 60, rookie: 24 * 60, champion: 36 * 60, ultimate: 48 * 60 };
+  // Humulos DM20 evolution guide sleep times (Dracomon line). Others keep species data.
+  var DM20_SLEEP_START = {
+    dracomon: 21, coredramon_blue: 23, coredramon_green: 23,
+    wingdramon: 23, groundramon: 23, slayerdramon: 23, breakdramon: 0
+  };
   var DP_REFILL_SEC = 8 * 3600;     // 1997: 8 h continuous sleep (NHOKO / Wikimon / DMComm)
   var DM20_DP_REFILL_SEC = 3 * 3600; // DM20: 3 h sleep / nap recovers stamina (Humulos, Wikimon)
   var DM20_NAP_SEC = 3 * 3600;       // Humulos DM20: nap lasts 3 hours
@@ -431,6 +449,10 @@
       state.sleepStart = m.sleepStart;
       state.sleepEnd = m.sleepEnd;
     }
+    if (isDm20(state)) {
+      if (DM20_SLEEP_START[m.id] != null) state.sleepStart = DM20_SLEEP_START[m.id];
+      state.sleepEnd = DM20_WAKE_HOUR;
+    }
     if (m.dpMax != null) {
       if (opts.migrate) {
         if ((state.dpMax || 0) < m.dpMax) state.dpMax = m.dpMax;
@@ -446,6 +468,8 @@
     // Official: care counters reset. Battles + win score + Perfect bit CARRY
     // Child→Adult (and are harmless to keep after later evos).
     state.calls = 0;
+    state.cmForm = 0;
+    state.hungerEmptySince = null;
     state.train = 0;
     state.overfeed = 0;
     state.sleepDist = 0;
@@ -499,6 +523,7 @@
   }
 
   function evoDueMinutes(state, m) {
+    if (isDm20(state) && DM20_STAGE_MIN[m.stage] != null) return DM20_STAGE_MIN[m.stage];
     var due = state.evoDueAt;
     var lo = m.lifespanMin || 0;
     // After the first clock SET, the egg's hatch window is the official
@@ -534,7 +559,8 @@
       }
     }
 
-    var mins = timeInStage(state) / 60;
+    // DM20: the evolution timer only runs while awake (Humulos DM20 manual).
+    var mins = (isDm20(state) && m.stage !== 'egg') ? (state.awakeInStage || 0) / 60 : timeInStage(state) / 60;
     var due = evoDueMinutes(state, m);
     if (mins < due) return false;
 
@@ -550,7 +576,9 @@
       return false;
     }
 
-    var stats = buildStats(state, mins);
+    // DM20 timing is gated above (awake-only Humulos table); do not let the
+    // 1997 lifespanMin in the species data hold the evolution back.
+    var stats = buildStats(state, isDm20(state) ? Math.max(mins, m.lifespanMin || 0) : mins);
 
     if (hasPerfectRoll(m)) {
       if (!state.perfectRolledThisStage) {
@@ -605,6 +633,7 @@
 
   function addCareMistake(state, why) {
     state.calls = Math.min(CALLS_CAP, (state.calls || 0) + 1);
+    state.cmForm = (state.cmForm || 0) + 1; // uncapped, per form (DM20 20-mistake death)
     state.boostCareDown = Math.min(4, (state.boostCareDown || 0) + 1);
     if (state.lifespanElapsed) {
       state.oldAgeMistakes = (state.oldAgeMistakes || 0) + 1;
@@ -640,14 +669,18 @@
     state.emptySince = state.emptyCallSince;
   }
 
+  function callTimeout(state) {
+    return isDm20(state) ? DM20_CALL_TIMEOUT : CALL_TIMEOUT;
+  }
+
   function isCallLit(state) {
     if (!state || state.dead) return false;
     if (state.callAt != null && !state.callResolved && (state.hunger <= 0 || state.strength <= 0) &&
-        state.gameTime - state.callAt < CALL_TIMEOUT) {
+        state.gameTime - state.callAt < callTimeout(state)) {
       return true;
     }
     if (state.callLightsAt != null && !state.lightsCallResolved && state.sleeping && state.lights &&
-        state.gameTime - state.callLightsAt < CALL_TIMEOUT) {
+        state.gameTime - state.callLightsAt < callTimeout(state)) {
       return true;
     }
     return false;
@@ -667,14 +700,16 @@
     syncCallMeters(state);
     if (state.callAt != null && !state.callResolved &&
         (state.hunger <= 0 || state.strength <= 0) &&
-        state.gameTime - state.callAt >= CALL_TIMEOUT) {
+        state.gameTime - state.callAt >= callTimeout(state)) {
       addCareMistake(state, '育成失誤 +1');
+      // DM20: hunger AND strength empty together = 2 mistakes (Wikimon Ver.20th).
+      if (isDm20(state) && state.hunger <= 0 && state.strength <= 0) addCareMistake(state, '育成失誤 +1');
       state.callResolved = true;
       // Do not restart the call.
     }
     if (state.callLightsAt != null && !state.lightsCallResolved &&
         state.sleeping && state.lights &&
-        state.gameTime - state.callLightsAt >= CALL_TIMEOUT) {
+        state.gameTime - state.callLightsAt >= callTimeout(state)) {
       addCareMistake(state, '未關燈，育成失誤 +1');
       state.lightsCallResolved = true;
       // Do not retrigger; one lights mistake per night (sleepCalledTonight).
@@ -698,131 +733,181 @@
     var dtReal = Math.max(0, (realNow - state.lastReal) / 1000);
     state.lastReal = realNow;
     var dt = dtReal * (state.speed || 1);
-    if (dt <= 0) return { died: false, evolved: false };
-    if (dt > MAX_CATCHUP) dt = MAX_CATCHUP;
-    var evolved = false, died = false;
-    var remain = dt;
-    while (remain > 0 && !state.dead) {
-      var step = Math.min(remain, 60);
-      remain -= step;
-      state.gameTime += step;
-      var m = mon(state);
-      if (!m) break;
+    if (!(dt > 0)) return { died: false, evolved: false };
+    return advanceGrid(state, dt, simStep);
+  }
 
-      if (m.stage !== 'egg') {
-        var cyc = cycleSec(state);
-        if (!state.sleeping) {
-          state.awakeInStage = (state.awakeInStage || 0) + step;
-          if (state.gameTime - (state.lastHungerTick || 0) >= cyc) {
-            state.lastHungerTick = state.gameTime;
-            if (state.gameTime >= (state.overfeedLockUntil || 0)) {
-              var prevH = state.hunger;
-              state.hunger = Math.max(0, state.hunger - 1);
-              if (state.hunger < prevH) {
-                // New fullness cycle after a heart drops (next OF after drop).
-                state.satietyFilled = state.hunger;
-              }
+  /**
+   * Advance game time by dt seconds, running the care logic once per
+   * 60-second grid boundary (state.simAt = last boundary processed).
+   * gameTime itself stays continuous for the clock / UI. The step
+   * sequence depends only on the grid, so one long catch-up after the app
+   * was closed produces exactly the same state as many small open ticks.
+   */
+  function advanceGrid(state, dt, stepFn) {
+    var res = { evolved: false, died: false };
+    var g0 = state.gameTime || 0;
+    // Round to 1 µs: real ms deltas then add up exactly (no float drift that
+    // could make open play miss a grid boundary the long catch-up hits).
+    var target = Math.round((g0 + dt) * 1e6) / 1e6;
+    var t = state.simAt;
+    if (typeof t !== 'number' || !isFinite(t) || t > g0 || t < g0 - SIM_GRID) t = g0;
+    while (!state.dead) {
+      var nb = (Math.floor(t / SIM_GRID) + 1) * SIM_GRID;
+      if (nb > target) break;
+      var stepLen = nb - t;
+      state.gameTime = nb;
+      var r = stepFn(state, stepLen);
+      t = nb;
+      if (r && r.evolved) res.evolved = true;
+      if (r && r.died) { res.died = true; break; }
+    }
+    state.simAt = t;
+    state.gameTime = state.dead ? t : target;
+    return res;
+  }
+
+  function simStep(state, step) {
+    var r = { evolved: false, died: false };
+    var m = mon(state);
+    if (!m) return r;
+
+    if (m.stage !== 'egg') {
+      var cyc = cycleSec(state);
+      if (!state.sleeping) {
+        state.awakeInStage = (state.awakeInStage || 0) + step;
+        if (state.gameTime - (state.lastHungerTick || 0) >= cyc) {
+          state.lastHungerTick = state.gameTime;
+          if (state.gameTime >= (state.overfeedLockUntil || 0)) {
+            var prevH = state.hunger;
+            state.hunger = Math.max(0, state.hunger - 1);
+            if (state.hunger < prevH) {
+              // New fullness cycle after a heart drops (next OF after drop).
+              state.satietyFilled = state.hunger;
             }
           }
-          if (state.gameTime - (state.lastStrTick || 0) >= cyc) {
-            state.lastStrTick = state.gameTime;
-            state.strength = Math.max(0, state.strength - 1);
+        }
+        if (state.gameTime - (state.lastStrTick || 0) >= cyc) {
+          state.lastStrTick = state.gameTime;
+          state.strength = Math.max(0, state.strength - 1);
+        }
+        var poopInt = poopIntervalSec(state);
+        var poopCap = poopCapOf(state);
+        if (state.gameTime - (state.lastPoopAt || 0) >= poopInt) {
+          state.lastPoopAt = state.gameTime;
+          // DM20 at 4 piles: will not poop (or injure) again (Humulos / community).
+          // 1997: stack to 8, 8th pile injures (firmware, measured).
+          if ((state.poop || 0) < poopCap) {
+            state.poop = (state.poop || 0) + 1;
+            if (state.poop >= poopCap) injure(state, 'poop');
           }
-          var poopInt = poopIntervalSec(state);
-          var poopCap = poopCapOf(state);
-          if (state.gameTime - (state.lastPoopAt || 0) >= poopInt) {
-            state.lastPoopAt = state.gameTime;
-            // DM20 at 4 piles: will not poop (or injure) again (Humulos / community).
-            // 1997: stack to 8, 8th pile injures (firmware, measured).
-            if ((state.poop || 0) < poopCap) {
-              state.poop = (state.poop || 0) + 1;
-              if (state.poop >= poopCap) injure(state, 'poop');
-            }
-          }
-        }
-
-        if (state.hunger <= 0 || state.strength <= 0) syncCallMeters(state);
-        else {
-          state.callAt = null;
-          state.callResolved = false;
-          state.callHungerAt = null;
-          state.callStrengthAt = null;
-          state.emptyCallSince = null;
-          state.emptySince = null;
-        }
-
-        // sleep — official DMC / 1997 schedule and disturbance window
-        var shouldSleep = m.stage !== 'baby1' && isSleepHours(state);
-        var inDisturbAwake = !!(state.awakeUntil && state.gameTime < state.awakeUntil);
-        if (state.sleeping) {
-          state.sleptContinuously = (state.sleptContinuously || 0) + step;
-        }
-        if (shouldSleep && !state.sleeping) {
-          if (!inDisturbAwake) {
-            state.sleeping = true;
-            state.awakeUntil = 0;
-            // One lights-out call per night (Humulos DMC Call).
-            if (state.lights && !state.sleepCalledTonight) {
-              state.lightsCallResolved = false;
-              markCall(state, 'lights');
-            }
-            state.sleepCalledTonight = true;
-          }
-        }
-        // DM20 daytime nap: do not treat "not bedtime" as a morning wake
-        // until napUntil is reached. If the nap overlaps bedtime, they
-        // keep sleeping (Humulos).
-        var napping = !!(state.napUntil && state.sleeping && state.gameTime < state.napUntil);
-        if (!shouldSleep) {
-          if (state.sleeping && !napping) {
-            state.sleeping = false;
-            state.callLightsAt = null;
-            state.lightsCallResolved = false;
-            // Natural morning wake, or a completed 3 h nap, refills DP after
-            // continuous sleep: 1997 = 8 h; DM20 = 3 h (Humulos, Wikimon).
-            // A disturbance wake does not (disturbSleep resets sleptContinuously).
-            // No hunger / strength gift (that was invented).
-            if ((state.sleptContinuously || 0) >= dpRefillSec(state)) {
-              state.dp = state.dpMax || 0;
-            }
-            state.napUntil = 0;
-            // DM20 morning wake / nap end turns the lamp back on.
-            if (isDm20(state)) setLights(state, true);
-          }
-          if (!napping) {
-            state.sleepCalledTonight = false;
-            state.awakeUntil = 0;
-            state.sleptContinuously = 0;
-          }
-        }
-
-        resolveCalls(state);
-
-        if (state.injured && state.injuredAt != null && state.gameTime - state.injuredAt >= INJURY_DEATH) {
-          die(state, '受傷未治療');
-          died = true;
-          break;
-        }
-        if (state.emptyCallSince && state.gameTime - state.emptyCallSince >= STARVE_DEATH &&
-            m.stage !== 'baby1' && m.stage !== 'egg') {
-          die(state, '飢餓過久');
-          died = true;
-          break;
-        }
-        if (state.injuries >= MAX_INJURIES) {
-          die(state, '受傷次數過多');
-          died = true;
-          break;
-        }
-        if (state.lifespanElapsed && (state.oldAgeMistakes || 0) >= 5) {
-          die(state, '壽終');
-          died = true;
-          break;
         }
       }
-      if (tryEvolve(state)) evolved = true;
+
+      if (state.hunger <= 0 || state.strength <= 0) syncCallMeters(state);
+      else {
+        state.callAt = null;
+        state.callResolved = false;
+        state.callHungerAt = null;
+        state.callStrengthAt = null;
+        state.emptyCallSince = null;
+        state.emptySince = null;
+      }
+
+      // sleep — official DMC / 1997 schedule and disturbance window
+      var shouldSleep = m.stage !== 'baby1' && isSleepHours(state);
+      var inDisturbAwake = !!(state.awakeUntil && state.gameTime < state.awakeUntil);
+      if (state.sleeping) {
+        state.sleptContinuously = (state.sleptContinuously || 0) + step;
+      }
+      if (shouldSleep && !state.sleeping) {
+        if (!inDisturbAwake) {
+          state.sleeping = true;
+          state.awakeUntil = 0;
+          // One lights-out call per night (Humulos DMC Call).
+          if (state.lights && !state.sleepCalledTonight) {
+            state.lightsCallResolved = false;
+            markCall(state, 'lights');
+          }
+          state.sleepCalledTonight = true;
+        }
+      }
+      // DM20 daytime nap: do not treat "not bedtime" as a morning wake
+      // until napUntil is reached. If the nap overlaps bedtime, they
+      // keep sleeping (Humulos).
+      var napping = !!(state.napUntil && state.sleeping && state.gameTime < state.napUntil);
+      if (!shouldSleep) {
+        if (state.sleeping && !napping) {
+          state.sleeping = false;
+          state.callLightsAt = null;
+          state.lightsCallResolved = false;
+          // Natural morning wake, or a completed 3 h nap, refills DP after
+          // continuous sleep: 1997 = 8 h; DM20 = 3 h (Humulos, Wikimon).
+          // A disturbance wake does not (disturbSleep resets sleptContinuously).
+          // No hunger / strength gift (that was invented).
+          if ((state.sleptContinuously || 0) >= dpRefillSec(state)) {
+            state.dp = state.dpMax || 0;
+          }
+          state.napUntil = 0;
+          // DM20 morning wake / nap end turns the lamp back on.
+          if (isDm20(state)) setLights(state, true);
+        }
+        if (!napping) {
+          state.sleepCalledTonight = false;
+          state.awakeUntil = 0;
+          state.sleptContinuously = 0;
+        }
+      }
+
+      resolveCalls(state);
+
+      if (state.injured && state.injuredAt != null && state.gameTime - state.injuredAt >= INJURY_DEATH) {
+        die(state, '受傷未治療');
+        r.died = true;
+        return r;
+      }
+      if (isDm20(state)) {
+        // DM20 (Humulos / NHOKO / Bandai): 12 h with empty HUNGER kills; empty
+        // strength alone is not lethal (NHOKO, Bandai "dies of hunger").
+        if (state.hunger <= 0 && m.stage !== 'baby1') {
+          if (state.hungerEmptySince == null) state.hungerEmptySince = state.gameTime - step;
+        } else {
+          state.hungerEmptySince = null;
+        }
+        if (state.hungerEmptySince != null && state.gameTime - state.hungerEmptySince >= STARVE_DEATH) {
+          die(state, '飢餓過久');
+          r.died = true;
+          return r;
+        }
+        if ((state.cmForm || 0) >= DM20_DEATH_CM_FORM) {
+          die(state, '育成失誤過多');
+          r.died = true;
+          return r;
+        }
+        if ((state.awakeInStage || 0) >= DM20_OLD_AGE_AWAKE && (state.cmForm || 0) >= DM20_OLD_AGE_CM) {
+          die(state, '壽終');
+          r.died = true;
+          return r;
+        }
+      } else if (state.emptyCallSince && state.gameTime - state.emptyCallSince >= STARVE_DEATH &&
+          m.stage !== 'baby1' && m.stage !== 'egg') {
+        die(state, '飢餓過久');
+        r.died = true;
+        return r;
+      }
+      if (state.injuries >= MAX_INJURIES) {
+        die(state, '受傷次數過多');
+        r.died = true;
+        return r;
+      }
+      if (!isDm20(state) && state.lifespanElapsed && (state.oldAgeMistakes || 0) >= 5) {
+        die(state, '壽終');
+        r.died = true;
+        return r;
+      }
     }
-    return { evolved: evolved, died: died };
+    if (tryEvolve(state)) r.evolved = true;
+    return r;
   }
 
   function injure(state, why) {
@@ -858,8 +943,9 @@
       return { woken: false };
     }
     state.sleeping = false;
-    state.sleepDist = (state.sleepDist || 0) + 1;
-    state.awakeUntil = state.gameTime + DISTURB_AWAKE_SEC;
+    // DM20 removed sleep disturbance (Wikimon Ver.20th, NHOKO).
+    if (!isDm20(state)) state.sleepDist = (state.sleepDist || 0) + 1;
+    state.awakeUntil = state.gameTime + (isDm20(state) ? DM20_WAKE_SEC : DISTURB_AWAKE_SEC);
     state.callLightsAt = null;
     // Disturbance breaks the 8 h continuous-sleep stretch for DP refill.
     state.sleptContinuously = 0;
@@ -987,6 +1073,40 @@
     return { ok: true, train: state.train };
   }
 
+  /* DM20 single training (Bandai manual + NHOKO Ver.20th table + Humulos):
+     after "!" mash A within the time limit to break the wall.
+       untouched  → fail,  weight  0, strength  0, no effort
+       half-broken→ fail,  weight −1, strength  0, effort +1 training
+       wrecked    → success, weight −2, strength +1, effort +1
+       destroyed  → success, weight −4, strength +2, effort +1
+     13 presses = destroyed (Humulos). The 4 / 9 press cut-offs for the
+     two middle states are unpublished → PLACEHOLDER. Effort: NHOKO and
+     Humulos say failures count too; the Bandai manual says some wall must
+     be destroyed, so an untouched wall gives nothing. */
+  var DM20_TRAIN_CUTS = { half: 4, wreck: 9, destroy: 13, source: 'destroy=Humulos; half/wreck=PLACEHOLDER' };
+  function dm20TrainTier(presses) {
+    var n = presses || 0;
+    if (n >= DM20_TRAIN_CUTS.destroy) return 3;
+    if (n >= DM20_TRAIN_CUTS.wreck) return 2;
+    if (n >= DM20_TRAIN_CUTS.half) return 1;
+    return 0;
+  }
+  function finishDm20Training(state, presses) {
+    if (!state || state.dead) return { ok: false };
+    var m = mon(state);
+    if (!m || !STAGE_TRAIN_BATTLE[m.stage]) return { ok: false, reason: 'too-young' };
+    var tier = dm20TrainTier(presses);
+    var minW = m.weight || 5;
+    var loss = [0, 1, 2, 4][tier];
+    var gain = [0, 0, 1, 2][tier];
+    state.weight = Math.max(minW, (state.weight || minW) - loss);
+    if (tier >= 1) state.train = (state.train || 0) + 1;
+    if (gain) state.strength = Math.min(4, (state.strength || 0) + gain);
+    state._trainSessionCounted = false;
+    clearStrengthCall(state);
+    return { ok: true, tier: tier, success: tier >= 2, train: state.train, strength: state.strength, weight: state.weight };
+  }
+
   function flush(state) {
     if (state.dead) return { ok: false };
     state.poop = 0;
@@ -1034,7 +1154,7 @@
         state.napUntil = 0;
         // Keep a short awake window so tick() does not immediately re-sleep
         // at night. DISTURB_AWAKE_SEC is an unverified placeholder.
-        state.awakeUntil = (state.gameTime || 0) + DISTURB_AWAKE_SEC;
+        state.awakeUntil = (state.gameTime || 0) + DM20_WAKE_SEC;
         woken = true;
       }
       return { ok: true, lights: true, woken: woken };
@@ -1297,6 +1417,11 @@
     feedMeat: feedMeat,
     feedProtein: feedProtein,
     finishTraining: finishTraining,
+    finishDm20Training: finishDm20Training,
+    dm20TrainTier: dm20TrainTier,
+    isDm20: isDm20,
+    advanceGrid: advanceGrid,
+    SIM_GRID: SIM_GRID,
     noteTrainingOpened: noteTrainingOpened,
     cancelTraining: cancelTraining,
     flush: flush,
@@ -1333,7 +1458,7 @@
     disturbSleep: disturbSleep,
     DISTURB_AWAKE_SEC: DISTURB_AWAKE_SEC,
     CALL_TIMEOUT: CALL_TIMEOUT,
-    MAX_CATCHUP: MAX_CATCHUP,
+    MAX_CATCHUP: Infinity, // v32: no cap (whole closed period simulated on SIM_GRID)
     STARVE_DEATH: STARVE_DEATH,
     INJURY_DEATH: INJURY_DEATH,
     OVERFEED_LOCK: OVERFEED_LOCK,

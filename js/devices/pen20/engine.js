@@ -399,7 +399,7 @@
     // Untreated sick/injury 6h
     if ((pet.sick || pet.injured)) {
       var since = pet.sick ? pet.sickSince : pet.injuredSince;
-      if (since && (state.gameTime - since) >= Da.DEATH.untreatedHours * 3600) {
+      if (since != null && (state.gameTime - since) >= Da.DEATH.untreatedHours * 3600) {
         beginDying(state, pet, pi);
       }
     }
@@ -484,6 +484,15 @@
     }
   }
 
+  var SIM_GRID = 60;
+  function anyLivePet(state) {
+    for (var i = 0; i < 2; i++) {
+      var p = state.pets && state.pets[i];
+      if (p && p.mon && !p.dead) return true;
+    }
+    return false;
+  }
+
   function tick(state, now) {
     now = nowMs(now);
     migrateState(state);
@@ -498,19 +507,31 @@
     var speed = clamp(state.speed || 1, 1, MAX_SPEED);
     var elapsed = Math.max(0, (now - (state.lastReal || now)) / 1000) * speed;
     state.lastReal = now;
-    // Process in chunks so 6h death etc. fire correctly
-    var left = elapsed;
-    while (left > 0) {
-      var step = Math.min(left, 60); // 1-minute chunks
-      state.gameTime += step;
+    if (!(elapsed > 0)) return state;
+    // v32: no cap, fixed 60 s game-time grid (state.simAt = last boundary
+    // processed). One long catch-up after the app was closed runs exactly
+    // the same steps as many short ticks while open.
+    var g0 = state.gameTime || 0;
+    var target = Math.round((g0 + elapsed) * 1e6) / 1e6; // no float drift
+    var t = state.simAt;
+    if (typeof t !== 'number' || !isFinite(t) || t > g0 || t < g0 - SIM_GRID) t = g0;
+    var live = anyLivePet(state);
+    while (live) {
+      var nb = (Math.floor(t / SIM_GRID) + 1) * SIM_GRID;
+      if (nb > target) break;
+      var step = nb - t;
+      state.gameTime = nb;
       for (var i = 0; i < 2; i++) {
         var pet = state.pets[i];
         if (!pet) continue;
         if (pet.dying) tickDying(state, pet, i, step);
         else tickPet(state, pet, step, i);
       }
-      left -= step;
+      t = nb;
+      live = anyLivePet(state);
     }
+    state.simAt = live ? t : target;
+    state.gameTime = target;
     return state;
   }
 

@@ -45,7 +45,7 @@ console.log('==================\n');
 console.log('1) Falls asleep at night with lights on, starts one lights call');
 {
   const s = nightAgumon();
-  advance(s, 5);
+  advance(s, 60);
   ok(s.sleeping, 'asleep after a few seconds of night');
   ok(s.sleepCalledTonight, 'sleepCalledTonight set');
   ok(s.callLightsAt != null, 'lights call started (lights were on)');
@@ -56,7 +56,7 @@ console.log('1) Falls asleep at night with lights on, starts one lights call');
 console.log('2) Feed / train / battle wake: sleep disturbance, not a care mistake, placeholder awake window');
 {
   const s = nightAgumon();
-  advance(s, 5);
+  advance(s, 60);
   const callsBefore = s.calls;
   const r = Engine.disturbSleep(s, 'food');
   ok(r.woken, 'feed wakes');
@@ -77,7 +77,7 @@ console.log('2) Feed / train / battle wake: sleep disturbance, not a care mistak
 console.log('3) Train and battle also wake; lights and flush do not');
 {
   const s = nightAgumon();
-  advance(s, 5);
+  advance(s, 60);
   ok(Engine.disturbSleep(s, 'train').woken, 'train wakes');
   s.sleeping = true; s.awakeUntil = 0;
   ok(Engine.disturbSleep(s, 'battle').woken, 'battle wakes');
@@ -92,7 +92,7 @@ console.log('3) Train and battle also wake; lights and flush do not');
 console.log('4) toggleLights does not wake and does not start a second call');
 {
   const s = nightAgumon();
-  advance(s, 5);
+  advance(s, 60);
   ok(s.sleeping && s.callLightsAt != null, 'precondition: asleep, called');
   Engine.toggleLights(s); // off
   ok(s.sleeping, 'still asleep after lights off');
@@ -106,7 +106,7 @@ console.log('4) toggleLights does not wake and does not start a second call');
 console.log('5) Lights-left-on care mistake still applies on the first fall-asleep');
 {
   const s = nightAgumon();
-  advance(s, 5);
+  advance(s, 60);
   const started = s.callLightsAt;
   ok(started != null, 'call running');
   // 20 min timeout
@@ -120,7 +120,7 @@ console.log('6) Natural morning wake at 8:00, no sleepDist, DP refill, new night
 {
   const s = nightAgumon();
   s.dp = 0;
-  advance(s, 5);
+  advance(s, 60);
   ok(s.sleeping, 'asleep at night');
   // 22:00 + 10 hours = 8:00. Catch-up cap is 8h, so two steps.
   advance(s, 7 * 3600);
@@ -135,7 +135,7 @@ console.log('7) Opening-food style: feedMeat while asleep uses the same rules');
 {
   const s = nightAgumon();
   s.hunger = 2;
-  advance(s, 5);
+  advance(s, 60);
   const r = Engine.feedMeat(s);
   ok(r.ok, 'feed succeeds');
   ok(!s.sleeping, 'woken by feeding');
@@ -148,7 +148,7 @@ console.log('8) Old saves without awakeUntil / sleepCalledTonight still work');
   const s = nightAgumon();
   delete s.awakeUntil;
   delete s.sleepCalledTonight;
-  advance(s, 5);
+  advance(s, 60);
   ok(s.sleeping, 'falls asleep from a legacy save');
   const r = Engine.disturbSleep(s, 'food');
   ok(r.woken && s.awakeUntil > 0, 'fields are created on disturbance');

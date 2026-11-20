@@ -127,6 +127,21 @@
     return rng() < chance ? 'win' : 'loss';
   }
 
+  /* DM20 single battle "!" charge (v32). Humulos: the mash sets the attack
+     order Weak < Strong < Double Weak < Double Strong < Critical; Wikimon:
+     about 10 presses gives the Critical order. Tiers 0–4 by presses; only the
+     10-press Critical cut is sourced, the lower cuts are PLACEHOLDER. The
+     DM20 HP damage table is unpublished, so the tier is applied as a small
+     boost on the existing win model (PLACEHOLDER: +0/+0/+1/+1/+2 sixteenths),
+     not as a fake damage simulation. */
+  var CHARGE_CUTS = [3, 6, 8, 10];
+  function chargeTier(presses) {
+    var n = presses || 0, t = 0;
+    for (var i = 0; i < CHARGE_CUTS.length; i++) if (n >= CHARGE_CUTS[i]) t = i + 1;
+    return t;
+  }
+  function chargeBoost(tier) { return [0, 0, 1, 1, 2][Math.max(0, Math.min(4, tier || 0))]; }
+
   function mulberry(a) {
     return function () {
       a |= 0; a = (a + 0x6d2b79f5) | 0;
@@ -224,6 +239,8 @@
 
   root.Battle = {
     resolveBattle: resolveBattle,
+    chargeTier: chargeTier,
+    chargeBoost: chargeBoost,
     pickCpuFoe: pickCpuFoe,
     makeOffer: makeOffer,
     acceptOffer: acceptOffer,

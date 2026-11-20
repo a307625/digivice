@@ -49,6 +49,17 @@
   var scanTimer = null;
   var scanStream = null;
   var train = { t: 0, pos: 0, dir: 1, done: false, success: false };
+  /* DM20 (Ver.20th) single training + single battle charge (v32).
+     Bandai manual: the Digimon shows "!" and THEN you mash A; B does not
+     count. Timed in real milliseconds (v31 counted rAF frames, so the window
+     doubled to ~6.7 s when iOS throttled to 30 fps). Durations are not
+     published: READY / WINDOW are PLACEHOLDER; battle charge 3 s follows the
+     manual's "After 3 seconds, the battle will start" (tag charge). */
+  var DM20_READY_MS = 800;
+  var DM20_TRAIN_WINDOW_MS = 3000;
+  var DM20_CHARGE_MS = 3000;
+  var DM20_RESULT_MS = 1400;
+  var charge = { on: false };
   var evoFx = { t: 0, from: '', to: '' };
   var battleFx = { t: 0, foe: '', result: '', active: false };
   var poseFx = { name: null, until: 0, extra: null };
@@ -815,6 +826,7 @@
     var I = items();
     var mode = train.mode || 'meter';
     var fr = train.done ? (train.success ? 'happy' : 'angry') : ((animTick() % 2) ? 'train1' : 'train0');
+    if (mode === 'wall') { drawDm20Wall(); return; }
     if (mode === 'highlow') {
       I.drawText(ctx, 'HI', fx(24), fy(1), ITEM);
       I.drawText(ctx, 'LO', fx(24), fy(7), ITEM);
@@ -837,6 +849,63 @@
       drawMeter(fy(1), mode === 'meter_slow');
     }
     blitMon(state.mon, fx(0), fy(0), MON, fr, true);
+  }
+
+  function drawBang(x, y) {
+    // "!" cue (3 dots wide, 7 tall): bar + dot, in LCD ink.
+    ctx.fillStyle = INK;
+    ctx.fillRect(x + DOT, y, DOT, 5 * DOT);
+    ctx.fillRect(x + DOT, y + 6 * DOT, DOT, DOT);
+  }
+  function drawPowerBar(x, presses, full) {
+    // Vertical power meter beside the Digimon, 14 dots tall; full = 13 presses (Humulos).
+    var h = Math.min(14, Math.round(14 * (presses || 0) / full));
+    ctx.fillStyle = 'rgba(30, 36, 28, 0.25)';
+    ctx.fillRect(x, fy(1), 2 * DOT, 14 * DOT);
+    ctx.fillStyle = INK;
+    for (var i = 0; i < h; i++) if (i % 2 === 0 || i === h - 1) ctx.fillRect(x, fy(15 - i), 2 * DOT, DOT);
+  }
+  function drawWallTier(tier) {
+    // 0 untouched, 1 half-broken, 2 wrecked, 3 destroyed (NHOKO Ver.20th table).
+    if (tier >= 3) { blitItem('hit', fx(16), fy(0), ITEM); return; }
+    var keepRows = tier === 2 ? 5 : tier === 1 ? 10 : 16;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(fx(16), fy(16 - keepRows), 16 * DOT, keepRows * DOT);
+    ctx.clip();
+    blitItem('wall', fx(16), fy(0), ITEM);
+    ctx.restore();
+  }
+  function drawDm20Wall() {
+    var I = items();
+    var now = Date.now();
+    if (train.phase === 'ready') {
+      blitMon(state.mon, fx(0), fy(0), MON, (animTick() % 2) ? 'idle1' : 'idle0', true);
+      drawWallTier(0);
+      return;
+    }
+    if (train.phase === 'go') {
+      blitMon(state.mon, fx(0), fy(0), MON, (animTick() % 2) ? 'train1' : 'train0', true);
+      drawBang(fx(13), fy(1));
+      drawPowerBar(fx(17), train.presses, 13);
+      drawWallTier(0);
+      return;
+    }
+    // result: shot flies, then the wall state stays up
+    var u = Math.min(1, (now - train.doneAt) / 500);
+    blitMon(state.mon, fx(0), fy(0), MON, u < 1 ? 'attack' : (train.tier >= 2 ? 'happy' : 'angry'), true);
+    if (u < 1 && train.tier > 0) blitItem('shot', fx(12) + (fx(20) - fx(12)) * u, fy(4), ITEM, false);
+    drawWallTier(u < 1 ? 0 : train.tier);
+  }
+  function drawCharge() {
+    lcdBg();
+    if (!state) return;
+    blitMon(state.mon, fx(0), fy(0), MON, charge.phase === 'go' ? ((animTick() % 2) ? 'train1' : 'train0') : 'idle0', true);
+    if (charge.phase === 'go') {
+      drawBang(fx(13), fy(1));
+      drawPowerBar(fx(17), charge.presses, 12);
+    }
+    if (charge.foe) blitMon(charge.foe, fx(20), fy(0), MON, 'idle0', false);
   }
 
   function drawEvo() {
@@ -958,6 +1027,7 @@
     else if (view === 'albumRecord') drawAlbumRecord();
     else if (view === 'connect') drawConnectMenu();
     else if (view === 'train') drawTrain();
+    else if (view === 'charge') drawCharge();
     else if (view === 'evo') drawEvo();
     else if (view === 'battle') drawBattleFx();
     else if (view === 'grave') drawGrave();
@@ -1111,6 +1181,7 @@
     if (!state || state.dead) return;
     var m = mon();
     if (!m || m.stage === 'egg') { playPose('refuse', 900); return; }
+    if (dm20Asleep()) return;
     disturb('food');
     // Keep the last-chosen item (meat or protein). Official manuals we
     // found do not spell the cursor out; the original-device pattern and
@@ -1139,8 +1210,16 @@
     eatAnim = { on: true, t: 0, kind: kind, refused: false, returnToFood: true };
   }
 
+  function dm20Asleep() {
+    // DM20: a sleeping Digimon has to be woken with LIGHTS → ON first; then it
+    // stays up 15 min for feeding / training (Bandai manual, NHOKO). Feed /
+    // train / battle while asleep do nothing (no wake, no disturbance).
+    return currentDevice().family === 'dm20' && state && state.sleeping;
+  }
+
   function startTrain() {
     var m = mon();
+    if (dm20Asleep()) { view = 'play'; return; }
     disturb('train');
     // Official: Egg / Baby I / Baby II cannot train — refuse animation.
     // Child and up, including DM20 Mega, can (Engine.canTrain).
@@ -1153,8 +1232,14 @@
     if (window.Engine.noteTrainingOpened) window.Engine.noteTrainingOpened(state);
     var d = currentDevice();
     var mode = 'meter';
-    if (d.family === 'dm20') mode = 'mash';
-    else if (d.version === 1) mode = 'highlow';
+    if (d.family === 'dm20') {
+      var t0 = Date.now();
+      train = { mode: 'wall', phase: 'ready', startAt: t0, goAt: t0 + DM20_READY_MS,
+        endAt: t0 + DM20_READY_MS + DM20_TRAIN_WINDOW_MS, presses: 0, done: false, success: false, tier: 0 };
+      view = 'train';
+      return;
+    }
+    if (d.version === 1) mode = 'highlow';
     else if (d.version === 3) mode = 'mash';
     else if (d.version === 4) mode = 'number';
     else if (d.version === 5) mode = 'meter_slow';
@@ -1165,6 +1250,21 @@
       num: 0
     };
     view = 'train';
+  }
+
+  function finishDm20Wall() {
+    if (train.done) return;
+    var r = window.Engine.finishDm20Training(state, train.presses);
+    train.done = true;
+    train.phase = 'result';
+    train.doneAt = Date.now();
+    train.tier = (r && r.tier) || 0;
+    train.success = !!(r && r.success);
+    persist();
+    setTimeout(function () {
+      if (view === 'train') view = 'play';
+      playPose(train.success ? 'happy' : 'angry', 1500);
+    }, DM20_RESULT_MS);
   }
 
   function finishTrainRound(success) {
@@ -1198,6 +1298,11 @@
   function trainInput(btn) {
     if (train.done) return;
     var mode = train.mode || 'meter';
+    if (mode === 'wall') {
+      // Only A, only after "!" (Bandai manual). B / early presses do nothing.
+      if (btn === 'A' && train.phase === 'go') train.presses++;
+      return;
+    }
     if (mode === 'highlow') {
       var choice = (btn === 'A') ? 1 : 0;
       if (choice === train.target) train.hits++;
@@ -1273,6 +1378,7 @@
 
   function openBattleMenu() {
     if (!state || state.dead) return;
+    if (dm20Asleep()) return;
     disturb('battle');
     // Official: Baby I/II/Egg cannot; need DP; must not be injured.
     // Engine.canBattle covers stage, DP, injury, and species.canBattle.
@@ -1295,11 +1401,21 @@
     }).join('');
   }
 
-  function cpuBattle(isTag) {
+  function cpuBattle(isTag, chargeTier) {
     if (!window.Engine.canBattle(state)) { playPose('refuse', 2000); view = 'play'; return; }
-    var foe = window.Battle.pickCpuFoe(state.mon);
+    if (!isTag && chargeTier == null && currentDevice().family === 'dm20') {
+      // Bandai manual (single battle): "When the ! icon appears, press A
+      // repeatedly to increase your Digimon's power." Then the fight runs.
+      var c0 = Date.now();
+      charge = { on: true, phase: 'ready', goAt: c0 + DM20_READY_MS, endAt: c0 + DM20_READY_MS + DM20_CHARGE_MS,
+        presses: 0, foe: window.Battle.pickCpuFoe(state.mon) };
+      view = 'charge';
+      return;
+    }
+    var foe = (chargeTier != null && charge.foe) ? charge.foe : window.Battle.pickCpuFoe(state.mon);
     var selfSnap = window.Battle.snapshot(state);
     selfSnap.initiator = window.Engine.nextCpuInitiator ? window.Engine.nextCpuInitiator(state) : true;
+    if (chargeTier != null && window.Battle.chargeBoost) selfSnap.enhancement = (selfSnap.enhancement || 0) + window.Battle.chargeBoost(chargeTier);
     var result = window.Battle.resolveBattle(state.mon, foe, Date.now() >>> 0, selfSnap, { mon: foe, strength: 2, weight: 20, enhancement: 0 });
     hideAllOverlays();
     battleFx = { t: 0, foe: foe, result: result, active: true };
@@ -1309,6 +1425,13 @@
     persist();
   }
 
+  function finishCharge() {
+    if (!charge.on) return;
+    charge.on = false;
+    var tier = window.Battle.chargeTier ? window.Battle.chargeTier(charge.presses) : 0;
+    cpuBattle(false, tier);
+  }
+
   function finishBattleFx() {
     view = 'play';
     battleFx.active = false;
@@ -1316,6 +1439,7 @@
   }
 
   function confirmSel() {
+    if (view === 'charge') return; // DM20 charge: only A counts
     if (view === 'train') { trainInput('B'); return; }
     if (view === 'clock') { view = 'play'; return; }
     if (view === 'status') { statusPage = (statusPage + 1) % statusPages().length; return; }
@@ -1432,6 +1556,7 @@
     if (isPendulum() && window.PendulumUI) {
       if (window.PendulumUI.pressA(penHost())) return;
     }
+    if (view === 'charge') { if (charge.on && charge.phase === 'go') charge.presses++; return; }
     if (view === 'train') { trainInput('A'); return; }
     cycleSel();
   }
@@ -1480,6 +1605,7 @@
     if (isPendulum() && window.PendulumUI) {
       if (window.PendulumUI.pressC(penHost())) return;
     }
+    if (view === 'charge') { charge.on = false; view = 'play'; return; }
     if (view === 'train') {
       if (window.Engine && window.Engine.cancelTraining) window.Engine.cancelTraining(state);
       persist();
@@ -1586,9 +1712,19 @@
     if (isPen20() && window.Pen20UI) {
       window.Pen20UI.tickMinigame(penHost());
     }
+    if (view === 'train' && train.mode === 'wall' && !train.done) {
+      var nowW = Date.now();
+      if (train.phase === 'ready' && nowW >= train.goAt) train.phase = 'go';
+      if (train.phase === 'go' && nowW >= train.endAt) finishDm20Wall();
+    }
+    if (view === 'charge' && charge.on) {
+      var nowC = Date.now();
+      if (charge.phase === 'ready' && nowC >= charge.goAt) charge.phase = 'go';
+      if (charge.phase === 'go' && nowC >= charge.endAt) finishCharge();
+    }
     if (isPendulum() && window.PendulumUI) {
       window.PendulumUI.tickMinigame(penHost());
-    } else if (view === 'train' && !train.done) {
+    } else if (view === 'train' && !train.done && train.mode !== 'wall') {
       train.t = (train.t || 0) + 1;
       var mode = train.mode || 'meter';
       var step = (mode === 'meter_slow') ? 0.009 : 0.018;

@@ -155,6 +155,11 @@
     if (!s) return;
     if (s.dead) { drawComputer(host); return; }
     var fr = monFrame(host);
+    if (s.dying) {
+      // Dying cry (Humulos): stops moving and cries for one minute — shake!
+      blitMon(host, s.mon, host.fx(8), host.fy(0), (host.animTick() % 2) ? 'lose' : 'angry', false);
+      return;
+    }
     var mx = host.fx(host.walk ? host.walk.x : 8);
     var my = host.fy(0);
     var flip = host.walk && host.walk.dir > 0;

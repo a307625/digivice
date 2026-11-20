@@ -736,8 +736,10 @@
     var dtReal = Math.max(0, (realNow - (state.lastReal || realNow)) / 1000);
     state.lastReal = realNow;
     var dt = dtReal * (state.speed || 1);
-    if (dt > 3600 * 6) dt = 3600 * 6;
-    state.gameTime = (state.gameTime || 0) + dt;
+    // v32: no cap. The Holy Project Digivice has no care meters or death;
+    // its only passive timers (Child evolution, help-signal window) are
+    // absolute game-time checks, so one long step equals running open.
+    state.gameTime = Math.round(((state.gameTime || 0) + dt) * 1e6) / 1e6;
     maybeChildEvo(state);
     tickHelp(state, dt);
     return { ok: true };

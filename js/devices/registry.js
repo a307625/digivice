@@ -244,7 +244,9 @@
       state.clockAnchor = { value: rawClock(state), at: realNow };
     } else {
       var target = mod86400(a.value + (realNow - a.at) / 1000);
-      state.clockOffset = mod86400(target - (state.gameTime || 0));
+      // Rounded to 1 µs so the offset is bit-stable between ticks (v32: the
+      // grid simulation reads it for sleep / age times).
+      state.clockOffset = mod86400(Math.round((target - (state.gameTime || 0)) * 1e6) / 1e6);
     }
     state.clockSyncOffset = state.clockOffset;
   }

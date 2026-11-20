@@ -59,7 +59,7 @@ console.log('===========================\n');
 console.log('1) Calls: 20 min, one CM per empty period, hunger+strength is one call, no retrigger');
 {
   const s = form('agumon', { hunger: 0, strength: 4, clockOffset: 10 * 3600 });
-  advance(s, 1);
+  advance(s, 60);
   ok(s.callAt != null, 'hunger call started');
   ok(Engine.isCallLit(s), 'call icon on while the call is open');
   eq(s.calls, 0, 'not yet a mistake');
@@ -95,7 +95,7 @@ console.log('1) Calls: 20 min, one CM per empty period, hunger+strength is one c
   // force another: must stay at 15. Need to fill first then empty? already resolved at 15.
   // Start a fresh empty after fill:
   s.hunger = 2; s.strength = 2;
-  advance(s, 1);
+  advance(s, 60);
   s.hunger = 0;
   s.callAt = null; s.callResolved = false;
   advance(s, 21 * 60);
@@ -113,7 +113,7 @@ console.log('2) 12 h starve from the call (hunger or strength), 13 h catch-up ca
   advance(s, 12 * 3600 + 60);
   ok(s.dead && s.deadReason === '飢餓過久', '12 h unanswered strength call also starves');
 }
-eq(Engine.MAX_CATCHUP, 13 * 3600, 'catch-up cap is 13 h so 12 h death can fire in one tick');
+eq(Engine.MAX_CATCHUP, Infinity, 'v32: no catch-up cap (whole closed period simulated)');
 eq(Engine.DISTURB_AWAKE_SEC, 600, 'DISTURB_AWAKE_SEC stays the 10 min unverified placeholder');
 
 console.log('3) Hunger / protein / weight');
@@ -220,7 +220,7 @@ console.log('4) Injury / heal / death clocks');
   // Direct: recordBattle that hits
   s.dp = 2;
   Engine.recordBattle(s, 'win', () => 0);
-  advance(s, 2);
+  advance(s, 60);
   ok(s.dead && s.deadReason === '受傷次數過多', '20 injuries in a form is death (got ' + s.deadReason + ', injuries=' + s.injuries + ')');
 }
 
@@ -369,14 +369,14 @@ console.log('6) Sleep hours, lifespan windows, DP refill, no hunger gift, 5-CM o
 }
 {
   const s = form('agumon', { clockOffset: 22 * 3600, dp: 0, dpMax: 20, hunger: 1, strength: 1 });
-  advance(s, 5);
+  advance(s, 60);
   ok(s.sleeping, 'asleep at 22:00 (default 21–08 still covers this if care not forcing 19:00)');
   // 8 h 0 min of continuous sleep ending at morning: 22:00 + 10 h = 08:00
   advance(s, 8 * 3600);
   // still before 08:00? 22+8=06:00, still sleeping
   ok(s.sleeping, 'still asleep at 06:00');
   eq(s.dp, 0, 'DP not refilled mid-sleep');
-  advance(s, 2 * 3600);
+  advance(s, 2 * 3600 - 60); // v32 grid: land exactly on the 08:00 wake step
   ok(!s.sleeping, 'natural morning wake');
   eq(s.dp, 20, '≥8 h continuous natural morning refills DP to dpMax');
   eq(s.hunger, 1, 'no invented hunger gift on morning wake');

@@ -124,7 +124,7 @@ console.log('3) Adult paths (File Island / Wikimon) — successful trains only')
   const s = form('tentomon', { careMistakes: 0, trainSuccess: 40, evoDueAt: 24, gameTime: 0, stageEnteredGame: 0 });
   // MAX_CATCHUP is 13 h, so set the clock inside the window and tick a second.
   s.gameTime = 24 * 3600;
-  s.lastReal = Date.now() - 1000;
+  s.lastReal = Date.now() - 60000;
   Eng.tick(s, Date.now());
   eq(s.mon, 'kabuterimon', 'live evo Tentomon → Kabuterimon');
   eq(s.careMistakes, 0, 'CM reset on evo (Humulos)');
@@ -135,7 +135,7 @@ console.log('4) Perfect gates: 30 battles BEFORE window (flag stays), WR, CM, tr
 {
   const s = form('kabuterimon', { battles: 30, wins: 15, wrFlag: false, gameTime: 0, stageEnteredGame: 0 });
   // 30 battles before window → flag sets on tick, before 60 h.
-  advance(s, 10);
+  advance(s, 60);
   ok(s.wrFlag, '30 battles as Adult before the window sets wrFlag');
   s.gameTime = 70 * 3600; // inside window; flag must still be true
   ok(s.wrFlag, 'flag stays once set');
@@ -256,12 +256,12 @@ console.log('8) Sleep: all wake at 08:00, bedtime per species, 8 h DP, disturb r
   s.clockOffset = 20 * 3600;
   s.gameTime = 0;
   s.dpQ = 0;
-  advance(s, 1);
+  advance(s, 60);
   ok(s.tired, 'tired at bedtime');
   ok(Eng.isCallLit(s), 'bedtime call while lights on');
   // Lights already off: no call, goes to sleep
   const s2 = form('tentomon', { lights: false, clockOffset: 20 * 3600 });
-  advance(s2, 1);
+  advance(s2, 60);
   ok(s2.sleeping, 'lights already off → sleep, no forced wake');
   ok(!Eng.isCallLit(s2) || s2.callKind !== 'bedtime' || s2.callResolved, 'no outstanding bedtime call');
 
@@ -313,7 +313,7 @@ console.log('9) Lights-off screen: black+Z when tired/sleeping, not 1997 blank, 
 console.log('10) Calls: Humulos 10 min hunger/strength, 30 min bedtime');
 {
   const s = form('tentomon', { hunger: 0, strength: 4, clockOffset: 10 * 3600 });
-  advance(s, 1);
+  advance(s, 60);
   ok(Eng.isCallLit(s), 'hunger call starts');
   eq(s.careMistakes, 0, 'not yet a mistake');
   advance(s, 9 * 60);
@@ -321,7 +321,7 @@ console.log('10) Calls: Humulos 10 min hunger/strength, 30 min bedtime');
   advance(s, 2 * 60);
   eq(s.careMistakes, 1, 'CM at 10 min (Humulos, not FI 20)');
   const b = form('tentomon', { clockOffset: 20 * 3600, lights: true });
-  advance(b, 1);
+  advance(b, 60);
   ok(b.callKind === 'bedtime', 'bedtime call');
   advance(b, 29 * 60);
   eq(b.careMistakes, 0, 'bedtime still open at 29 min');
@@ -348,7 +348,7 @@ console.log('11) Clock 12/24, SET does not jump growth, age at midnight (NHOKO A
 
   // Cross midnight → age +1
   const a = form('tentomon', { clockOffset: 23 * 3600 + 3590, gameTime: 0, ageDays: 2, lastReal: Date.now() });
-  advance(a, 20);
+  advance(a, 60);
   eq(a.ageDays, 3, 'age increments at midnight (NHOKO AM 12:00), not at 24 h of gameTime');
 }
 
@@ -423,30 +423,46 @@ console.log('13) Jogress: Adult+, full DP, same position fails, attribute produc
 
 console.log('14) Death pools, 6 h sick, dying-save shakes, computer after death');
 {
+  // v32: every Pendulum death opens the official one-minute dying cry
+  // (Humulos); unsaved after 60 s it dies with the original cause.
+  function finishCry(x) { x.lastReal = Date.now() - 61000; Eng.tick(x, Date.now()); }
   const s = form('tentomon', { sickCount: 19 });
   Eng.makeSick(s, 'test');
   eq(s.sickCount, 20, '20th sickness');
   Eng.checkDeath(s);
-  ok(s.dead, '20 sicknesses in one form → death');
+  ok(s.dying && !s.dead, '20 sicknesses → dying cry starts (shake window)');
+  finishCry(s);
+  ok(s.dead, '20 sicknesses in one form → death after the unsaved minute');
   eq(s.deathReason, 'sick-20', 'reason');
 
   const i = form('tentomon', { injureCount: 19 });
   Eng.makeInjured(i, 'test');
   Eng.checkDeath(i);
-  ok(i.dead, '20 injuries in one form (separate pool)');
+  finishCry(i);
+  ok(i.dead && i.deathReason === 'injury-20', '20 injuries in one form (separate pool)');
 
   const c = form('tentomon', { careMistakes: 19 });
   Eng.addCareMistake(c, 'x');
-  ok(c.dead, '20 CM in one form');
+  ok(c.dying, '20th CM starts the dying cry');
+  finishCry(c);
+  ok(c.dead && c.deathReason === 'cm-20', '20 CM in one form');
 
   const w = form('kabuterimon', { careMistakes: 4, evoDueAt: 60, gameTime: 60 * 3600, stageEnteredGame: 0 });
   Eng.addCareMistake(w, 'window');
-  ok(w.dead, '5 CM at/after the Perfect window');
+  finishCry(w);
+  ok(w.dead && w.deathReason === 'cm-window', '5 CM at/after the Perfect window');
 
   const t = form('tentomon', { sick: true, sickSince: 0, gameTime: 0 });
-  t.lastReal = Date.now() - 6 * 3600 * 1000;
+  t.lastReal = Date.now() - (6 * 3600 + 60) * 1000;
   const rr = Eng.tick(t, Date.now());
-  ok(t.dead && rr.died, 'left sick 6 h → death');
+  ok(t.dead && rr.died && t.deathReason === 'sick-6h', 'left sick 6 h → cry → death (one catch-up)');
+
+  const sv = form('tentomon', { careMistakes: 19 });
+  Eng.addCareMistake(sv, 'x');
+  for (let k = 0; k < 100; k++) Eng.addShake(sv, 1);
+  ok(!sv.dying && !sv.dead, 'shaking 100 times in the minute saves it');
+  sv.hunger = 4; sv.strength = 4; sv.lastReal = Date.now() - 300 * 1000; Eng.tick(sv, Date.now());
+  ok(!sv.dead && !sv.dying, 'saved: the same 20 CM do not restart the cry');
 
   const d = form('tentomon');
   Eng.beginDyingSave(d);

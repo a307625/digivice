@@ -13,7 +13,9 @@
     return root.PendulumData;
   }
 
-  var MAX_CATCHUP = 13 * 3600;
+  // v32: no catch-up cap; closed time is simulated on a 60 s game-time grid
+  // (identical to leaving the app open). See tick / advanceGrid.
+  var SIM_GRID = 60;
 
   function now() { return Date.now(); }
 
@@ -238,8 +240,13 @@
     checkDeath(state);
   }
 
-  function checkDeath(state) {
-    if (state.dead) return true;
+  /* Humulos Pendulum manual "Death": 20 sicknesses / 20 injuries / 20 care
+     mistakes in one form; 5 care mistakes upon or after the Perfect or
+     Ultimate evolution window; sick or injured for 6 hours. Every death
+     starts with a one-minute dying cry during which ~100 shakes save the
+     Digimon (Humulos). v32: checkDeath now opens that window instead of
+     killing instantly; tick() kills when the minute ends unsaved. */
+  function deathCause(state) {
     var R = rules();
     var m = mon(state);
     var inWindow = false;
@@ -247,17 +254,41 @@
       var hours = timeInStage(state) / 3600;
       if (hours >= (m.lifespanMin || 0)) inWindow = true;
     }
-    if ((state.sickCount || 0) >= R.deathSickInForm) return die(state, 'sick-20');
-    if ((state.injureCount || 0) >= R.deathInjuryInForm) return die(state, 'injury-20');
-    if ((state.careMistakes || 0) >= R.deathCmInForm) return die(state, 'cm-20');
-    if (inWindow && (state.careMistakes || 0) >= R.deathCmAtWindow) return die(state, 'cm-window');
-    if (state.sick && state.sickSince != null && state.gameTime - state.sickSince >= R.sickDeathHours * 3600) {
-      return die(state, 'sick-6h');
+    if ((state.sickCount || 0) >= R.deathSickInForm) return 'sick-20';
+    if ((state.injureCount || 0) >= R.deathInjuryInForm) return 'injury-20';
+    if ((state.careMistakes || 0) >= R.deathCmInForm) return 'cm-20';
+    if (inWindow && (state.careMistakes || 0) >= R.deathCmAtWindow) return 'cm-window';
+    if (state.sick && state.sickSince != null && state.gameTime - state.sickSince >= R.sickDeathHours * 3600) return 'sick-6h';
+    if (state.injured && state.injuredSince != null && state.gameTime - state.injuredSince >= R.sickDeathHours * 3600) return 'injury-6h';
+    return null;
+  }
+
+  function checkDeath(state) {
+    if (state.dead) return true;
+    if (state.dying) return false;
+    var why = deathCause(state);
+    if (!why) return false;
+    var g = state.deathSavedAt;
+    if (g && why !== 'sick-6h' && why !== 'injury-6h' &&
+        (state.sickCount || 0) <= g.sick && (state.injureCount || 0) <= g.injure &&
+        (state.careMistakes || 0) <= g.cm) {
+      // Already saved for these same counters (Humulos: "you could save it").
+      return false;
     }
-    if (state.injured && state.injuredSince != null && state.gameTime - state.injuredSince >= R.sickDeathHours * 3600) {
-      return die(state, 'injury-6h');
-    }
+    beginDyingSave(state);
+    state.dyingReason = why;
     return false;
+  }
+
+  function savedFromDeath(state) {
+    state.dying = false;
+    state.dyingShakes = 0;
+    state.deathSavedAt = { sick: state.sickCount || 0, injure: state.injureCount || 0, cm: state.careMistakes || 0 };
+    // PLACEHOLDER: what a save does to the 6 h sick / injury timer is
+    // unpublished; restart it so the save is not undone the next minute.
+    if (state.dyingReason === 'sick-6h') state.sickSince = state.gameTime;
+    if (state.dyingReason === 'injury-6h') state.injuredSince = state.gameTime;
+    state.dyingReason = null;
   }
 
   function die(state, reason) {
@@ -522,7 +553,7 @@
     } else if (state.tired || isSleepHours(state)) {
       state.sleeping = true;
       state.tired = true;
-      if (!state.sleptSince) state.sleptSince = state.gameTime;
+      if (state.sleptSince == null) state.sleptSince = state.gameTime;
       // Turning off at bedtime cancels the bedtime call (NHOKO).
       if (state.callKind === 'bedtime') {
         resolveCall(state, false);
@@ -553,8 +584,7 @@
     if (state.dying) {
       state.dyingShakes = (state.dyingShakes || 0) + n;
       if (state.dyingShakes >= rules().dyingSaveShakes) {
-        state.dying = false;
-        state.dyingShakes = 0;
+        savedFromDeath(state);
         return { saved: true };
       }
       return { saved: false, shakes: state.dyingShakes };
@@ -723,7 +753,7 @@
         if (state.callKind !== 'bedtime') startCall(state, 'bedtime');
       } else if (!state.lights) {
         state.sleeping = true;
-        if (!state.sleptSince) state.sleptSince = state.gameTime;
+        if (state.sleptSince == null) state.sleptSince = state.gameTime;
         state.sleepCalledTonight = true;
       }
     }
@@ -746,7 +776,7 @@
     var wake = R.wakeHour + (state.wakeDelayHours || 0);
     if (wake > R.wakeDelayCapHour) wake = R.wakeDelayCapHour;
     if (state.sleeping) {
-      if (!state.sleptSince) state.sleptSince = state.gameTime - dt;
+      if (state.sleptSince == null) state.sleptSince = state.gameTime - dt;
       if (state.gameTime - state.sleptSince >= R.dpSleepHours * 3600) fillDp(state);
       // Wake at 08:00 (+ delay).
       if (!isSleepHours(state) && h >= wake && h < 12) {
@@ -774,6 +804,32 @@
     if (crossed > 0) state.ageDays = (state.ageDays || 0) + crossed;
   }
 
+  /* One 60 s grid step of PenOG/ZERO care (v32). Same order as v31's tick
+     body: age at 00:00, hunger/poop, sleep, calls, dying window, death,
+     evolution. */
+  function simStep(state, dt) {
+    var r = { evolved: false, died: false };
+    var nextClock = runningClockSeconds(state);
+    var prevClock = (((nextClock - dt) % 86400) + 86400) % 86400;
+    tickAge(state, prevClock, nextClock, dt);
+    maybeSetWrFlag(state);
+    tickHungerPoop(state, dt);
+    tickSleep(state, dt);
+    tickCalls(state);
+    if (state.dying && state.dyingStartedAt != null &&
+        state.gameTime - state.dyingStartedAt >= rules().dyingSaveSec) {
+      if ((state.dyingShakes || 0) < rules().dyingSaveShakes) die(state, state.dyingReason || 'dying-fail');
+      else savedFromDeath(state);
+    }
+    if (state.dead || checkDeath(state)) {
+      r.died = !!state.dead;
+      if (r.died) return r;
+    }
+    var ev = tryEvolve(state);
+    if (ev) { r.evolved = true; r.from = ev.from; r.to = ev.to; }
+    return r;
+  }
+
   function tick(state, realNow) {
     state = migrateState(state);
     var result = { ok: true, evolved: false, died: false, paused: false };
@@ -782,7 +838,6 @@
     var speed = state.speed || 1;
     var elapsed = (realNow - (state.lastReal || realNow)) / 1000;
     if (elapsed < 0) elapsed = 0;
-    if (elapsed > MAX_CATCHUP) elapsed = MAX_CATCHUP;
     var dt = elapsed * speed;
     state.lastReal = realNow;
 
@@ -796,35 +851,23 @@
       return result;
     }
 
-    var prevClock = runningClockSeconds(state);
-    state.gameTime = (state.gameTime || 0) + dt;
-    var nextClock = runningClockSeconds(state);
-    tickAge(state, prevClock, nextClock, dt);
-
-    // Capture wrFlag before the Perfect window opens.
-    maybeSetWrFlag(state);
-
-    tickHungerPoop(state, dt);
-    tickSleep(state, dt);
-    tickCalls(state);
-
-    if (state.dying && state.dyingStartedAt != null &&
-        state.gameTime - state.dyingStartedAt >= rules().dyingSaveSec) {
-      if ((state.dyingShakes || 0) < rules().dyingSaveShakes) die(state, 'dying-fail');
-      else { state.dying = false; }
+    if (!(dt > 0)) return result;
+    var g0 = state.gameTime || 0;
+    var target = Math.round((g0 + dt) * 1e6) / 1e6; // no float drift
+    var t = state.simAt;
+    if (typeof t !== 'number' || !isFinite(t) || t > g0 || t < g0 - SIM_GRID) t = g0;
+    while (!state.dead) {
+      var nb = (Math.floor(t / SIM_GRID) + 1) * SIM_GRID;
+      if (nb > target) break;
+      var stepLen = nb - t;
+      state.gameTime = nb;
+      var r = simStep(state, stepLen);
+      t = nb;
+      if (r.evolved) { result.evolved = true; result.from = r.from; result.to = r.to; }
+      if (r.died) { result.died = true; break; }
     }
-
-    if (checkDeath(state)) {
-      result.died = true;
-      return result;
-    }
-
-    var ev = tryEvolve(state);
-    if (ev) {
-      result.evolved = true;
-      result.from = ev.from;
-      result.to = ev.to;
-    }
+    state.simAt = t;
+    state.gameTime = state.dead ? t : target;
     return result;
   }
 
@@ -887,6 +930,8 @@
     checkDeath: checkDeath,
     die: die,
     beginDyingSave: beginDyingSave,
+    deathCause: deathCause,
+    SIM_GRID: SIM_GRID,
     lightsOffScreen: lightsOffScreen,
     addCareMistake: addCareMistake
   };
