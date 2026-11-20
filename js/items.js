@@ -23,6 +23,20 @@
   var RAW_RECON = {"skull":[126,219,219,255,255,90,102,60],"grave":[2016,8184,16380,14364,14748,14748,16380,14748,14748,14364,16380,16380,16380,32766,65535,32766],"wall":[16380,27310,30038,27310,30038,27310,30038,27310,30038,27310,30038,27310,30038,27310,32766,16380],"shot":[24,60,126,219,24,24,60,0],"hit":[384,4488,10644,5544,3024,1440,29646,64959,64959,29646,1440,3024,5544,10644,4488,384]};
   var ITEMS = {"empty":{"w":8,"h":8,"pal":["#00000000"],"frames":{"idle0":["00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000"]},"src":"official"},"pet":{"w":8,"h":8,"pal":["#00000000","#32362aff","#505644ff","#1a1c16ff"],"frames":{"idle0":["00100100","01222210","01022010","01222210","02200220","31111113","00000000","00000000"]},"src":"official"},"scale":{"w":8,"h":8,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["10000010","12222210","00030000","01222100","02000200","01000100","02020200","12222210"]},"src":"official"},"heart_empty":{"w":8,"h":8,"pal":["#00000000","#501008ff"],"frames":{"idle0":["00000000","01101100","10010010","10000010","10000010","01000100","00101000","00010000"]},"src":"official"},"heart":{"w":8,"h":8,"pal":["#00000000","#501008ff","#e05048ff","#c02018ff"],"frames":{"idle0":["00000000","01102200","10222220","10333330","13333330","03333300","00333000","00010000"]},"src":"official"},"age":{"w":8,"h":8,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["00000000","00100000","01010000","20002000","22122000","20002000","10001000","00000000"]},"src":"official"},"weight":{"w":8,"h":8,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["00121000","01002000","00122000","00003200","01122000","10002000","01110000","00000000"]},"src":"official"},"percent":{"w":8,"h":8,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["00000000","00100001","01010010","01020200","00202020","00020201","00100101","01000010"]},"src":"official"},"arrow":{"w":8,"h":8,"pal":["#00000000","#1a1c16ff","#505644ff","#32362aff"],"frames":{"idle0":["00000000","00100000","00220000","32222000","22222300","32222000","00220000","00100000"]},"src":"official"},"meat":{"w":8,"h":8,"pal":["#00000000","#e8c8a0ff","#c46e30ff","#7a3a18ff","#2a180cff"],"frames":{"idle0":["00000011","00022201","00202010","03033330","03333330","03333300","30333000","43000000"]},"src":"official"},"half_meat":{"w":8,"h":8,"pal":["#00000000","#e8c8a0ff","#c46e30ff","#7a3a18ff","#2a180cff"],"frames":{"idle0":["00000011","00002201","00022210","00030330","00303300","03030000","30300000","43000000"]},"src":"official"},"empty_meat":{"w":8,"h":8,"pal":["#00000000","#e8c8a0ff"],"frames":{"idle0":["00000011","00000101","00001010","00010100","00101000","01010000","10100000","11000000"]},"src":"official"},"pill":{"w":8,"h":8,"pal":["#00000000","#281c30ff","#c8506eff","#f0dce4ff"],"frames":{"idle0":["00001220","00020023","00202233","01022333","10003330","10000300","10001000","01110000"]},"src":"official"},"half_pill":{"w":8,"h":8,"pal":["#00000000","#c8506eff","#281c30ff","#f0dce4ff"],"frames":{"idle0":["00000000","00000000","00000000","01100000","11010000","10101000","20013000","02130000"]},"src":"official"},"am":{"w":8,"h":8,"pal":["#00000000","#32362aff","#1a1c16ff","#505644ff"],"frames":{"idle0":["01122000","13000100","33121100","11000200","00000000","11101200","33010100","11020200"]},"src":"official"},"pm":{"w":8,"h":8,"pal":["#00000000","#32362aff","#1a1c16ff","#505644ff"],"frames":{"idle0":["01122000","13000200","33122000","11000000","00000000","11101200","33010100","11020200"]},"src":"official"},"empty_triangle":{"w":8,"h":8,"pal":["#00000000","#1a1c16ff"],"frames":{"idle0":["10000000","01000000","00100000","01000000","10000000","00000000","00000000","00000000"]},"src":"official"},"triangle":{"w":8,"h":8,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["10000000","23000000","33200000","23000000","10000000","00000000","00000000","00000000"]},"src":"official"},"poop":{"w":8,"h":8,"pal":["#00000000","#2a1c0cff","#5a3a18ff","#8c6028ff","#b48c46ff"],"frames":{"idle0":["10000000","01000010","10000001","00010010","00022000","00230200","02034320","01223320"]},"src":"official"},"poopwave":{"w":8,"h":8,"pal":["#00000000","#103050ff","#2060a0ff","#50b0d8ff"],"frames":{"idle0":["00000000","00000000","10001000","02020201","20203020","23033302","02320232","00200020"]},"src":"official"},"skull":{"w":8,"h":8,"pal":["#00000000","#c8c4b8ff","#f0ece0ff","#fffffaff"],"frames":{"idle0":["01111110","12022021","22022022","23333332","12333321","02022020","01200210","00111100"]},"src":"reconstructed"},"grave":{"w":16,"h":16,"pal":["#00000000","#30322eff","#5a5c56ff","#82847cff"],"frames":{"idle0":["0000012222100000","0001233333321000","0013322222233100","0023200000023200","0023200110023200","0023200220023200","0023211221123200","0023200220023200","0023200110023200","0023200000023200","0023322222233200","0023333333333200","0023333333333200","0233333333333320","1233333333333321","0122222222222210"]},"src":"reconstructed"},"wall":{"w":16,"h":16,"pal":["#00000000","#6e4620ff","#a8763aff","#d2aa64ff"],"frames":{"idle0":["0011111111111100","0120202020202210","0222010101010320","0230101010102220","0222010101010320","0230101010102220","0222010101010320","0230101010102220","0222010101010320","0230101010102220","0222010101010320","0230101010102220","0222010101010320","0230202020202320","0123232323233310","0012222222222100"]},"src":"reconstructed"},"shot":{"w":8,"h":8,"pal":["#00000000","#dcb428ff","#fff078ff","#ffffe6ff","#282008ff"],"frames":{"idle0":["00011000","00233200","01233210","41022014","00022000","00022000","00411400","00000000"]},"src":"reconstructed"},"hit":{"w":16,"h":16,"pal":["#00000000","#dc5018ff","#281808ff","#ffc83cff","#ffffc8ff"],"frames":{"idle0":["0000000110000000","0002000330002000","0020100330010200","0001010330101000","0000103333010000","0000010440100000","0131003333001310","1444310330134441","1444310330134441","0131003333001310","0000010440100000","0000103333010000","0001010330101000","0020100330010200","0002000330002000","0000000110000000"]},"src":"reconstructed"},"digit_0":{"w":4,"h":7,"pal":["#00000000","#1a1c16ff"],"frames":{"idle0":["0110","1001","1001","1001","1001","1001","0110"]},"src":"official"},"digit_1":{"w":4,"h":7,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["0010","0220","0020","0010","0010","0010","0010"]},"src":"official"},"digit_2":{"w":4,"h":7,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["0110","1001","0001","0010","0100","2000","1211"]},"src":"official"},"digit_3":{"w":4,"h":7,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["0110","1001","0001","0120","0001","1001","0110"]},"src":"official"},"digit_4":{"w":4,"h":7,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["0010","0220","1020","1010","2020","1322","0020"]},"src":"official"},"digit_5":{"w":4,"h":7,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["1211","2000","2000","1210","0001","0001","1110"]},"src":"official"},"digit_6":{"w":4,"h":7,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["0110","1001","2000","2210","2001","1001","0110"]},"src":"official"},"digit_7":{"w":4,"h":7,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["1221","1002","0001","0010","0010","0010","0010"]},"src":"official"},"digit_8":{"w":4,"h":7,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["0110","1001","1001","0220","1001","1001","0110"]},"src":"official"},"digit_9":{"w":4,"h":7,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["0110","1001","1002","0122","0002","1001","0110"]},"src":"official"},"sdigit_0":{"w":3,"h":5,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["121","202","101","202","121"]},"src":"official"},"sdigit_1":{"w":3,"h":5,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["001","022","002","001","001"]},"src":"official"},"sdigit_2":{"w":3,"h":5,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["121","002","121","200","121"]},"src":"official"},"sdigit_3":{"w":3,"h":5,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["121","002","122","002","121"]},"src":"official"},"sdigit_4":{"w":3,"h":5,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["101","202","132","002","001"]},"src":"official"},"sdigit_5":{"w":3,"h":5,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["121","200","121","002","121"]},"src":"official"},"sdigit_6":{"w":3,"h":5,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["121","200","231","202","121"]},"src":"official"},"sdigit_7":{"w":3,"h":5,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["121","102","001","001","001"]},"src":"official"},"sdigit_8":{"w":3,"h":5,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["121","202","232","202","121"]},"src":"official"},"sdigit_9":{"w":3,"h":5,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["121","202","132","002","121"]},"src":"official"},"letter_A":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["0110","1001","2002","2222","2002","1001"]},"src":"official"},"letter_B":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["1210","2001","2220","2001","2001","1210"]},"src":"official"},"letter_C":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff"],"frames":{"idle0":["0110","1001","1000","1000","1001","0110"]},"src":"official"},"letter_D":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["1210","2001","1001","1001","2001","1210"]},"src":"official"},"letter_E":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["1211","2000","2211","2000","2000","1211"]},"src":"official"},"letter_F":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["1211","2000","2211","2000","1000","1000"]},"src":"official"},"letter_G":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["0110","1001","1000","1011","1002","0110"]},"src":"official"},"letter_H":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["1001","2002","2222","2002","1001","1001"]},"src":"official"},"letter_I":{"w":3,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["121","020","010","010","020","121"]},"src":"official"},"letter_J":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["1121","0002","0001","0001","1001","0110"]},"src":"official"},"letter_K":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["1001","2010","2300","2010","1001","1001"]},"src":"official"},"letter_L":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["1000","1000","1000","1000","2000","1211"]},"src":"official"},"letter_M":{"w":5,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["10001","23032","23332","20202","10101","10101"]},"src":"official"},"letter_N":{"w":5,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["10001","22001","20102","10022","10002","10001"]},"src":"official"},"letter_O":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff"],"frames":{"idle0":["0110","1001","1001","1001","1001","0110"]},"src":"official"},"letter_P":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["1210","2001","2001","2210","2000","1000"]},"src":"official"},"letter_Q":{"w":5,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["01100","10010","10010","10020","10330","02221"]},"src":"official"},"letter_R":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["1210","2001","2001","2220","2001","1001"]},"src":"official"},"letter_S":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff"],"frames":{"idle0":["0110","1001","0100","0010","1001","0110"]},"src":"official"},"letter_T":{"w":5,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["12221","00200","00100","00100","00100","00100"]},"src":"official"},"letter_U":{"w":4,"h":6,"pal":["#00000000","#1a1c16ff"],"frames":{"idle0":["1001","1001","1001","1001","1001","0110"]},"src":"official"},"letter_V":{"w":5,"h":6,"pal":["#00000000","#1a1c16ff"],"frames":{"idle0":["10001","10001","10001","10001","01010","00100"]},"src":"official"},"letter_W":{"w":5,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff","#505644ff"],"frames":{"idle0":["10101","10101","20202","23332","03330","01010"]},"src":"official"},"letter_X":{"w":5,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["10001","01010","00200","01010","10001","10001"]},"src":"official"},"letter_Y":{"w":5,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["10001","01010","00200","00100","00100","00100"]},"src":"official"},"letter_Z":{"w":5,"h":6,"pal":["#00000000","#1a1c16ff","#32362aff"],"frames":{"idle0":["11221","00020","00100","01000","20000","12111"]},"src":"official"}};
 
+  /* v33: punctuation used by LCD labels (clock colon, DP "/", ".", "!",
+     "-", "?"). Same 6-row letter grid and the same dot size; previously
+     drawText silently dropped these and digits. Reconstructed, not ROM. */
+  (function addPunct() {
+    var INK = '#1a1c16ff';
+    function g(w, rows) { return { w: w, h: 6, pal: ['#00000000', INK], frames: { idle0: rows }, src: 'reconstructed-v33' }; }
+    ITEMS['letter_:'] = g(1, ['0', '1', '0', '0', '1', '0']);
+    ITEMS['letter_/'] = g(3, ['001', '001', '010', '010', '100', '100']);
+    ITEMS['letter_.'] = g(1, ['0', '0', '0', '0', '0', '1']);
+    ITEMS['letter_!'] = g(1, ['1', '1', '1', '1', '0', '1']);
+    ITEMS['letter_-'] = g(3, ['000', '000', '111', '000', '000', '000']);
+    ITEMS['letter_?'] = g(4, ['0110', '1001', '0010', '0100', '0000', '0100']);
+  })();
+
   var cache = {};
 
   function decodeHex(h) {
@@ -96,6 +110,38 @@
     return g;
   }
 
+  /* v33: LCD text audit hook (tests only; no-op unless VpetLcdAudit.on). */
+  var auditMute = 0;
+  function auditText(kind, str, x, y, w, h, scale) {
+    if (auditMute) return;
+    var A = root.VpetLcdAudit;
+    if (A && A.on && typeof A.rec === 'function') A.rec({ kind: kind, text: String(str), x: x, y: y, w: w, h: h, scale: scale });
+  }
+
+  /* Exported blit: same as blit, plus an LCD audit record of the icon's ink
+     box (letters/digits are audited by the text functions instead). */
+  var inkBoxes = {};
+  function inkBox(name) {
+    if (inkBoxes[name]) return inkBoxes[name];
+    var sp = ITEMS[name]; if (!sp || !sp.frames || !sp.frames.idle0) return null;
+    var rows = sp.frames.idle0, x0 = 99, y0 = 99, x1 = -1, y1 = -1;
+    for (var y = 0; y < rows.length; y++) for (var x = 0; x < rows[y].length; x++) {
+      if (rows[y].charAt(x) !== '0') { if (x < x0) x0 = x; if (y < y0) y0 = y; if (x > x1) x1 = x; if (y > y1) y1 = y; }
+    }
+    inkBoxes[name] = x1 < 0 ? null : { x0: x0, y0: y0, x1: x1, y1: y1, w: sp.w };
+    return inkBoxes[name];
+  }
+  function blitAudited(ctx, name, x, y, scale, flip) {
+    blit(ctx, name, x, y, scale, flip);
+    var A = root.VpetLcdAudit;
+    if (!A || !A.on || auditMute || /^(letter_|digit_|sdigit_)/.test(name)) return;
+    var b = inkBox(name); if (!b) return;
+    scale = scale || 1;
+    var bx0 = flip ? (b.w - 1 - b.x1) : b.x0;
+    A.rec({ kind: 'icon', text: name, x: Math.round(x) + bx0 * scale, y: Math.round(y) + b.y0 * scale,
+      w: (b.x1 - b.x0 + 1) * scale, h: (b.y1 - b.y0 + 1) * scale, scale: scale });
+  }
+
   function drawDigit(ctx, n, x, y, scale) {
     n = Math.abs(n | 0) % 10;
     blit(ctx, 'digit_' + n, x, y, scale || 1);
@@ -111,6 +157,7 @@
       blit(ctx, 'digit_' + s.charAt(i), dx, y, scale);
       dx += 5 * scale;
     }
+    if (s.length) auditText('number', s, x, y, dx - x - scale, 7 * scale, scale);
     return dx - x;
   }
 
@@ -123,6 +170,7 @@
       blit(ctx, 'sdigit_' + s.charAt(i), dx, y, scale);
       dx += 4 * scale;
     }
+    if (s.length) auditText('small', s, x, y, dx - x - scale, 5 * scale, scale);
     return dx - x;
   }
 
@@ -132,16 +180,20 @@
        canvas pixels — the same as a sprite LCD-dot at that scale. */
     scale = scale || 1;
     if (typeof tracking !== 'number') tracking = 1;
-    var dx = x;
+    var dx = x, tall = 6;
     text = String(text || '').toUpperCase();
     for (var i = 0; i < text.length; i++) {
       var ch = text.charAt(i);
       if (ch === ' ') { dx += 4 * scale; continue; }
-      var name = 'letter_' + ch;
-      if (!ITEMS[name]) continue;
+      // Letters and punctuation share the 6-row grid; digits use the
+      // device's own 4x7 digit glyphs (v33: digits were silently dropped).
+      var name = ITEMS['letter_' + ch] ? 'letter_' + ch : (ITEMS['digit_' + ch] ? 'digit_' + ch : null);
+      if (!name) continue;
+      if (name.charAt(0) === 'd') tall = 7;
       blit(ctx, name, dx, y, scale);
       dx += (ITEMS[name].w + tracking) * scale;
     }
+    if (dx > x) auditText('text', text, x, y, dx - x - Math.max(0, tracking) * scale, tall * scale, scale);
     return dx - x;
   }
 
@@ -176,11 +228,52 @@
     return total;
   }
 
+  /* Width in LCD dots of a string in the device letter font. */
+  function textDots(text, tracking) {
+    if (typeof tracking !== 'number') tracking = 1;
+    text = String(text || '').toUpperCase();
+    var w = 0, n = 0;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charAt(i);
+      if (ch === ' ') { w += 4; continue; }
+      var it = ITEMS['letter_' + ch] || ITEMS['digit_' + ch];
+      if (!it) continue;
+      w += it.w + tracking; n++;
+    }
+    return n ? w - tracking : Math.max(0, w);
+  }
+
+  /* v33: fit text to a field WITHOUT changing the dot size. If the string is
+     wider than maxDots it scrolls sideways one dot at a time inside the field
+     (the way the real units scroll long names), holding at each end. */
+  var SCROLL_HOLD_MS = 900, SCROLL_STEP_MS = 160;
+  function drawTextFit(ctx, text, x, y, scale, maxDots, tracking, nowMs) {
+    scale = scale || 1;
+    if (typeof tracking !== 'number') tracking = 1;
+    var w = textDots(text, tracking);
+    if (w <= maxDots) return drawText(ctx, text, x, y, scale, tracking);
+    var over = w - maxDots;
+    var t = (typeof nowMs === 'number') ? nowMs :
+      ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
+    var period = SCROLL_HOLD_MS * 2 + over * SCROLL_STEP_MS;
+    var ph = ((t % period) + period) % period;
+    var off = ph < SCROLL_HOLD_MS ? 0 : Math.min(over, Math.floor((ph - SCROLL_HOLD_MS) / SCROLL_STEP_MS));
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, maxDots * scale, 7 * scale);
+    ctx.clip();
+    auditMute++;
+    try { drawText(ctx, text, x - off * scale, y, scale, tracking); } finally { auditMute--; }
+    ctx.restore();
+    auditText('scroll', text, x, y, maxDots * scale, (/[0-9]/.test(String(text)) ? 7 : 6) * scale, scale);
+    return maxDots * scale;
+  }
+
   function drawHearts(ctx, x, y, filled, max, scale) {
     scale = scale || 1;
     max = max || 4;
     for (var i = 0; i < max; i++) {
-      blit(ctx, i < filled ? 'heart' : 'heart_empty', x + i * 8 * scale, y, scale);
+      blitAudited(ctx, i < filled ? 'heart' : 'heart_empty', x + i * 8 * scale, y, scale);
     }
   }
 
@@ -233,12 +326,14 @@
     SELECTABLE: SELECTABLE,
     EGG_PICKER: EGG_PICKER,
     render: render,
-    blit: blit,
+    blit: blitAudited,
     drawDigit: drawDigit,
     drawNumber: drawNumber,
     drawSmallNumber: drawSmallNumber,
     drawText: drawText,
     drawTextWrapped: drawTextWrapped,
+    drawTextFit: drawTextFit,
+    textDots: textDots,
     drawHearts: drawHearts,
     bitGrid: bitGrid
   };

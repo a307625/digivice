@@ -79,6 +79,12 @@
     var I = host.items();
     if (I && I.drawText) I.drawText(host.ctx, s, x, y, sc || host.ITEM, tracking);
   }
+  /* Native dot size always; text wider than maxDots scrolls inside it. */
+  function fitText(host, s, x, y, maxDots, tracking, still) {
+    var I = host.items();
+    if (I && I.drawTextFit) I.drawTextFit(host.ctx, s, x, y, host.ITEM, maxDots, tracking, still ? 0 : undefined);
+    else text(host, s, x, y, host.ITEM, tracking);
+  }
   function num(host, n, x, y, sc, pad) {
     var I = host.items();
     if (I && I.drawNumber) I.drawNumber(host.ctx, n, x, y, sc || host.ITEM, pad);
@@ -219,7 +225,8 @@
     // Display is always 4 hearts (NHOKO); fill is min(4, value).
     var i;
     for (i = 0; i < 4; i++) {
-      item(host, i < filled ? 'heart' : 'heart_empty', x + i * 9 * (host.ITEM / 4) * 4, y);
+      // v33: 8-dot pitch (7-dot heart + 1 gap) so 4 hearts end at col 31
+      item(host, i < filled ? 'heart' : 'heart_empty', x + i * 8 * host.DOT, y);
     }
   }
 
@@ -240,18 +247,20 @@
       text(host, 'G', host.fx(24), host.fy(8), host.ITEM);
     } else if (page === 'hunger') {
       text(host, 'HUNGRY', host.fx(1), host.fy(1), host.ITEM);
-      hearts(host, Math.min(4, s.hunger || 0), host.fx(1), host.fy(9));
+      hearts(host, Math.min(4, s.hunger || 0), host.fx(1), host.fy(8));
     } else if (page === 'strength') {
-      text(host, 'STRENGTH', host.fx(0), host.fy(1), host.ITEM, 0);
-      hearts(host, Math.min(4, s.strength || 0), host.fx(1), host.fy(9));
+      fitText(host, 'STRENGTH', host.fx(0), host.fy(1), 32, 0); // 35 dots: scrolls (v33)
+      hearts(host, Math.min(4, s.strength || 0), host.fx(1), host.fy(8));
     } else if (page === 'win') {
       var w = s.wins || 0, l = s.losses || 0, b = s.battles || 0;
       var pct = b ? Math.round(100 * w / b) : 0;
       text(host, 'W', host.fx(0), host.fy(0), host.ITEM);
-      num(host, w, host.fx(6), host.fy(0), host.ITEM, 3);
+      // v33: W/L (2 digits, cols 6-14) + percent (3 digits, cols 18-31) fit
+      // 32 dots; 3-digit counts collided with the percent. Shown capped at 99.
+      num(host, Math.min(99, w), host.fx(6), host.fy(0), host.ITEM, 2);
       text(host, 'L', host.fx(0), host.fy(8), host.ITEM);
-      num(host, l, host.fx(6), host.fy(8), host.ITEM, 3);
-      num(host, pct, host.fx(20), host.fy(4), host.ITEM, 3);
+      num(host, Math.min(99, l), host.fx(6), host.fy(8), host.ITEM, 2);
+      num(host, pct, host.fx(18), host.fy(4), host.ITEM, 3); // 3 digits = cols 18-31
     } else if (page === 'dp') {
       text(host, 'DP', host.fx(1), host.fy(1), host.ITEM);
       var dp = Eng().dp(s);
@@ -279,17 +288,18 @@
 
   function menuRow(host, selected, y, label) {
     item(host, selected ? 'triangle' : 'empty_triangle', host.fx(0), y);
-    // Native ITEM scale; tight tracking so 7-letter words (JOGRESS) fit.
-    text(host, label, host.fx(8), y, host.ITEM, 0);
+    // v33: cursor ink is cols 0-3, label owns cols 5-31 at the native dot
+    // size; a longer word (JOGRESS) scrolls while selected.
+    fitText(host, label, host.fx(5), y, 27, 0, !selected);
   }
 
   function drawFood(host) {
     lcdPaper(host, false);
     menuRow(host, subSel === 0, host.fy(2), 'MEAT');
-    item(host, 'meat', host.fx(24), host.fy(2));
+    item(host, 'meat', host.fx(24), host.fy(0)); // v33: 8-row icons on rows 0-7 / 8-15
     // "PROT" + pill: "PROTEIN" at any comfortable scale collides with the icon.
     menuRow(host, subSel === 1, host.fy(10), 'PROT');
-    item(host, 'pill', host.fx(24), host.fy(10));
+    item(host, 'pill', host.fx(24), host.fy(8));
   }
 
   function drawLight(host) {
@@ -303,7 +313,7 @@
     // Official: top = sick (dots), bottom = injury (skull)
     menuRow(host, subSel === 0, host.fy(2), 'SICK');
     menuRow(host, subSel === 1, host.fy(10), 'INJURY');
-    item(host, 'skull', host.fx(24), host.fy(10));
+    item(host, 'skull', host.fx(24), host.fy(8));
   }
 
   function drawConnect(host) {
@@ -314,9 +324,9 @@
 
   function drawSound(host) {
     lcdPaper(host, false);
-    text(host, 'SOUND', host.fx(1), host.fy(0), host.ITEM);
-    menuRow(host, subSel === 0, host.fy(6), 'ON');
-    menuRow(host, subSel === 1, host.fy(12), 'OFF');
+    // v33: three 6-row lines cannot fit 16 rows (OFF ran off the LCD).
+    text(host, 'SOUND', host.fx(1), host.fy(1), host.ITEM);
+    menuRow(host, true, host.fy(9), subSel === 0 ? 'ON' : 'OFF'); // A toggles
   }
 
   function drawClock(host) {
@@ -368,7 +378,7 @@
         // and the current block's triangle is solid (1997 uses five 1 Hz).
         on = i < Math.floor(ss / 12) + ((ss % 12 > 0) ? 1 : 0);
         if (ss === 0) on = false;
-        item(host, on ? 'triangle' : 'empty_triangle', host.fx(2 + i * 5), host.fy(12));
+        item(host, on ? 'triangle' : 'empty_triangle', host.fx(2 + i * 5), host.fy(11)); // v33: rows 11-15
       }
     }
   }
@@ -381,7 +391,7 @@
       text(host, 'READY', host.fx(4), host.fy(5), host.ITEM);
     } else if (train.phase === 'count') {
       text(host, 'COUNT', host.fx(4), host.fy(2), host.ITEM);
-      num(host, train.shakes, host.fx(12), host.fy(10), host.ITEM, 2);
+      num(host, train.shakes, host.fx(12), host.fy(9), host.ITEM, 2); // v33: rows 9-15
     } else if (train.phase === 'shots') {
       // 5 shots; Super = double projectile (Humulos).
       var i;
@@ -389,8 +399,9 @@
         var fired = i <= train.shot;
         if (!fired) continue;
         var isSuper = i < train.supers;
-        item(host, 'shot', host.fx(4 + i * 5), host.fy(isSuper ? 2 : 6));
-        if (isSuper) item(host, 'shot', host.fx(4 + i * 5), host.fy(10));
+        // v33: 7-row shot icons on rows 1-7 / 9-15 (super) or 5-11 (normal).
+        item(host, 'shot', host.fx(4 + i * 5), host.fy(isSuper ? 1 : 5));
+        if (isSuper) item(host, 'shot', host.fx(4 + i * 5), host.fy(9));
       }
     } else if (train.phase === 'result') {
       if (train.result && train.result.success) text(host, 'GREAT', host.fx(4), host.fy(5), host.ITEM);
@@ -404,7 +415,7 @@
     if (battle.phase === 'ready') text(host, 'READY', host.fx(4), host.fy(5), host.ITEM);
     else if (battle.phase === 'count') {
       text(host, 'COUNT', host.fx(4), host.fy(2), host.ITEM);
-      num(host, battle.shakes, host.fx(12), host.fy(10), host.ITEM, 2);
+      num(host, battle.shakes, host.fx(12), host.fy(9), host.ITEM, 2);
     } else if (battle.phase === 'shots') {
       text(host, 'HP', host.fx(0), host.fy(0), host.ITEM);
       num(host, battle.hpS, host.fx(8), host.fy(0), host.ITEM, 1);

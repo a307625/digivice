@@ -165,6 +165,14 @@
     return ['age', 'hunger', 'strength', 'dp', 'win'];
   }
 
+  function syncShellAspect() {
+    var img = $('shell-art');
+    if (!img || !img.naturalWidth || !img.naturalHeight || !img.complete) return;
+    var rootEl = document.documentElement;
+    rootEl.style.setProperty('--shell-aw', String(img.naturalWidth));
+    rootEl.style.setProperty('--shell-ah', String(img.naturalHeight));
+  }
+
   function applyShellLayout() {
     var d = currentDevice();
     var L = (d && d.layout) ? d.layout : SHELL_LAYOUT;
@@ -179,6 +187,7 @@
       rootEl.style.setProperty('--shell-aw', String(L.aspectW));
       rootEl.style.setProperty('--shell-ah', String(L.aspectH));
     }
+    syncShellAspect(); // the loaded art's own size wins (v33)
     // Show only this model's printed-icon highlights. CONNECT is Pendulum's
     // 4th top icon; 1997/DM20 keep BATTLE in that slot.
     var shown = {};
@@ -278,6 +287,14 @@
     }
     var src = './icons/shell/' + shellName + '.webp';
     if (img && img.getAttribute('src') !== src) img.setAttribute('src', src);
+    // v33: the shell box always takes the art's own aspect ratio, so the
+    // shell is scaled uniformly (never stretched) even if a profile's
+    // aspect constants drift from the WebP; screen/buttons are % of it.
+    if (img && !img.__aspectHook) {
+      img.__aspectHook = true;
+      img.addEventListener('load', syncShellAspect);
+    }
+    syncShellAspect();
     if (dev) {
       dev.setAttribute('data-model', d.family);
       dev.setAttribute('data-shell', d.shell);
@@ -308,11 +325,24 @@
     sizeLcd();
   }
 
+  /* v33: cursor ink is 4 dots (cols 1-4); the label starts at col 6 and
+     owns cols 6-31 (26 dots). Same dot size as everything else; a label that
+     is wider scrolls sideways while selected (clipped at its start
+     otherwise) instead of running off the 32x16 LCD. */
+  var MENU_LABEL_X = 6, MENU_LABEL_DOTS = FW - 6;
   function menuItem(I, selected, y, label) {
     blitItem(selected ? 'triangle' : 'empty_triangle', fx(1), y, ITEM);
-    /* Native ITEM scale (1 font pixel = 1 sprite dot). Tight tracking so
-       7-letter labels (COPYMON, DIGIMON) still fit the 32-dot field. */
-    if (I && I.drawText) I.drawText(ctx, label, fx(9), y, ITEM, 0);
+    if (!I) return;
+    if (I.drawTextFit) I.drawTextFit(ctx, label, fx(MENU_LABEL_X), y, ITEM, MENU_LABEL_DOTS, 0, selected ? animNow() : 0);
+    else if (I.drawText) I.drawText(ctx, label, fx(MENU_LABEL_X), y, ITEM, 0);
+  }
+  /* Two 6-dot rows fit the 16-dot LCD (rows 2-7 and 10-15). Longer lists
+     page two at a time, following the cursor, like the real menus. */
+  function menuList(I, list, selIdx) {
+    var page = Math.floor(Math.max(0, selIdx) / 2) * 2;
+    for (var r = 0; r < 2 && page + r < list.length; r++) {
+      menuItem(I, selIdx === page + r, fy(r === 0 ? 2 : 10), list[page + r]);
+    }
   }
 
 
@@ -556,7 +586,7 @@
     // "A big Z will appear over the Digimon's head" (WTW / Humulos Z's).
     var mx = fx(Math.floor((FW - 16) / 2));
     I.drawText(ctx, 'Z', mx + 14 * DOT, fy(0), ITEM);
-    I.drawText(ctx, 'Z', mx + 20 * DOT, fy(2), ITEM);
+    I.drawText(ctx, 'Z', mx + 18 * DOT, fy(2), ITEM); // cols 26-30: inside the 32-dot LCD
   }
 
   function poopCount() {
@@ -685,7 +715,7 @@
     dx += 2 * ITEM;
     if (blinkOn) I.drawNumber(ctx, min, dx, dy, ITEM, 2);
     if (setting) return;
-    var triY = fy(12);
+    var triY = fy(11); // v33: 5-row triangles on rows 11-15 (row 16 is off the LCD)
     var triX0 = fx(14);
     var i, j, k;
     for (i = 0; i < 5; i++) blitItem('empty_triangle', triX0 + i * 3 * DOT, triY, ITEM);
@@ -707,13 +737,15 @@
     var page = pages[statusPage] || pages[0];
     if (page === 'name') {
       var nm = (s.nameEn || s.nameZh || '').toString();
-      if (I.drawTextWrapped) I.drawTextWrapped(ctx, nm, fx(1), fy(1), ITEM, 30, 7);
-      else I.drawText(ctx, nm, fx(1), fy(5), ITEM);
+      // One line at the native dot size; long names scroll sideways (v33).
+      if (I.drawTextFit) I.drawTextFit(ctx, nm, fx(0), fy(5), ITEM, FW, 1, animNow());
+      else I.drawText(ctx, nm, fx(0), fy(5), ITEM);
     } else if (page === 'age') {
-      blitItem('age', fx(1), fy(1), ITEM);
-      I.drawNumber(ctx, s.age, fx(10), fy(2), ITEM, 2);
-      blitItem('weight', fx(1), fy(9), ITEM);
-      I.drawNumber(ctx, s.weight, fx(10), fy(10), ITEM, 2);
+      // 7-dot digits: rows 1-7 and 9-15 keep both inside the 16-row LCD.
+      blitItem('age', fx(1), fy(0), ITEM);
+      I.drawNumber(ctx, s.age, fx(10), fy(1), ITEM, 2);
+      blitItem('weight', fx(1), fy(8), ITEM);
+      I.drawNumber(ctx, s.weight, fx(10), fy(9), ITEM, 2);
     } else if (page === 'hunger') {
       I.drawHearts(ctx, fx(0), fy(4), s.hunger, 4, ITEM);
     } else if (page === 'strength') {
@@ -738,9 +770,9 @@
   function drawFoodMenu() {
     lcdBg();
     blitItem(foodSel === 0 ? 'triangle' : 'empty_triangle', fx(1), fy(2), ITEM);
-    blitItem('meat', fx(10), fy(1), ITEM);
+    blitItem('meat', fx(10), fy(0), ITEM);   // v33: 8-row icons on rows 0-7 / 8-15
     blitItem(foodSel === 1 ? 'triangle' : 'empty_triangle', fx(1), fy(10), ITEM);
-    blitItem('pill', fx(10), fy(9), ITEM);
+    blitItem('pill', fx(10), fy(8), ITEM);
   }
 
   function battleMenuItems() {
@@ -751,14 +783,7 @@
   function drawBattleMenu() {
     lcdBg();
     var I = items();
-    var list = battleMenuItems();
-    var n = list.length;
-    var gap = n >= 3 ? 5 : 7;
-    var y0 = n >= 3 ? 1 : 2;
-    for (var i = 0; i < n; i++) {
-      var y = fy(y0 + i * gap);
-      menuItem(I, battleSel === i, y, list[i]);
-    }
+    menuList(I, battleMenuItems(), battleSel);
   }
 
   function drawLightMenu() {
@@ -780,18 +805,13 @@
       blitMon(state.mon, fx(8), fy(0), MON, fr, false);
       return;
     }
-    menuItem(I, albumSel === 0, fy(0), 'DIGIMON');
-    menuItem(I, albumSel === 1, fy(4), 'RECORD');
-    menuItem(I, albumSel === 2, fy(8), 'TAMER');
-    menuItem(I, albumSel === 3, fy(12), 'COPYMON');
+    menuList(I, ['DIGIMON', 'RECORD', 'TAMER', 'COPYMON'], albumSel);
   }
 
   function drawConnectMenu() {
     lcdBg();
     var I = items();
-    menuItem(I, connectSel === 0, fy(2), 'BATTLE');
-    menuItem(I, connectSel === 1, fy(7), 'OTHER');
-    menuItem(I, connectSel === 2, fy(12), 'COPYMON');
+    menuList(I, ['BATTLE', 'OTHER', 'COPYMON'], connectSel);
   }
 
   function drawAlbumRecord() {
@@ -828,8 +848,8 @@
     var fr = train.done ? (train.success ? 'happy' : 'angry') : ((animTick() % 2) ? 'train1' : 'train0');
     if (mode === 'wall') { drawDm20Wall(); return; }
     if (mode === 'highlow') {
-      I.drawText(ctx, 'HI', fx(24), fy(1), ITEM);
-      I.drawText(ctx, 'LO', fx(24), fy(7), ITEM);
+      I.drawText(ctx, 'HI', fx(23), fy(1), ITEM);   // v33: LO is 9 dots → cols 23-31
+      I.drawText(ctx, 'LO', fx(23), fy(7), ITEM);
       var ty = train.target === 1 ? fy(1) : fy(7);
       blitItem('arrow', fx(18), ty, ITEM);
       I.drawNumber(ctx, (train.round || 0) + 1, fx(1), fy(1), ITEM, 0);
@@ -2736,7 +2756,29 @@
       },
       family: function () { return state && state.family; },
       gameTime: function () { return state ? (state.gameTime || 0) : 0; },
-      dead: function () { return !!(state && state.dead); }
+      dead: function () { return !!(state && state.dead); },
+      /* v33 test hook (LCD text audit): show one screen with the given
+         sub-state and draw it once. No effect on the save. */
+      renderView: function (v, o) {
+        o = o || {};
+        if (!state) return null;
+        if (o.state) for (var k in o.state) state[k] = o.state[k];
+        view = v;
+        if ('sel' in o) sel = o.sel;
+        if ('statusPage' in o) statusPage = o.statusPage;
+        if ('foodSel' in o) foodSel = o.foodSel;
+        if ('battleSel' in o) battleSel = o.battleSel;
+        if ('lightSel' in o) lightSel = o.lightSel;
+        if ('albumSel' in o) albumSel = o.albumSel;
+        if ('connectSel' in o) connectSel = o.connectSel;
+        if (o.train) { for (var t in o.train) train[t] = o.train[t]; }
+        if (o.charge) { for (var c in o.charge) charge[c] = o.charge[c]; }
+        if (o.evoFx) { for (var e in o.evoFx) evoFx[e] = o.evoFx[e]; }
+        if (o.battleFx) { for (var b in o.battleFx) battleFx[b] = o.battleFx[b]; }
+        draw();
+        return view;
+      },
+      statusPageCount: function () { return statusPages().length; }
     };
 
     var params = new URLSearchParams(location.search);

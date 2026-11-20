@@ -134,6 +134,8 @@
     str = String(str == null ? '' : str).toUpperCase();
     var adv = 3 * s + 1;
     for (var i = 0; i < str.length; i++) glyph(ctx, str.charAt(i), dx + i * adv, dy, s);
+    var A = root.VpetLcdAudit;
+    if (A && A.on && str.length) A.rec({ kind: 'dv', text: str, x: dx * DOT, y: dy * DOT, w: textWidth(str, s) * DOT, h: 5 * s * DOT, scale: s * DOT });
   }
 
   function textWidth(str, s) {
@@ -142,10 +144,55 @@
     return n ? n * (3 * s + 1) - 1 : 0;
   }
 
-  function textC(ctx, str, cy, s) {
-    s = s || 1;
-    var w = textWidth(str, s);
-    text(ctx, str, Math.floor((LW - w) / 2), cy, s);
+  /* v33: one dot size for all text (s is always 1) and every line stays
+     inside the round window. chordSpan(dy) is the widest run of whole dots
+     that is inside the circle on all 5 rows of a line starting at dy. */
+  var R_DOT = LW / 2;
+  function chordSpan(dy) {
+    var half = Infinity;
+    for (var r = dy; r < dy + 5; r++) {
+      var top = r, bot = r + 1;
+      var far = Math.max(Math.abs(top - R_DOT), Math.abs(bot - R_DOT));
+      var h = far >= R_DOT ? 0 : Math.sqrt(R_DOT * R_DOT - far * far);
+      if (h < half) half = h;
+    }
+    var x0 = Math.ceil(R_DOT - half), x1 = Math.floor(R_DOT + half);
+    return { x0: x0, x1: x1, w: Math.max(0, x1 - x0) };
+  }
+  var TEXT_TOP = 4, TEXT_BOTTOM = 27;   // lines that keep >= 22 dots of chord
+  function clampLine(dy) { return Math.max(TEXT_TOP, Math.min(TEXT_BOTTOM, dy)); }
+  var SCROLL_HOLD = 900, SCROLL_STEP = 160;
+  function scrollText(ctx, str, x0, dy, maxW, still) {
+    str = String(str == null ? '' : str).toUpperCase();
+    var w = textWidth(str, 1);
+    if (w <= maxW) { text(ctx, str, x0, dy, 1); return; }
+    var over = w - maxW;
+    var period = SCROLL_HOLD * 2 + over * SCROLL_STEP;
+    var t = still ? 0 : (Date.now() % period);
+    var off = t < SCROLL_HOLD ? 0 : Math.min(over, Math.floor((t - SCROLL_HOLD) / SCROLL_STEP));
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x0 * DOT, dy * DOT, maxW * DOT, 5 * DOT);
+    ctx.clip();
+    var A = root.VpetLcdAudit, was = A && A.on;
+    if (A) A.on = false;
+    try { text(ctx, str, x0 - off, dy, 1); } finally { if (A) A.on = was; }
+    ctx.restore();
+    if (A && A.on) A.rec({ kind: 'dv-scroll', text: str, x: x0 * DOT, y: dy * DOT, w: maxW * DOT, h: 5 * DOT, scale: DOT });
+  }
+  function textC(ctx, str, cy) {
+    cy = clampLine(cy);
+    var c = chordSpan(cy);
+    var w = textWidth(str, 1);
+    if (w <= c.w) text(ctx, str, Math.max(c.x0, Math.floor((LW - w) / 2)), cy, 1);
+    else scrollText(ctx, str, c.x0, cy, c.w);
+  }
+  /* Menu line: cursor at the chord's left edge, label in the rest. */
+  function rowText(ctx, str, dy, selected) {
+    dy = clampLine(dy);
+    var c = chordSpan(dy);
+    if (selected) text(ctx, '>', c.x0, dy, 1);
+    scrollText(ctx, str, c.x0 + 4, dy, c.w - 4, !selected);
   }
 
   // Official 26×34 sprites cannot sit at 1:1 in a 36-dot circle together
@@ -214,7 +261,7 @@
     else drawMain(ctx, state, host);
     if (U.toast && Date.now() < U.toastUntil) {
       // small toast at the bottom of the circle
-      textC(ctx, U.toast, 30, 1);
+      textC(ctx, U.toast, 30);
     }
     endPaper(ctx);
   }
@@ -229,54 +276,54 @@
     var mm = (clk.min < 10 ? '0' : '') + clk.min;
     // "10:34" is 5 glyphs; at y=4 the circle is wide enough. Full "10:34 AM"
     // was clipped by the circular window.
-    textC(ctx, hh + ':' + mm, 3, 1);
+    textC(ctx, hh + ':' + mm, 3);
     if (p) {
       // Fitted sprite (see blitMon); baseline 35 is clamped inside the circle.
       blitMon(ctx, p.mon, 18, 35);
-      if (p.injured) text(ctx, 'X', 28, 7, 1);
-      if (p.unhappy) text(ctx, '!', 2, 7, 1);
+      // Markers sit inside the circle on rows 9-13 (v33: '!' at col 2 was cut off).
+      if (p.injured) text(ctx, 'X', 27, 9, 1);
+      if (p.unhappy) text(ctx, '!', 6, 9, 1);
     }
     if (state && E && !E.mapComplete(state)) {
-      textC(ctx, String(state.areaRemaining || 0), 31, 1);
+      textC(ctx, String(state.areaRemaining || 0), 31);
     }
   }
 
   function drawPick(ctx, state) {
     var Da = Data();
     var E = Eng();
-    textC(ctx, 'PARTNER', 2, 1);
+    textC(ctx, 'PARTNER', 2);
     var i = state.partnerPick || 0;
     var id = Da.STARTERS[i];
     // Show the Child form (the 7 Chosen) — authentic on-device pick.
     var mon = Da.monAt(id, 1);
     blitMon(ctx, mon, 18, 27);
-    textC(ctx, (i + 1) + '/' + Da.STARTERS.length, 31, 1);
+    textC(ctx, (i + 1) + '/' + Da.STARTERS.length, 31);
   }
 
   function drawSetClock(ctx, state) {
     var c = state.clock || { h12: 12, min: 0, pm: false, field: 'h' };
-    textC(ctx, 'SET TIME', 3, 1);
+    textC(ctx, 'SET TIME', 3);
     var hh = (c.h12 < 10 ? ' ' : '') + c.h12;
     var mm = (c.min < 10 ? '0' : '') + c.min;
     var ap = c.pm ? 'PM' : 'AM';
-    textC(ctx, hh + ':' + mm, 12, 2);
-    textC(ctx, ap, 24, 1);
+    textC(ctx, hh + ':' + mm, 12);
+    textC(ctx, ap, 24);
     // Field marker
     var label = c.field === 'h' ? 'HOUR' : (c.field === 'm' ? 'MIN' : 'AMPM');
-    textC(ctx, label, 31, 1);
+    textC(ctx, label, 31);
   }
 
   function drawMenu(ctx, state) {
     var Da = Data();
     var names = Da.MENUS;
-    textC(ctx, 'MENU', 2, 1);
-    var start = Math.max(0, Math.min(U.menuI - 2, names.length - 5));
-    for (var i = 0; i < Math.min(5, names.length); i++) {
+    textC(ctx, 'MENU', 2);
+    // Four lines fit the round window (rows 8-27); the list follows the cursor.
+    var rows = 4;
+    var start = Math.max(0, Math.min(U.menuI - 1, names.length - rows));
+    for (var i = 0; i < Math.min(rows, names.length); i++) {
       var idx = start + i;
-      var sel = idx === U.menuI;
-      var y = 8 + i * 5;
-      if (sel) text(ctx, '>', 3, y, 1);
-      text(ctx, names[idx], sel ? 8 : 7, y, 1);
+      rowText(ctx, names[idx], 8 + i * 5, idx === U.menuI);
     }
   }
 
@@ -284,32 +331,32 @@
     var E = Eng();
     var p = state.party && state.party[U.partyI];
     if (!p) p = E && E.active(state);
-    if (!p) { textC(ctx, 'STATUS', 16, 1); return; }
+    if (!p) { textC(ctx, 'STATUS', 16); return; }
     var pages = ['MON', 'HP', 'ATK', 'DP', 'WIN'];
     var pg = pages[U.statusI % pages.length];
-    textC(ctx, pg, 2, 1);
+    textC(ctx, pg, 2);
     if (pg === 'MON') {
       blitMon(ctx, p.mon, 18, 26);
-      textC(ctx, p.stage + (p.injured ? ' X' : ''), 31, 1);
+      textC(ctx, p.stage + (p.injured ? ' X' : ''), 31);
     } else if (pg === 'HP') {
       blitMon(ctx, p.mon, 18, 22);
-      textC(ctx, String(p.maxHp), 28, 1);
+      textC(ctx, String(p.maxHp), 28);
     } else if (pg === 'ATK') {
       blitMon(ctx, p.mon, 18, 22);
-      textC(ctx, String(p.atk), 28, 1);
+      textC(ctx, String(p.atk), 28);
     } else if (pg === 'DP') {
-      textC(ctx, 'DP', 12, 1);
-      textC(ctx, String(state.dp || 0), 20, 2);
+      textC(ctx, 'DP', 12);
+      textC(ctx, String(state.dp || 0), 20);
     } else if (pg === 'WIN') {
-      textC(ctx, 'WIN', 10, 1);
-      textC(ctx, String(p.wins || 0), 18, 2);
-      textC(ctx, 'B ' + (p.battles || 0), 30, 1);
+      textC(ctx, 'WIN', 10);
+      textC(ctx, String(p.wins || 0), 18);
+      textC(ctx, 'B ' + (p.battles || 0), 30);
     }
   }
 
   function drawMap(ctx, state) {
     var E = Eng();
-    textC(ctx, 'MAP', 2, 1);
+    textC(ctx, 'MAP', 2);
     // 7 dots in a loose hex-ish / oval ring, current blinks.
     // Positions in dots, inside the circle.
     var pts = [
@@ -337,50 +384,47 @@
         ctx.fillRect(x * DOT, (y + 1) * DOT, 2 * DOT, DOT);
       }
     }
-    if (!E.mapComplete(state)) textC(ctx, String(state.areaRemaining || 0), 30, 1);
-    else textC(ctx, 'CLEAR', 30, 1);
+    if (!E.mapComplete(state)) textC(ctx, String(state.areaRemaining || 0), 30);
+    else textC(ctx, 'CLEAR', 30);
   }
 
   function drawStub(ctx, title) {
     // JP Slot / Card procedures are unpublished (US Interactive is a
     // different product and is not copied). Menu is present and labelled.
-    textC(ctx, title, 10, 1);
-    textC(ctx, '---', 18, 1);
+    textC(ctx, title, 10);
+    textC(ctx, '---', 18);
   }
 
   function drawMedical(ctx, state) {
     var injured = (state.party || []).filter(function (p) { return p.injured; });
-    textC(ctx, 'MEDICAL', 3, 1);
+    textC(ctx, 'MEDICAL', 3);
     if (!injured.length) {
-      textC(ctx, 'OK', 16, 2);
+      textC(ctx, 'OK', 16);
     } else {
       blitMon(ctx, injured[0].mon, 18, 24);
-      textC(ctx, 'KIT', 30, 1);
+      textC(ctx, 'KIT', 30);
     }
   }
 
   function drawVs(ctx, state) {
     var opts = ['LINK', 'ANALYZER'];
-    textC(ctx, 'VS', 3, 1);
+    textC(ctx, 'VS', 3);
     for (var i = 0; i < opts.length; i++) {
-      var sel = i === U.vsI;
-      var y = 12 + i * 7;
-      if (sel) text(ctx, '>', 5, y, 1);
-      text(ctx, opts[i], sel ? 10 : 9, y, 1);
+      rowText(ctx, opts[i], 12 + i * 7, i === U.vsI);
     }
   }
 
   function drawEncounter(ctx, state) {
     var enc = state.encounter;
     if (!enc) return;
-    textC(ctx, enc.isBoss ? 'BOSS' : 'ENEMY', 2, 1);
+    textC(ctx, enc.isBoss ? 'BOSS' : 'ENEMY', 2);
     blitMon(ctx, enc.id, 18, 26);
-    textC(ctx, enc.optional ? 'A FIGHT  C RUN' : 'A FIGHT', 31, 1);
+    textC(ctx, enc.optional ? 'A FIGHT  C RUN' : 'A FIGHT', 31);
   }
 
   function drawHelp(ctx, state) {
     var h = state.help;
-    textC(ctx, 'HELP', 2, 1);
+    textC(ctx, 'HELP', 2);
     // Signal bar (fills 0..1). 16-dot wide.
     var w = 16;
     var filled = Math.round((h.fill || 0) * w);
@@ -393,8 +437,8 @@
     ctx.fillRect((x0 - 1) * DOT, (y - 1) * DOT, DOT, 5 * DOT);
     ctx.fillRect((x0 + w) * DOT, (y - 1) * DOT, DOT, 5 * DOT);
     ctx.fillRect(x0 * DOT, y * DOT, filled * DOT, 3 * DOT);
-    if (h.catchReady) textC(ctx, 'CATCH', 20, 2);
-    else textC(ctx, 'WAVE', 22, 1);
+    if (h.catchReady) textC(ctx, 'CATCH', 20);
+    else textC(ctx, 'WAVE', 22);
     if (h.target) {
       var Da = Data();
       var mon = (Da.lineOf(h.target) && Da.monAt(h.target, 1)) || h.target;
@@ -409,16 +453,16 @@
     var p = E.active(state);
     var Da = Data();
     if (b.phase === 'result' || b.phase === 'quick') {
-      textC(ctx, b.result === 'win' ? 'WIN' : 'LOSE', 6, 2);
-      if (b.result === 'lose') textC(ctx, 'X', 16, 2);
+      textC(ctx, b.result === 'win' ? 'WIN' : 'LOSE', 6);
+      if (b.result === 'lose') textC(ctx, 'X', 16);
       blitMon(ctx, b.result === 'win' ? (p && p.mon) : b.enemyId, 18, 30);
-      if (b.dropped) textC(ctx, b.dropped === 'powerUp' ? 'POWER' : b.dropped, 32, 1);
+      if (b.dropped) textC(ctx, b.dropped === 'powerUp' ? 'POWER' : b.dropped, 32);
       return;
     }
     // Official 26×34 sprites nearly fill the 36-dot circle, so we show
     // one mon at a time (the foe during options/countdown; the partner
     // during our attack exchange). HP and the command sit in the padding.
-    textC(ctx, 'HP ' + b.selfHp + '/' + b.enemyHp, 2, 1);
+    textC(ctx, 'HP ' + b.selfHp + '/' + b.enemyHp, 2);
     var show = b.phase === 'exchange' && (b.exchanges || []).length &&
                b.exchanges[b.exchanges.length - 1].who === 'player'
       ? (p && p.mon) : b.enemyId;
@@ -428,9 +472,9 @@
       var beat = U.countBeat;
       var n = (Data().COUNTDOWN_BEATS - beat);
       if (n < 1) n = 1;
-      textC(ctx, String(n), 31, 2);
+      textC(ctx, String(n), 31);
     } else if (b.phase === 'mash') {
-      textC(ctx, 'A', 31, 2);
+      textC(ctx, 'A', 31);
     } else if (b.phase === 'options' || b.phase === 'exchange') {
       var opts = [];
       opts.push('USE');
@@ -438,7 +482,7 @@
       if (state.party && state.party.length > 1) opts.push('SW');
       opts.push('QCK');
       var i = U.battleI % opts.length;
-      textC(ctx, opts[i], 31, 1);
+      textC(ctx, opts[i], 31);
     }
   }
 

@@ -39,6 +39,12 @@
       root.VpetItems.drawText(host.ctx, String(s), x, y, sc || host.ITEM, tracking);
     }
   }
+  /* v33: native dot size always; wider text scrolls inside maxDots. */
+  function fitText(host, s, x, y, maxDots, tracking, still) {
+    var I = root.VpetItems;
+    if (I && I.drawTextFit) I.drawTextFit(host.ctx, String(s), x, y, host.ITEM, maxDots, tracking, still ? 0 : undefined);
+    else text(host, s, x, y, host.ITEM, tracking);
+  }
   function num(host, n, x, y, sc, pad) {
     var s = String(n);
     if (pad) while (s.length < pad) s = '0' + s;
@@ -108,7 +114,7 @@
 
     if (s.display === 'computer' || (s.deadComputer && s.display === 'computer')) {
       blitPet(host, { mon: 'computer', dead: true }, host.fx(8), host.fy(0));
-      text(host, 'COMPUTER', host.fx(2), host.fy(9), host.ITEM, 0);
+      fitText(host, 'COMPUTER', host.fx(0), host.fy(9), 32, 0);
       return;
     }
     if (s.display === 'egg' && s.pendingEgg) {
@@ -174,48 +180,49 @@
     if (root.VpetItems && root.VpetItems.blit) {
       try { root.VpetItems.blit(host.ctx, selected ? 'triangle' : 'empty_triangle', host.fx(1), y, host.ITEM || 4); } catch (e) {}
     }
-    text(host, label, host.fx(8), y, host.ITEM, 0);
+    // Cursor ink cols 1-4; label owns cols 6-31 (v33).
+    fitText(host, label, host.fx(6), y, 26, 0, !selected);
   }
 
   function drawStatus(host) {
     lcdPaper(host);
     var Eapi = E();
     var pet = Eapi && Eapi.activePet(host.state);
-    if (!pet) { text(host, 'NO DATA', host.fx(2), host.fy(6), host.ITEM); return; }
+    if (!pet) { fitText(host, 'NO DATA', host.fx(0), host.fy(5), 32, 0); return; }
     var m = D() && D().monster(pet.mon);
     var page = STATUS_PAGES[statusPage] || 'name';
     if (page === 'name') {
-      if (root.VpetItems.drawTextWrapped) root.VpetItems.drawTextWrapped(host.ctx, (m && m.name) ? m.name : (pet.mon || '?'), host.fx(1), host.fy(5), host.ITEM, 30, 7);
-      else text(host, (m && m.name) ? m.name.toUpperCase() : (pet.mon || '?'), host.fx(1), host.fy(6), host.ITEM);
+      // One line, native dots; long names scroll sideways (v33).
+      fitText(host, (m && m.name) ? m.name : (pet.mon || '?'), host.fx(0), host.fy(5), 32, 1);
     } else if (page === 'age') {
-      text(host, 'AGE', host.fx(2), host.fy(3), host.ITEM);
+      fitText(host, 'AGE', host.fx(2), host.fy(3), 30, 1);
       num(host, pet.ageDays || 0, host.fx(2), host.fy(9), host.ITEM);
       text(host, 'Y', host.fx(16), host.fy(9), host.ITEM);
     } else if (page === 'weight') {
-      text(host, 'WEIGHT', host.fx(2), host.fy(3), host.ITEM, 0);
+      fitText(host, 'WEIGHT', host.fx(2), host.fy(3), 30, 0);
       num(host, pet.weight || 0, host.fx(2), host.fy(9), host.ITEM);
       text(host, 'G', host.fx(16), host.fy(9), host.ITEM);
     } else if (page === 'hunger') {
-      text(host, 'HUNGER', host.fx(2), host.fy(3), host.ITEM);
-      hearts(host, pet.hunger || 0, host.fx(2), host.fy(9));
+      fitText(host, 'HUNGER', host.fx(2), host.fy(3), 30, 1);
+      hearts(host, pet.hunger || 0, host.fx(1), host.fy(8)); // v33: cols 1-31, rows 9-15
     } else if (page === 'strength') {
-      text(host, 'STRENGTH', host.fx(2), host.fy(3), host.ITEM, 0);
-      hearts(host, pet.strength || 0, host.fx(2), host.fy(9));
+      fitText(host, 'STRENGTH', host.fx(2), host.fy(3), 30, 0);
+      hearts(host, pet.strength || 0, host.fx(1), host.fy(8));
     } else if (page === 'effort') {
-      text(host, 'EFFORT', host.fx(2), host.fy(3), host.ITEM);
-      hearts(host, Eapi.effortHearts(pet), host.fx(2), host.fy(9));
+      fitText(host, 'EFFORT', host.fx(2), host.fy(3), 30, 1);
+      hearts(host, Eapi.effortHearts(pet), host.fx(1), host.fy(8));
     } else if (page === 'dp') {
-      text(host, 'DP', host.fx(2), host.fy(3), host.ITEM);
+      fitText(host, 'DP', host.fx(2), host.fy(3), 30, 1);
       var cur = Math.floor((pet.dpQ || 0) / 4);
       var mx = Math.floor((pet.dpMaxQ || 0) / 4);
       num(host, cur, host.fx(2), host.fy(9), host.ITEM);
       text(host, '/', host.fx(12), host.fy(9), host.ITEM);
       num(host, mx, host.fx(16), host.fy(9), host.ITEM);
     } else if (page === 'attr') {
-      text(host, 'ATTR', host.fx(2), host.fy(3), host.ITEM);
+      fitText(host, 'ATTR', host.fx(2), host.fy(3), 30, 1);
       var a = (m && m.attr) || 'free';
       // Free: "there will be nothing listed"
-      if (a !== 'free') text(host, String(a).toUpperCase(), host.fx(2), host.fy(9), host.ITEM);
+      if (a !== 'free') fitText(host, String(a).toUpperCase(), host.fx(2), host.fy(9), 30, 1);
     } else if (page === 'bj') {
       // B = Battle, J = Jogress; O can, X cannot.
       var canB = !!(m && m.canBattle) && (pet.dpQ || 0) > 0;
@@ -223,10 +230,11 @@
       text(host, 'B ' + (canB ? 'O' : 'X'), host.fx(2), host.fy(4), host.ITEM);
       text(host, 'J ' + (canJ ? 'O' : 'X'), host.fx(2), host.fy(10), host.ITEM);
     } else if (page === 'record') {
-      text(host, 'W', host.fx(2), host.fy(4), host.ITEM);
-      num(host, pet.wins || 0, host.fx(10), host.fy(4), host.ITEM);
-      text(host, 'L', host.fx(2), host.fy(10), host.ITEM);
-      num(host, pet.losses || 0, host.fx(10), host.fy(10), host.ITEM);
+      // v33: 7-row digits on rows 1-7 and 9-15 (row 16 was off the LCD).
+      text(host, 'W', host.fx(2), host.fy(1), host.ITEM);
+      num(host, Math.min(999, pet.wins || 0), host.fx(10), host.fy(1), host.ITEM);
+      text(host, 'L', host.fx(2), host.fy(9), host.ITEM);
+      num(host, Math.min(999, pet.losses || 0), host.fx(10), host.fy(9), host.ITEM);
     }
   }
 
@@ -247,26 +255,26 @@
   }
   function drawConnect(host) {
     lcdPaper(host);
+    // Two 6-dot rows fit the 16-row LCD; the third item is on page 2 (v33).
     var rows = ['BATTLE', 'JOGRESS', 'COPYMON'];
-    rows.forEach(function (r, i) {
-      menuRow(host, subSel === i, host.fy(2 + i * 5), r);
-    });
+    var pg = Math.floor(subSel / 2) * 2;
+    for (var r = 0; r < 2 && pg + r < rows.length; r++) {
+      menuRow(host, subSel === pg + r, host.fy(r ? 10 : 2), rows[pg + r]);
+    }
   }
   function drawColoMenu(host) {
     lcdPaper(host);
     var s = host.state;
-    if (battle.on && battle.phase === 'pick-div') {
-      menuRow(host, subSel === 0, host.fy(2), 'SINGLE');
-      menuRow(host, subSel === 1, host.fy(10), 'TAG');
-    } else if (battle.on && battle.phase === 'pick-act') {
+    // A cleared division reads "... CLEAR" on its own row (scrolls when
+    // selected) instead of a CLEAR word drawn past the LCD edge (v33).
+    var sClr = (s.coloSingle > 100) ? ' CLEAR' : '', tClr = (s.coloTag > 100) ? ' CLEAR' : '';
+    if (battle.on && battle.phase === 'pick-act') {
       menuRow(host, subSel === 0, host.fy(2), 'START');
       menuRow(host, subSel === 1, host.fy(10), 'CONTINUE');
     } else {
-      menuRow(host, subSel === 0, host.fy(2), 'SINGLE');
-      menuRow(host, subSel === 1, host.fy(10), 'TAG');
+      menuRow(host, subSel === 0, host.fy(2), 'SINGLE' + sClr);
+      menuRow(host, subSel === 1, host.fy(10), 'TAG' + tClr);
     }
-    var rnd = (subSel === 1) ? s.coloTag : s.coloSingle;
-    if (rnd > 100) text(host, 'CLEAR', host.fx(20), host.fy(9), host.ITEM);
   }
   function drawColo(host) {
     lcdPaper(host);
@@ -274,7 +282,7 @@
     if (battle.phase === 'fight') {
       if (pet) blitPet(host, pet, host.fx(0), host.fy(0));
       text(host, 'VS', host.fx(14), host.fy(6), host.ITEM);
-      text(host, (battle.foe || '?').slice(0, 6), host.fx(18), host.fy(6), host.ITEM, 0);
+      fitText(host, String(battle.foe || '?').toUpperCase(), host.fx(18), host.fy(6), 14, 0);
     } else if (battle.phase === 'result') {
       text(host, battle.won ? 'WIN' : 'LOSE', host.fx(8), host.fy(4), host.ITEM);
       if (battle.injured) text(host, 'INJURY', host.fx(6), host.fy(10), host.ITEM, 0);
@@ -289,37 +297,41 @@
       num(host, train.shakes || 0, host.fx(12), host.fy(9), host.ITEM);
     } else if (train.phase === 'result') {
       var lab = train.result === 'gigahit' ? 'GIGAHIT' : train.result === 'megahit' ? 'MEGAHIT' : train.result === 'success' ? 'GREAT' : 'FAIL';
-      text(host, lab, host.fx(4), host.fy(6), host.ITEM);
+      fitText(host, lab, host.fx(2), host.fy(6), 30, 0);
     }
   }
   function drawAlbum(host) {
     lcdPaper(host);
     var tabs = ['DIGIMON', 'COPYMON', 'RECORD', 'PASS'];
-    text(host, tabs[albumTab], host.fx(1), host.fy(1), host.ITEM);
     var s = host.state;
+    // v33 layout: two rows (1-7, 9-15) at the native dot size.
+    if (albumTab === 2) {
+      // Record: W and B rows; CHAMPION alternates with the W row.
+      if (s.champion && host.animTick() % 4 >= 2) fitText(host, 'CHAMPION', host.fx(0), host.fy(1), 32, 0);
+      else {
+        text(host, 'W', host.fx(2), host.fy(1), host.ITEM);
+        num(host, Math.min(999, s.recordWins || 0), host.fx(10), host.fy(1), host.ITEM);
+      }
+      text(host, 'B', host.fx(2), host.fy(9), host.ITEM);
+      num(host, Math.min(999, s.recordBattles || 0), host.fx(10), host.fy(9), host.ITEM);
+      return;
+    }
+    fitText(host, tabs[albumTab], host.fx(1), host.fy(1), 31, 0);
     if (albumTab === 0) {
       var list = s.album || [];
       var id = list[albumIdx] || '';
       var m = id && D() && D().monster(id);
-      if (root.VpetItems.drawTextWrapped) root.VpetItems.drawTextWrapped(host.ctx, (m && m.name) ? m.name : (id || '----'), host.fx(1), host.fy(6), host.ITEM, 30, 7);
-      else text(host, (m && m.name) ? m.name.slice(0, 6).toUpperCase() : (id || '----'), host.fx(1), host.fy(7), host.ITEM, 0);
-      num(host, list.length, host.fx(1), host.fy(9), host.ITEM);
+      var nm = (m && m.name) ? m.name : (id || '----');
+      fitText(host, (list.length ? (albumIdx + 1) + ' ' : '') + nm, host.fx(0), host.fy(9), 32, 1);
     } else if (albumTab === 1) {
       var cm = (s.copymon || [])[albumIdx];
-      text(host, cm ? String(cm.id).toUpperCase() : '----', host.fx(1), host.fy(7), host.ITEM);
-    } else if (albumTab === 2) {
-      text(host, 'W', host.fx(2), host.fy(5), host.ITEM);
-      num(host, Math.min(999, s.recordWins || 0), host.fx(10), host.fy(5), host.ITEM);
-      text(host, 'B', host.fx(2), host.fy(11), host.ITEM);
-      num(host, Math.min(999, s.recordBattles || 0), host.fx(10), host.fy(11), host.ITEM);
-      if (s.champion) text(host, 'CHAMPION', host.fx(1), host.fy(9), host.ITEM, 0);
+      fitText(host, cm ? String(cm.id).toUpperCase() : '----', host.fx(0), host.fy(9), 32, 1);
     } else {
-      var i, xs = '';
-      for (i = 0; i < 6; i++) xs += String(passDigits[i]);
-      text(host, xs, host.fx(4), host.fy(7), host.ITEM);
-      // caret under passPos
+      var i;
+      for (i = 0; i < 6; i++) num(host, passDigits[i], host.fx(2 + i * 5), host.fy(8), host.ITEM);
+      // caret under passPos: one dot tall, 4 dots wide (same dot size)
       host.ctx.fillStyle = host.INK;
-      host.ctx.fillRect(host.fx(4 + passPos * 4), host.fy(11), 12, 2);
+      host.ctx.fillRect(host.fx(2 + passPos * 5), host.fy(15), 4 * host.DOT, host.DOT);
     }
   }
   function drawEggPick(host) {
@@ -327,10 +339,10 @@
     var eggs = (host.state.unlockedEggs || []);
     var id = eggs[eggPickIdx] || '';
     var e = D() && D().EGGS && D().EGGS[id];
-    text(host, 'EGG', host.fx(2), host.fy(2), host.ITEM);
-    if (root.VpetItems.drawTextWrapped) root.VpetItems.drawTextWrapped(host.ctx, (e && e.name) ? e.name : id, host.fx(1), host.fy(7), host.ITEM, 30, 7);
-      else text(host, (e && e.name) ? e.name.slice(0, 6).toUpperCase() : id.slice(0, 6), host.fx(1), host.fy(8), host.ITEM, 0);
-    if (Spr() && Spr().has(id)) Spr().blit(host.ctx, id, host.fx(20), host.fy(0), 'idle0', false, host.INK, 4);
+    // Left half text, right half egg (16 dots wide at cols 16-31) (v33).
+    text(host, 'EGG', host.fx(1), host.fy(1), host.ITEM);
+    fitText(host, (e && e.name) ? e.name : id, host.fx(0), host.fy(9), 15, 1);
+    if (Spr() && Spr().has(id)) Spr().blit(host.ctx, id, host.fx(16), host.fy(0), 'idle0', false, host.INK, 4);
   }
   function drawClock(host) {
     lcdPaper(host);
@@ -355,9 +367,11 @@
     }
     var hh = (h < 10 ? '0' : '') + h;
     var mm = (min < 10 ? '0' : '') + min;
-    text(host, hh + ':' + mm, host.fx(4), host.fy(5), host.ITEM);
-    if (ap) text(host, ap, host.fx(22), host.fy(12), host.ITEM);
-    if (set) text(host, 'SET', host.fx(2), host.fy(1), host.ITEM);
+    // v33: HH:MM = 21 dots (cols 1-21, rows 7-13), AM/PM cols 23-31,
+    // SET on rows 0-5; digits now actually render (drawText dropped them).
+    text(host, hh + ':' + mm, host.fx(1), host.fy(7), host.ITEM);
+    if (ap) text(host, ap, host.fx(23), host.fy(8), host.ITEM, 0);
+    if (set) text(host, 'SET', host.fx(1), host.fy(0), host.ITEM);
   }
   function drawDying(host) {
     lcdPaper(host);
@@ -774,6 +788,16 @@
     setTrainForShot: setTrainForShot,
     getSubSel: function () { return subSel; },
     setSubSel: function (n) { subSel = n || 0; },
+    /* v33 test hook (LCD text audit): set private sub-screen state. */
+    setAuditState: function (o) {
+      o = o || {};
+      if ('albumTab' in o) albumTab = o.albumTab;
+      if ('albumIdx' in o) albumIdx = o.albumIdx;
+      if ('eggPickIdx' in o) eggPickIdx = o.eggPickIdx;
+      if ('passPos' in o) passPos = o.passPos;
+      if (o.battle) for (var k in o.battle) battle[k] = o.battle[k];
+      if (o.train) for (var t in o.train) train[t] = o.train[t];
+    },
     SELECTABLE: SELECTABLE,
     STATUS_PAGES: STATUS_PAGES,
     noteInput: noteInput

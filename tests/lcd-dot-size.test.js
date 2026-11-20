@@ -73,11 +73,11 @@ ok(/sc \|\| host\.ITEM/.test(file('js/devices/pendulum/ui.js')),
    'Pendulum text() defaults to host.ITEM');
 
 const ui = file('js/ui.js');
-ok(/menuItem[\s\S]{0,400}drawText\(ctx, label, fx\(9\), y, ITEM/.test(ui),
-   '1997 menuItem draws labels at ITEM');
-ok(/drawTextWrapped\(ctx, nm, fx\(1\), fy\(1\), ITEM/.test(ui) ||
-   /drawText\(ctx, nm, fx\(1\), fy\(5\), ITEM/.test(ui),
-   '1997 NAME page draws at ITEM (wrapping if needed)');
+// v33: labels scroll inside their field at ITEM instead of overflowing.
+ok(/function menuItem[\s\S]{0,400}drawTextFit\(ctx, label, fx\(MENU_LABEL_X\), y, ITEM/.test(ui),
+   '1997 menuItem draws labels at ITEM (scrolls if wider than the field)');
+ok(/drawTextFit\(ctx, nm, fx\(0\), fy\(5\), ITEM/.test(ui),
+   '1997 NAME page draws at ITEM (one line, scrolls if needed)');
 
 const dv = file('js/devices/digivice/ui.js');
 ok(/var DOT = 4/.test(dv), 'Dv1999 DOT is 4');
