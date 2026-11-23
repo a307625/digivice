@@ -476,11 +476,7 @@
     } else if (b.phase === 'mash') {
       textC(ctx, 'A', 31);
     } else if (b.phase === 'options' || b.phase === 'exchange') {
-      var opts = [];
-      opts.push('USE');
-      if (E.canEvolve(p) && !b.evolvedThisRound && (state.dp || 0) >= Da.DP_EVOLVE_COST) opts.push('EVO');
-      if (state.party && state.party.length > 1) opts.push('SW');
-      opts.push('QCK');
+      var opts = battleOpts();
       var i = U.battleI % opts.length;
       textC(ctx, opts[i], 31);
     }
@@ -556,8 +552,9 @@
         return true;
       }
       if (b.phase === 'options') {
-        var opts = battleOpts(state);
+        var opts = battleOpts();
         var name = opts[U.battleI % opts.length];
+        if (!battleOptOk(state, name)) { flash('NO', 700); return true; }
         if (name === 'SW') {
           // Cycle to next uninjured ally and throw them in.
           var n = state.party.length;
@@ -632,16 +629,22 @@
     return true;
   }
 
-  function battleOpts(state) {
+  function battleOpts() {
+    // Fixed order. Dropping EVO or SW after a fight used to shift the row
+    // under the cursor, so the battle menu looked different.
+    return ['USE', 'EVO', 'SW', 'QCK'];
+  }
+
+  function battleOptOk(state, name) {
     var E = Eng();
     var Da = Data();
     var p = E.active(state);
     var b = state.battle;
-    var opts = ['USE'];
-    if (p && E.canEvolve(p) && b && !b.evolvedThisRound && (state.dp || 0) >= Da.DP_EVOLVE_COST) opts.push('EVO');
-    if (state.party && state.party.length > 1) opts.push('SW');
-    opts.push('QCK');
-    return opts;
+    if (name === 'EVO') {
+      return !!(p && E.canEvolve(p) && b && !b.evolvedThisRound && (state.dp || 0) >= Da.DP_EVOLVE_COST);
+    }
+    if (name === 'SW') return !!(state.party && state.party.length > 1);
+    return name === 'USE' || name === 'QCK';
   }
 
   function pressB(host) {
@@ -676,7 +679,7 @@
       return true;
     }
     if (scr === 'battle' && state.battle && state.battle.phase === 'options') {
-      var opts = battleOpts(state);
+      var opts = battleOpts();
       U.battleI = (U.battleI + 1) % opts.length;
       return true;
     }

@@ -27,7 +27,7 @@
     circularLcd: true
   };
 
-  var MENUS = ['STATUS', 'MAP', 'SLOT', 'CARD', 'MEDICAL', 'VS'];
+  var MENUS = ['STATUS', 'MAP', 'SLOT', 'CARD', 'VS', 'MEDICAL'];
   var STATUS = ['mon', 'hp', 'atk', 'dp', 'win'];
 
   function profile(ver) {

@@ -1,4 +1,4 @@
-/* Offline cache for 數碼怪獸對打機 — v54 (Pendulum train table and win odds)
+/* Offline cache for 數碼怪獸對打機 — v56 (A after heal returns to the dashboard)
  * - Precaches every file index.html loads plus ALL device shells (WebP,
  *   ~2.4 MB), so any device works on an offline first launch.
  * - Precache requests bypass the HTTP cache (cache: 'reload'), so a new
@@ -9,7 +9,7 @@
  * - Only same-origin, non-redirected, 200 'basic' responses are cached.
  * - Old caches are deleted only after the new one is complete.
  */
-var CACHE = 'digivice-v55';
+var CACHE = 'digivice-v56';
 var APP_SHELL = './index.html';
 var ASSETS = [
   './',

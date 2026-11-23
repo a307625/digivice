@@ -159,9 +159,10 @@
     powerUp: 'double_all'   // FI
   };
 
-  // Menus: Status, Map, Slot, Card, Medical, VS (device-lines.md / FI Intro).
-  // No Scale/Meat/Train/Flush/Lights; no 4+4 hunger icons.
-  var MENUS = ['STATUS', 'MAP', 'SLOT', 'CARD', 'MEDICAL', 'VS'];
+  // Select cycles Status, Map, Slot, Card, VS, then Medical.
+  // The press after Medical returns to Status. VS stays before Medical
+  // so it is still reachable and is not the next row after 治療.
+  var MENUS = ['STATUS', 'MAP', 'SLOT', 'CARD', 'VS', 'MEDICAL'];
 
   // Battle options (FI Intro / Wikimon Toy).
   var BATTLE_OPTIONS = ['USE', 'EVOLVE', 'SWITCH', 'QUICK'];

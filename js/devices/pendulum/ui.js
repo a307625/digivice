@@ -585,7 +585,9 @@
       } else if (battle.phase === 'result' && t - battle.startedAt >= 1500) {
         resetBattle();
         host.setView('play');
-        host.setSel(-1);
+        var back = (host.profile && host.profile.selectable) || [];
+        var home = back.indexOf('STATUS');
+        host.setSel(home >= 0 ? home : 0);
       }
     }
   }

@@ -593,6 +593,10 @@
     if (v === 'colo') {
       host.setView('play');
       battle.on = false;
+      battle.phase = 'pick-div';
+      subSel = 0;
+      var home = SELECTABLE.indexOf('STATUS');
+      host.setSel(home >= 0 ? home : 0);
       return true;
     }
     if (v === 'album') {

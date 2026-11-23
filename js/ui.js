@@ -174,7 +174,9 @@
     var d = currentDevice();
     if (d && d.selectable) return d.selectable;
     if (d && d.family === 'dm20') {
-      return ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC', 'ALBUM', 'CONNECT'];
+      // Same printed icons as 1997. Album / Connect are not on this shell;
+      // leaving them in the A cycle lit the battle icon after 治療.
+      return ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC'];
     }
     return ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC'];
   }
@@ -1384,8 +1386,6 @@
     document.querySelectorAll('.face-icon').forEach(function (el) {
       var id = el.getAttribute('data-icon');
       var lit = (id === current && id !== 'CALL');
-      if (current === 'ALBUM' && id === 'STATUS') lit = false;
-      if (current === 'CONNECT' && id === 'BATTLE') lit = true;
       el.classList.toggle('on', lit);
       if (id === 'CALL') el.classList.toggle('call-blink', isCalling());
       else el.classList.remove('call-blink');
@@ -1496,16 +1496,12 @@
     if (isMenuView()) view = 'play';
     var list = selectable();
     sel = (sel + 1);
-    if (sel >= list.length) {
-      // 1997: 治療 is the last icon. The next A returns to 儀表板
-      // (STATUS, the first icon). It must not go blank and must not
-      // land on BATTLE.
-      if (is1997Brick()) {
-        var home = list.indexOf('STATUS');
-        sel = home >= 0 ? home : 0;
-      } else {
-        sel = -1;
-      }
+    if (sel < 0 || sel >= list.length) {
+      // 治療 is the last icon. The next A returns to 儀表板 (STATUS)
+      // on every brick and Pendulum. It must not go blank and must
+      // not land on the battle icon.
+      var home = list.indexOf('STATUS');
+      sel = home >= 0 ? home : 0;
     }
   }
 
@@ -1792,13 +1788,11 @@
     view = 'play';
     battleFx.active = false;
     battleSel = 0;
-    // Leave the fight on the dashboard icon. Do not stay on BATTLE,
-    // and do not reopen a different battle list.
-    if (is1997Brick()) {
-      var list = selectable();
-      var home = list.indexOf('STATUS');
-      sel = home >= 0 ? home : 0;
-    }
+    // Leave the fight on 儀表板. Do not stay on the battle icon, and
+    // do not reopen the list on a different row.
+    var list = selectable();
+    var home = list.indexOf('STATUS');
+    sel = home >= 0 ? home : 0;
     playPose(battleFx.result === 'win' ? 'happy' : 'angry', 2000);
   }
 

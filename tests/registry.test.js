@@ -232,7 +232,7 @@ console.log('9) 神聖計畫 (Digivice 1999) is its own family, portrait, not 19
   eq(p && p.shell, 'digivice-v1', 'own orange shell');
   eq(p && p.orient, 'portrait', 'portrait / round');
   eq(p && p.clockSet, 'digivice', 'own clock-SET');
-  eqArr(p.selectable, ['STATUS', 'MAP', 'SLOT', 'CARD', 'MEDICAL', 'VS'], '6 Digivice menus, no hunger icons');
+  eqArr(p.selectable, ['STATUS', 'MAP', 'SLOT', 'CARD', 'VS', 'MEDICAL'], '6 Digivice menus; Medical is last so the next press is Status');
   ok(Devices.isDigiviceEgg('dv1999_v1'), 'isDigiviceEgg is true');
   ok(!Devices.isPendulumEgg('dv1999_v1'), 'isPendulumEgg is false');
   ok(!Devices.isPen20Egg('dv1999_v1'), 'isPen20Egg is false');

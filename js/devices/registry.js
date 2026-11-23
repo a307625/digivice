@@ -114,7 +114,7 @@
       layout: LAYOUT_1997,
       iconsTop: LAYOUT_1997.names_top,
       iconsBot: LAYOUT_1997.names_bot,
-      selectable: ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC', 'ALBUM', 'CONNECT'],
+      selectable: ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC'],
       statusPages: ['name', 'age', 'hunger', 'strength', 'effort', 'dp', 'win'],
       buttonStyle: 'dm20-gold',
       lightsOff: 'visible-z',
@@ -335,7 +335,7 @@
     },
     // Public identical-to-v25 snapshot used by tests.
     SELECTABLE_1997: ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC'],
-    SELECTABLE_DM20: ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC', 'ALBUM', 'CONNECT'],
+    SELECTABLE_DM20: ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC'],
     STATUS_1997: ['age', 'hunger', 'strength', 'dp', 'win'],
     STATUS_DM20: ['name', 'age', 'hunger', 'strength', 'effort', 'dp', 'win']
   };
