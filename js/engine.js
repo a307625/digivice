@@ -15,7 +15,13 @@
   var data = root.EvolutionData;
   var evo = root.Evolution;
 
-  var CALL_TIMEOUT = 20 * 60;      // 20 min game-time (1997 firmware, 0x08C3)
+  var CALL_TIMEOUT = 20 * 60;      // hunger / strength call, 20 min (1997 firmware, 0x08C3)
+  // NHOKO: leaving the lamp on for 60 min after sleep starts is the lights
+  // care mistake. The call icon also stays up for those 60 min. This is not
+  // the 20 min hunger call.
+  var LIGHTS_CALL_TIMEOUT = 60 * 60;
+  // NHOKO: once a meal is refused (満腹), hunger hearts do not drop for about 1 h.
+  var HUNGER_FREEZE_SEC = 60 * 60;
   // Awake window after a sleep disturbance. The exact official duration is
   // unverified (1997 firmware does not quote one; rules-audit §4). The
   // "10 minutes" on Humulos DMC Sleep is the *call timeout*, not this
@@ -132,6 +138,8 @@
       lastHungerTick: 0,
       lastStrTick: 0,
       overfeedLockUntil: 0,
+      hungerFreezeUntil: 0,
+      dm20TagRound: 0,
       album: monId ? [monId] : [],
       events: [],
       sleepStart: 21,
@@ -312,6 +320,12 @@
   function cycleSec(state) {
     var m = mon(state);
     if (!m) return 3600;
+    // With the Will, 20th-brick playtest (BladeSabre): Baby I ~3 min,
+    // Baby II ~30 min. Later stages are "60–90 depending on kind", and
+    // poop-type / Jogress / "faster when old" have no roster or formula,
+    // so those keep the species cycle.
+    if (isDm20(state) && m.stage === 'baby1') return 3 * 60;
+    if (isDm20(state) && m.stage === 'baby2') return 30 * 60;
     if (m.cycleMin != null) return m.cycleMin * 60;
     if (m.stage === 'egg') return 600;
     if (m.stage === 'baby1') return 3 * 60;
@@ -690,6 +704,10 @@
     return isDm20(state) ? DM20_CALL_TIMEOUT : CALL_TIMEOUT;
   }
 
+  function lightsCallTimeout(state) {
+    return isDm20(state) ? DM20_CALL_TIMEOUT : LIGHTS_CALL_TIMEOUT;
+  }
+
   function isCallLit(state) {
     if (!state || state.dead) return false;
     if (state.callAt != null && !state.callResolved && (state.hunger <= 0 || state.strength <= 0) &&
@@ -697,7 +715,7 @@
       return true;
     }
     if (state.callLightsAt != null && !state.lightsCallResolved && state.sleeping && state.lights &&
-        state.gameTime - state.callLightsAt < callTimeout(state)) {
+        state.gameTime - state.callLightsAt < lightsCallTimeout(state)) {
       return true;
     }
     // Poop and an untreated injury light the same call icon. They are not
@@ -730,7 +748,7 @@
     }
     if (state.callLightsAt != null && !state.lightsCallResolved &&
         state.sleeping && state.lights &&
-        state.gameTime - state.callLightsAt >= callTimeout(state)) {
+        state.gameTime - state.callLightsAt >= lightsCallTimeout(state)) {
       addCareMistake(state, '未關燈，育成失誤 +1');
       state.lightsCallResolved = true;
       // Do not retrigger; one lights mistake per night (sleepCalledTonight).
@@ -803,8 +821,12 @@
       } else {
         state.awakeInStage = (state.awakeInStage || 0) + step;
         // Hunger and strength share this species cycle at every stage.
-        // A refused extra meat counts as an overfeed; it does not freeze hunger.
-        if (state.gameTime - (state.lastHungerTick || 0) >= cyc) {
+        // NHOKO: a refused meal freezes hunger hearts for about 1 hour.
+        // Strength keeps dropping. DM20 has no such freeze.
+        var hungerFrozen = !isDm20(state) && state.gameTime < (state.hungerFreezeUntil || 0);
+        if (hungerFrozen) {
+          state.lastHungerTick = (state.lastHungerTick || 0) + step;
+        } else if (state.gameTime - (state.lastHungerTick || 0) >= cyc) {
           state.lastHungerTick = state.gameTime;
           var prevH = state.hunger;
           state.hunger = Math.max(0, state.hunger - 1);
@@ -1030,6 +1052,8 @@
       state.overfeed = (state.overfeed || 0) + 1;
       state.overfeedLockUntil = state.gameTime + OVERFEED_LOCK;
       state.weight = Math.min(99, (state.weight || 0) + 1);
+      // NHOKO 初代: the refuse itself starts the ~1 h hunger freeze. DM20 does not.
+      if (!isDm20(state)) state.hungerFreezeUntil = state.gameTime + HUNGER_FREEZE_SEC;
       return { ok: true, overfeed: true, refused: true };
     }
     return { ok: false, reason: 'full' };
@@ -1102,14 +1126,16 @@
 
   /* DM20 single training (Bandai manual + NHOKO Ver.20th table + Humulos):
      after "!" mash A within the time limit to break the wall.
-       untouched  → fail,  weight  0, strength  0, no effort
+       untouched  → fail,  weight −1, strength  0, no effort
        half-broken→ fail,  weight −1, strength  0, effort +1 training
        wrecked    → success, weight −2, strength +1, effort +1
        destroyed  → success, weight −4, strength +2, effort +1
-     13 presses = destroyed (Humulos). The 4 / 9 press cut-offs for the
-     two middle states are unpublished → PLACEHOLDER. Effort: NHOKO and
-     Humulos say failures count too; the Bandai manual says some wall must
-     be destroyed, so an untouched wall gives nothing. */
+     Humulos: every training loses 1–4 g depending on performance, so the
+     untouched wall loses the floor (1 g) rather than 0. 13 presses =
+     destroyed and is the 4 g end of that range. The 4 / 9 press cut-offs
+     for the two middle states are unpublished → PLACEHOLDER. Effort:
+     NHOKO and Humulos say failures count too; the Bandai manual says some
+     wall must be destroyed, so an untouched wall still gives no effort. */
   var DM20_TRAIN_CUTS = { half: 4, wreck: 9, destroy: 13, source: 'destroy=Humulos; half/wreck=PLACEHOLDER' };
   function dm20TrainTier(presses) {
     var n = presses || 0;
@@ -1124,7 +1150,7 @@
     if (!m || !STAGE_TRAIN_BATTLE[m.stage]) return { ok: false, reason: 'too-young' };
     var tier = dm20TrainTier(presses);
     var minW = m.weight || 5;
-    var loss = [0, 1, 2, 4][tier];
+    var loss = [1, 1, 2, 4][tier];
     var gain = [0, 0, 1, 2][tier];
     state.weight = Math.max(minW, (state.weight || minW) - loss);
     if (tier >= 1) state.train = (state.train || 0) + 1;
@@ -1132,6 +1158,37 @@
     state._trainSessionCounted = false;
     clearStrengthCall(state);
     return { ok: true, tier: tier, success: tier >= 2, train: state.train, strength: state.strength, weight: state.weight };
+  }
+
+  /* DM20 tag training (Humulos). Two Digimon, five shots. A is the top
+     button (high), B is the middle button (low). 3 of 5 past the shield
+     succeeds. The six patterns repeat. */
+  var DM20_TAG_PATTERNS = ['ABABB', 'BBAAB', 'BAABB', 'ABBAA', 'BABAB', 'ABABA'];
+  function dm20TagPattern(round) {
+    var n = DM20_TAG_PATTERNS.length;
+    var i = ((round || 0) % n + n) % n;
+    return DM20_TAG_PATTERNS[i];
+  }
+  function finishDm20TagTraining(state, hits) {
+    if (!state || state.dead) return { ok: false };
+    var m = mon(state);
+    if (!m || !STAGE_TRAIN_BATTLE[m.stage]) return { ok: false, reason: 'too-young' };
+    var pattern = dm20TagPattern(state.dm20TagRound || 0);
+    state.dm20TagRound = ((state.dm20TagRound || 0) + 1) % DM20_TAG_PATTERNS.length;
+    var nHits = hits || 0;
+    var success = nHits >= 3;
+    var minW = m.weight || 5;
+    // Humulos: every session loses 1–4 g. Tag has no per-hit gram table,
+    // so a finished session loses the published floor, 1 g.
+    state.weight = Math.max(minW, (state.weight || minW) - 1);
+    state.train = (state.train || 0) + 1;
+    if (success) state.strength = Math.min(4, (state.strength || 0) + 1);
+    state._trainSessionCounted = false;
+    clearStrengthCall(state);
+    return {
+      ok: true, success: success, hits: nHits, pattern: pattern,
+      train: state.train, strength: state.strength, weight: state.weight
+    };
   }
 
   function flush(state) {
@@ -1408,6 +1465,8 @@
     if (state.healProgress == null) state.healProgress = 0;
     if (state.awakeInStage == null) state.awakeInStage = 0;
     if (state.awakeUntil == null) state.awakeUntil = 0;
+    if (state.hungerFreezeUntil == null) state.hungerFreezeUntil = 0;
+    if (state.dm20TagRound == null) state.dm20TagRound = 0;
     if (state.sleepCalledTonight == null) state.sleepCalledTonight = false;
     if (state.cpuPlayerInitiates == null) state.cpuPlayerInitiates = true;
     if (state.emptyCallSince == null && state.emptySince != null) state.emptyCallSince = state.emptySince;
@@ -1447,6 +1506,9 @@
     finishTraining: finishTraining,
     finishDm20Training: finishDm20Training,
     dm20TrainTier: dm20TrainTier,
+    dm20TagPattern: dm20TagPattern,
+    finishDm20TagTraining: finishDm20TagTraining,
+    DM20_TAG_PATTERNS: DM20_TAG_PATTERNS,
     isDm20: isDm20,
     advanceGrid: advanceGrid,
     SIM_GRID: SIM_GRID,
@@ -1486,6 +1548,8 @@
     disturbSleep: disturbSleep,
     DISTURB_AWAKE_SEC: DISTURB_AWAKE_SEC,
     CALL_TIMEOUT: CALL_TIMEOUT,
+    LIGHTS_CALL_TIMEOUT: LIGHTS_CALL_TIMEOUT,
+    HUNGER_FREEZE_SEC: HUNGER_FREEZE_SEC,
     MAX_CATCHUP: Infinity, // v32: no cap (whole closed period simulated on SIM_GRID)
     STARVE_DEATH: STARVE_DEATH,
     INJURY_DEATH: INJURY_DEATH,

@@ -33,7 +33,7 @@ console.log('1) Which device: the Dracomon eggs are DM20 (Ver.20th) special eggs
 }
 
 console.log('2) Single training: wall states (NHOKO table), 13 presses = destroyed (Humulos)');
-[[0, 0, 0, 0, 0, false], [3, 0, 0, 0, 0, false], [4, 1, 1, 0, 1, false], [8, 1, 1, 0, 1, false],
+[[0, 0, 1, 0, 0, false], [3, 0, 1, 0, 0, false], [4, 1, 1, 0, 1, false], [8, 1, 1, 0, 1, false],
   [9, 2, 2, 1, 1, true], [12, 2, 2, 1, 1, true], [13, 3, 4, 2, 1, true], [40, 3, 4, 2, 1, true]].forEach(([n, tier, loss, gain, effort, succ]) => {
   const s = draco();
   const r = E.finishDm20Training(s, n);
@@ -79,6 +79,45 @@ ok(/if \(dm20Asleep\(\)\) return;\s*disturb\('food'\)/.test(ui) && /if \(dm20Asl
   const w = draco({ sleeping: true, lights: false });
   E.confirmDm20Light(w, 0);
   eq(w.awakeUntil - w.gameTime, 15 * 60, 'LIGHTS ON keeps it up 15 min (Bandai manual)');
+}
+
+console.log('5b) Tag training chart, tag damage rows, max-Strength shot bonus');
+eq(E.DM20_TAG_PATTERNS.join(','), 'ABABB,BBAAB,BAABB,ABBAA,BABAB,ABABA', 'Humulos six-round chart');
+eq(E.dm20TagPattern(6), 'ABABB', 'round 7 repeats round 1');
+{
+  const s = draco({ weight: 30, strength: 2, train: 0 });
+  const r = E.finishDm20TagTraining(s, 3);
+  eq(r.success, true, '3 of 5 is a successful tag training');
+  eq(s.strength, 3, 'success adds one strength heart');
+  eq(s.weight, 29, 'a finished tag session loses the 1 g floor');
+  eq(s.train, 1, 'a miss-or-hit session still counts as effort');
+  eq(s.dm20TagRound, 1, 'the chart advances');
+  const miss = E.finishDm20TagTraining(draco({ weight: 30, strength: 2 }), 2);
+  eq(miss.success, false, '2 of 5 is a miss');
+}
+eq(JSON.stringify(B.dm20TagShots(3, 9)), JSON.stringify([12, 8, 6, 8, 12]), 'tag row: 3rd stop, 9 presses');
+eq(JSON.stringify(B.dm20TagShots(3, 12)), JSON.stringify([12, 6, 8, 8, 12]), 'tag row: 3rd stop, 12 presses');
+eq(JSON.stringify(B.dm20TagShots(2, 12)), JSON.stringify([8, 12, 8, 8, 8]), 'tag row: 2nd stop, 12 presses');
+eq(B.dm20TagShots(3, 11), null, '11 presses is not a published row');
+eq(B.dm20ShotBonus(4, false, 0), 1, 'single battle, max Strength: +1 per shot');
+eq(B.dm20ShotBonus(3, false, 0), 0, 'single battle below max Strength: no bonus');
+eq(B.dm20ShotBonus(4, true, 4), 2, 'tag battle, both max Strength: +2 per shot');
+eq(B.dm20ShotBonus(4, true, 3), 0, 'tag battle, only one at max: no bonus');
+eq(JSON.stringify(B.applyDm20ShotBonus([12, 8, 6, 8, 12], 1)), JSON.stringify([13, 9, 7, 9, 13]), 'bonus is added to every shot');
+{
+  const s = draco({ mon: 'babydmon' });
+  eq(E.cycleSec(s), 30 * 60, 'DM20 Baby II loses a heart about every 30 min');
+  s.mon = 'petitmon';
+  eq(E.cycleSec(s), 3 * 60, 'DM20 Baby I loses a heart about every 3 min');
+  const brick = E.defaultState(1);
+  brick.mon = 'koromon';
+  eq(E.cycleSec(brick), 57 * 60, '1997 Baby II keeps the NHOKO 57 min cycle');
+}
+{
+  const s = draco({ hunger: 4, satietyFilled: 99, weight: 20, clockOffset: 10 * 3600, gameTime: 0 });
+  const r = E.feedMeat(s);
+  ok(r.refused, 'DM20 can still refuse a meal');
+  eq(s.hungerFreezeUntil || 0, 0, 'DM20 refuse does not start the 1997 one-hour hunger freeze');
 }
 
 console.log('5) DM20 care timers for the Dracomon line');

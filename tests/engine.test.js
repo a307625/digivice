@@ -172,8 +172,20 @@ console.log('3) Hunger / protein / weight');
   });
   Engine.feedMeat(s);
   advance(s, 3 * 60);
-  eq(s.hunger, 3, 'Baby I: a refused meat does not freeze hunger (3 min cycle)');
-  eq(s.strength, 3, 'Baby I: strength drops on the same 3 min cycle');
+  eq(s.hunger, 4, 'Baby I: a refused meat freezes hunger (NHOKO, about 1 hour)');
+  eq(s.strength, 3, 'Baby I: strength still drops on the 3 min cycle');
+}
+{
+  const s = form('agumon', {
+    hunger: 4, strength: 4, satietyFilled: 24, weight: 20, clockOffset: 10 * 3600,
+    lastHungerTick: 0, lastStrTick: 0, gameTime: 0, simAt: 0
+  });
+  Engine.feedMeat(s);
+  advance(s, 73 * 60);
+  eq(s.hunger, 4, 'Child: hunger stays full through the 1 hour freeze');
+  eq(s.strength, 3, 'Child: strength is not frozen');
+  advance(s, 73 * 60);
+  eq(s.hunger, 3, 'Child: hunger drops on the next cycle after the freeze');
 }
 {
   const s = form('agumon', {

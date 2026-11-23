@@ -117,7 +117,9 @@
   /* DM20 single battle "!" charge (v32). Humulos: the mash sets the attack
      order Weak < Strong < Double Weak < Double Strong < Critical; Wikimon:
      about 10 presses gives the Critical order. Tiers 0–4 by presses; only the
-     10-press Critical cut is sourced, the lower cuts are PLACEHOLDER. The
+     10-press Critical cut is sourced, the lower cuts are PLACEHOLDER. Wikimon
+     says 11 presses hits harder on the first shot, but not by how much, so
+     11 stays in this same Critical tier. The
      DM20 HP damage table is unpublished, so the tier is applied as a small
      boost on the existing win model (PLACEHOLDER: +0/+0/+1/+1/+2 sixteenths),
      not as a fake damage simulation. */
@@ -128,6 +130,36 @@
     return t;
   }
   function chargeBoost(tier) { return [0, 0, 1, 1, 2][Math.max(0, Math.min(4, tier || 0))]; }
+
+  /* Humulos tag-battle strongest rows. First meter is counted from the
+     bottom (4 stops). Other stops and press counts are unpublished.
+     Wikimon's "11 presses hits harder on the first shot" has no amount,
+     so 11 is not its own row. */
+  var DM20_TAG_SHOTS = [
+    { meter: 3, presses: 9, shots: [12, 8, 6, 8, 12] },
+    { meter: 3, presses: 12, shots: [12, 6, 8, 8, 12] },
+    { meter: 2, presses: 12, shots: [8, 12, 8, 8, 8] }
+  ];
+  function dm20TagShots(meterFromBottom, presses) {
+    for (var i = 0; i < DM20_TAG_SHOTS.length; i++) {
+      var row = DM20_TAG_SHOTS[i];
+      if (row.meter === meterFromBottom && row.presses === presses) return row.shots.slice();
+    }
+    return null;
+  }
+  /* Humulos: max Strength adds +1 damage per shot in a single battle, or
+     +2 per shot in a tag battle when BOTH Digimon are at max Strength. */
+  function dm20ShotBonus(strength, tag, partnerStrength) {
+    if ((strength || 0) < 4) return 0;
+    if (!tag) return 1;
+    return (partnerStrength || 0) >= 4 ? 2 : 0;
+  }
+  function applyDm20ShotBonus(shots, bonus) {
+    if (!shots || !bonus) return shots ? shots.slice() : null;
+    var out = [];
+    for (var i = 0; i < shots.length; i++) out.push(shots[i] + bonus);
+    return out;
+  }
 
   function mulberry(a) {
     return function () {
@@ -228,6 +260,10 @@
     resolveBattle: resolveBattle,
     chargeTier: chargeTier,
     chargeBoost: chargeBoost,
+    dm20TagShots: dm20TagShots,
+    dm20ShotBonus: dm20ShotBonus,
+    applyDm20ShotBonus: applyDm20ShotBonus,
+    DM20_TAG_SHOTS: DM20_TAG_SHOTS,
     pickCpuFoe: pickCpuFoe,
     makeOffer: makeOffer,
     acceptOffer: acceptOffer,

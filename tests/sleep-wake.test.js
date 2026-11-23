@@ -109,9 +109,11 @@ console.log('5) Lights-left-on care mistake still applies on the first fall-asle
   advance(s, 60);
   const started = s.callLightsAt;
   ok(started != null, 'call running');
-  // 20 min timeout
   advance(s, 21 * 60);
-  ok(s.calls === 1, 'unanswered lights call is a care mistake after 20 min (1997)');
+  ok(s.calls === 0, '21 min is still inside the NHOKO 60 min lights window');
+  ok(Engine.isCallLit(s), 'lights call icon stays on past the 20 min hunger timeout');
+  advance(s, 40 * 60);
+  ok(s.calls === 1, 'unanswered lights call is a care mistake after 60 min (NHOKO)');
   ok(s.sleeping, 'still asleep');
   ok(s.sleepDist === 0, 'that is a care mistake, not a sleep disturbance');
 }

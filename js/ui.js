@@ -78,6 +78,7 @@
   var chordAt = 0;
 
   var lightSel = 0;
+  var trainPick = 0;
   var albumSel = 0;
   var connectSel = 0;
   var albumPose = 0;
@@ -1123,6 +1124,7 @@
       ? (train.success ? 'happy' : ((animTick() % 2) ? 'angry' : 'idle0'))
       : ((animTick() % 2) ? 'train1' : 'train0');
     if (mode === 'wall') { drawDm20Wall(); return; }
+    if (mode === 'tag') { drawDm20Tag(); return; }
     // Monster on the left. The minigame is drawn after it so the bar,
     // number, and HI/LO stay readable instead of disappearing under the sprite.
     blitMon(state.mon, fx(0), fy(0), MON, fr, true);
@@ -1195,13 +1197,43 @@
     if (u < 1 && train.tier > 0) blitItem('shot', fx(12) + (fx(20) - fx(12)) * u, fy(4), ITEM, false);
     drawWallTier(u < 1 ? 0 : train.tier);
   }
+  function drawDm20Tag() {
+    var high = (train.pattern || 'A').charAt(train.shot || 0) === 'A';
+    var fr = train.done
+      ? (train.success ? 'happy' : ((animTick() % 2) ? 'angry' : 'idle0'))
+      : ((animTick() % 2) ? 'attack' : 'idle0');
+    blitMon(state.mon, fx(0), fy(0), MON, fr, true);
+    blitMon(state.mon, fx(16), fy(0), MON, high ? 'attack' : 'idle0', false);
+    ctx.fillStyle = INK;
+    ctx.fillRect(fx(14), fy(high ? 1 : 13), 2 * DOT, DOT);
+    var I = items();
+    if (I) I.drawNumber(ctx, train.hits || 0, fx(26), fy(9), ITEM, 0);
+  }
+
+  function drawTrainPick() {
+    lcdBg();
+    var I = items();
+    menuItem(I, trainPick === 0, fy(2), '1');
+    menuItem(I, trainPick === 1, fy(10), '2');
+  }
+
+  function drawMeterStops(x, idx) {
+    for (var i = 0; i < 4; i++) {
+      ctx.fillStyle = i === idx ? INK : 'rgba(30, 36, 28, 0.35)';
+      ctx.fillRect(x, fy(12 - i * 3), 2 * DOT, DOT);
+    }
+  }
+
   function drawCharge() {
     lcdBg();
     if (!state) return;
-    blitMon(state.mon, fx(0), fy(0), MON, charge.phase === 'go' ? ((animTick() % 2) ? 'train1' : 'train0') : 'idle0', true);
-    if (charge.phase === 'go') {
+    var mashing = charge.phase === 'go' || charge.phase === 'meter';
+    blitMon(state.mon, fx(0), fy(0), MON, mashing ? ((animTick() % 2) ? 'train1' : 'train0') : 'idle0', true);
+    if (charge.tag && charge.phase === 'meter') {
+      drawMeterStops(fx(17), charge.meterIdx || 0);
+    } else if (charge.phase === 'go') {
       drawBang(fx(13), fy(1));
-      drawPowerBar(fx(17), charge.presses, 12);
+      drawPowerBar(fx(17), charge.presses, charge.tag ? 12 : 13);
     }
     if (charge.foe) blitMon(charge.foe, fx(20), fy(0), MON, 'idle0', false);
   }
@@ -1278,6 +1310,11 @@
     if (t >= 2 && t < 5) {
       var goingRight = battleFx.result === 'win';
       drawShot(!goingRight, (t - 2) / 3, 4);
+    }
+    if (battleFx.shots && battleFx.shots.length && t >= 1) {
+      var I2 = items();
+      var si = Math.min(battleFx.shots.length - 1, Math.floor((t - 1) / 2));
+      if (I2 && I2.drawNumber) I2.drawNumber(ctx, battleFx.shots[si], fx(12), fy(9), ITEM, 0);
     }
   }
 
@@ -1360,6 +1397,7 @@
     else if (view === 'album' || view === 'albumView') drawAlbumMenu();
     else if (view === 'albumRecord') drawAlbumRecord();
     else if (view === 'connect') drawConnectMenu();
+    else if (view === 'trainPick') drawTrainPick();
     else if (view === 'train') drawTrain();
     else if (view === 'charge') drawCharge();
     else if (view === 'evo') drawEvo();
@@ -1374,7 +1412,7 @@
                    view === 'eat' || view === 'flush') ? (sel >= 0 ? selectable()[sel] : null) : (
       view === 'status' ? 'STATUS' :
       view === 'food' ? 'FEED' :
-      view === 'train' ? 'TRAIN' :
+      (view === 'train' || view === 'trainPick') ? 'TRAIN' :
       (view === 'lightMenu') ? 'LIGHT' :
       (view === 'album' || view === 'albumView' || view === 'albumRecord') ? 'ALBUM' :
       (view === 'connect') ? 'CONNECT' :
@@ -1475,12 +1513,13 @@
 
   function isMenuView() {
     return view === 'clock' || view === 'status' || view === 'food' ||
-      view === 'battleMenu' || view === 'lightMenu' || view === 'album' ||
+      view === 'battleMenu' || view === 'lightMenu' || view === 'trainPick' || view === 'album' ||
       view === 'albumView' || view === 'albumRecord' || view === 'connect';
   }
 
   function cycleSel() {
     if (view === 'train') return;
+    if (view === 'trainPick') { trainPick = (trainPick + 1) % 2; return; }
     if (view === 'clock') return;
     if (view === 'evo' || view === 'battle' || view === 'dying' || view === 'grave') return;
     if (view === 'food') { foodSel = (foodSel + 1) % 2; return; }
@@ -1573,10 +1612,9 @@
     var d = currentDevice();
     var mode = 'meter';
     if (d.family === 'dm20') {
-      var t0 = Date.now();
-      train = { mode: 'wall', phase: 'ready', startAt: t0, goAt: t0 + DM20_READY_MS,
-        endAt: t0 + DM20_READY_MS + DM20_TRAIN_WINDOW_MS, presses: 0, done: false, success: false, tier: 0 };
-      view = 'train';
+      // Humulos: one Digimon mashes the wall; two Digimon play high/low.
+      trainPick = 0;
+      view = 'trainPick';
       return;
     }
     if (d.version === 1) mode = 'highlow';
@@ -1592,6 +1630,24 @@
     view = 'train';
   }
 
+  function startDm20Wall() {
+    var t0 = Date.now();
+    train = { mode: 'wall', phase: 'ready', startAt: t0, goAt: t0 + DM20_READY_MS,
+      endAt: t0 + DM20_READY_MS + DM20_TRAIN_WINDOW_MS, presses: 0, done: false, success: false, tier: 0 };
+    view = 'train';
+  }
+
+  function startDm20Tag() {
+    var pattern = window.Engine.dm20TagPattern ? window.Engine.dm20TagPattern(state.dm20TagRound || 0) : 'ABABB';
+    train = { mode: 'tag', pattern: pattern, shot: 0, hits: 0, done: false, success: false };
+    view = 'train';
+  }
+
+  function confirmTrainPick() {
+    if (trainPick === 1) startDm20Tag();
+    else startDm20Wall();
+  }
+
   function finishDm20Wall() {
     if (train.done) return;
     var r = window.Engine.finishDm20Training(state, train.presses);
@@ -1599,6 +1655,18 @@
     train.phase = 'result';
     train.doneAt = Date.now();
     train.tier = (r && r.tier) || 0;
+    train.success = !!(r && r.success);
+    persist();
+    setTimeout(function () {
+      if (view === 'train') view = 'play';
+      playPose(train.success ? 'happy' : 'angry', 1500);
+    }, DM20_RESULT_MS);
+  }
+
+  function finishDm20Tag() {
+    if (train.done) return;
+    var r = window.Engine.finishDm20TagTraining(state, train.hits || 0);
+    train.done = true;
     train.success = !!(r && r.success);
     persist();
     setTimeout(function () {
@@ -1640,6 +1708,15 @@
   function trainInput(btn) {
     if (train.done) return;
     var mode = train.mode || 'meter';
+    if (mode === 'tag') {
+      // Humulos chart: A high, B low. The pattern is the shield for this round.
+      if (btn !== 'A' && btn !== 'B') return;
+      var want = (train.pattern || '').charAt(train.shot || 0);
+      if (btn === want) train.hits = (train.hits || 0) + 1;
+      train.shot = (train.shot || 0) + 1;
+      if (train.shot >= 5) finishDm20Tag();
+      return;
+    }
     if (mode === 'wall') {
       // Only A, only after "!" (Bandai manual). B / early presses do nothing.
       if (btn === 'A' && train.phase === 'go') train.presses++;
@@ -1754,12 +1831,13 @@
 
   function cpuBattle(isTag, chargeTier) {
     if (!window.Engine.canBattle(state)) { playPose('refuse', 2000); view = 'play'; return; }
-    if (!isTag && chargeTier == null && currentDevice().family === 'dm20') {
-      // Bandai manual (single battle): "When the ! icon appears, press A
-      // repeatedly to increase your Digimon's power." Then the fight runs.
+    if (chargeTier == null && currentDevice().family === 'dm20') {
+      // Single: mash A after "!". Tag: stop the first meter, then mash A.
       var c0 = Date.now();
-      charge = { on: true, phase: 'ready', goAt: c0 + DM20_READY_MS, endAt: c0 + DM20_READY_MS + DM20_CHARGE_MS,
-        presses: 0, foe: window.Battle.pickCpuFoe(state.mon) };
+      charge = { on: true, tag: !!isTag, phase: 'ready', goAt: c0 + DM20_READY_MS,
+        endAt: c0 + DM20_READY_MS + DM20_CHARGE_MS, presses: 0,
+        foe: window.Battle.pickCpuFoe(state.mon), meterIdx: 0, meterDir: 1,
+        shots: null, shotBonus: 0 };
       view = 'charge';
       return;
     }
@@ -1770,21 +1848,47 @@
     // difference is the player's boost alone.
     selfSnap.initiator = true;
     if (window.Engine.nextCpuInitiator) window.Engine.nextCpuInitiator(state);
-    if (chargeTier != null && window.Battle.chargeBoost) selfSnap.enhancement = (selfSnap.enhancement || 0) + window.Battle.chargeBoost(chargeTier);
+    // Charge order and the Humulos per-shot bonus share the existing
+    // sixteenths channel. DM20 has no published HP bar, so +1 (single, max
+    // Strength) or +2 (tag, both max) is that many sixteenths, not a
+    // reconstructed damage table. A published tag row is the strongest order.
+    var boost = 0;
+    if (!isTag && chargeTier != null && window.Battle.chargeBoost) boost += window.Battle.chargeBoost(chargeTier);
+    if (isTag && charge.shots && window.Battle.chargeBoost) boost += window.Battle.chargeBoost(4);
+    if (charge.shotBonus) boost += charge.shotBonus;
+    if (boost) selfSnap.enhancement = (selfSnap.enhancement || 0) + boost;
     var result = window.Battle.resolveBattle(state.mon, foe, Date.now() >>> 0, selfSnap, { mon: foe, enhancement: 0 });
     hideAllOverlays();
-    battleFx = { t: 0, foe: foe, result: result, active: true };
+    battleFx = { t: 0, foe: foe, result: result, active: true, shots: charge.shots || null };
     view = 'battle';
     window.Engine.recordBattle(state, result);
     if (isTag && result === 'win') window.Engine.addTagWin(state);
     persist();
   }
 
+  function stopTagMeter() {
+    if (!charge.on || charge.phase !== 'meter') return;
+    charge.meter = (charge.meterIdx || 0) + 1;
+    charge.phase = 'go';
+    charge.presses = 0;
+    var now = Date.now();
+    charge.goAt = now;
+    charge.endAt = now + DM20_CHARGE_MS;
+  }
+
   function finishCharge() {
     if (!charge.on) return;
+    var tag = !!charge.tag;
+    var presses = charge.presses || 0;
+    var meter = charge.meter || ((charge.meterIdx || 0) + 1);
+    var shots = (tag && window.Battle.dm20TagShots) ? window.Battle.dm20TagShots(meter, presses) : null;
+    var bonus = window.Battle.dm20ShotBonus ? window.Battle.dm20ShotBonus(state.strength || 0, tag, 0) : 0;
+    if (shots && bonus && window.Battle.applyDm20ShotBonus) shots = window.Battle.applyDm20ShotBonus(shots, bonus);
     charge.on = false;
-    var tier = window.Battle.chargeTier ? window.Battle.chargeTier(charge.presses) : 0;
-    cpuBattle(false, tier);
+    charge.shots = shots;
+    charge.shotBonus = bonus;
+    var tier = tag ? 0 : (window.Battle.chargeTier ? window.Battle.chargeTier(presses) : 0);
+    cpuBattle(tag, tier);
   }
 
   function finishBattleFx() {
@@ -1800,7 +1904,12 @@
   }
 
   function confirmSel() {
-    if (view === 'charge') return; // DM20 charge: only A counts
+    if (view === 'trainPick') { confirmTrainPick(); return; }
+    if (view === 'charge') {
+      // Tag battle: B stops the first meter. Single battle ignores B.
+      if (charge.tag && charge.phase === 'meter') stopTagMeter();
+      return;
+    }
     if (view === 'train') { trainInput('B'); return; }
     if (view === 'clock') { view = 'play'; return; }
     if (view === 'status') { statusPage = (statusPage + 1) % statusPages().length; return; }
@@ -1814,7 +1923,7 @@
       var itemsB = battleMenuItems();
       var pick = itemsB[battleSel];
       if (pick === '1P' || pick === 'SINGLE') cpuBattle(false);
-      else if (pick === 'TAG') { /* two-pet Tag needs engine; stay on the menu */ }
+      else if (pick === 'TAG') cpuBattle(true);
       else { fillJogress(); showOverlay('overlay-battle', true); }
       return;
     }
@@ -2078,7 +2187,7 @@
         if (flushAnim.off > 24) flushAnim.on = false;
       }
     }
-    if (state && (view === 'play' || view === 'train' || view === 'clock' || view === 'status' || view === 'food' || view === 'battleMenu' || view === 'lightMenu' || view === 'album' || view === 'albumView' || view === 'albumRecord' || view === 'connect' || view === 'healMenu' || view === 'soundMenu')) {
+    if (state && (view === 'play' || view === 'train' || view === 'trainPick' || view === 'charge' || view === 'clock' || view === 'status' || view === 'food' || view === 'battleMenu' || view === 'lightMenu' || view === 'album' || view === 'albumView' || view === 'albumRecord' || view === 'connect' || view === 'healMenu' || view === 'soundMenu')) {
       var prevMon = state.mon;
       var r = (window.Devices && window.Devices.tick) ? window.Devices.tick(state, Date.now()) : window.Engine.tick(state, Date.now());
       if (r.evolved) {
@@ -2105,7 +2214,27 @@
     }
     if (view === 'charge' && charge.on) {
       var nowC = Date.now();
-      if (charge.phase === 'ready' && nowC >= charge.goAt) charge.phase = 'go';
+      if (charge.phase === 'ready' && nowC >= charge.goAt) {
+        charge.phase = charge.tag ? 'meter' : 'go';
+        charge.meterIdx = 0;
+        charge.meterDir = 1;
+        charge.meterAcc = 0;
+        charge.meterAt = nowC;
+      }
+      if (charge.phase === 'meter') {
+        charge.meterAcc = (charge.meterAcc || 0) + (nowC - (charge.meterAt || nowC));
+        charge.meterAt = nowC;
+        while (charge.meterAcc >= 350) {
+          charge.meterAcc -= 350;
+          var mi = charge.meterIdx || 0;
+          var md = charge.meterDir || 1;
+          mi += md;
+          if (mi >= 3) { mi = 3; md = -1; }
+          if (mi <= 0) { mi = 0; md = 1; }
+          charge.meterIdx = mi;
+          charge.meterDir = md;
+        }
+      }
       if (charge.phase === 'go' && nowC >= charge.endAt) finishCharge();
     }
     if (isPendulum() && window.PendulumUI) {
