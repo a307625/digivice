@@ -84,9 +84,10 @@
     names_top: LAYOUT.names_top,
     names_bot: LAYOUT.names_bot,
     chamber: null,
-    // v34's own icon art (icons/bezel/*.png); CONNECT uses battle.png.
+    // Glyphs traced from the 1.0 shell print (same set on every 超代):
+    // gauge, meat, weight lifter, arrows, poop, bulb, bandage, yell.
     iconArt: {
-      src: { STATUS: 'status', FEED: 'feed', TRAIN: 'train', CONNECT: 'battle', FLUSH: 'flush', LIGHT: 'light', MEDIC: 'medic', CALL: 'call' },
+      src: { STATUS: 'status', FEED: 'feed', TRAIN: 'train', CONNECT: 'arrows', FLUSH: 'flush', LIGHT: 'light', MEDIC: 'medic', CALL: 'call' },
       bgTop: '#badccc',
       bgBot: '#80a577'
     }

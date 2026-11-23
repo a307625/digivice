@@ -1,4 +1,4 @@
-/* Offline cache for 數碼怪獸對打機 — v49 (flush wave scrolls over the piles)
+/* Offline cache for 數碼怪獸對打機 — v52 (Pendulum icons match the shell)
  * - Precaches every file index.html loads plus ALL device shells (WebP,
  *   ~2.4 MB), so any device works on an offline first launch.
  * - Precache requests bypass the HTTP cache (cache: 'reload'), so a new
@@ -9,7 +9,7 @@
  * - Only same-origin, non-redirected, 200 'basic' responses are cached.
  * - Old caches are deleted only after the new one is complete.
  */
-var CACHE = 'digivice-v49';
+var CACHE = 'digivice-v52';
 var APP_SHELL = './index.html';
 var ASSETS = [
   './',
@@ -27,6 +27,7 @@ var ASSETS = [
   './icons/bezel/feed.png',
   './icons/bezel/train.png',
   './icons/bezel/battle.png',
+  './icons/bezel/arrows.png',
   './icons/bezel/flush.png',
   './icons/bezel/light.png',
   './icons/bezel/medic.png',
