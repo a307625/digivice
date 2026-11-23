@@ -1098,6 +1098,11 @@
 
   function cancelTraining(state) {
     // Ver.1 already counted on open; no weight change (they did not exercise).
+    // NHOKO: cancelling a tag round still advances the six-pattern rotation.
+    if (state && state.dm20TagActive) {
+      state.dm20TagRound = ((state.dm20TagRound || 0) + 1) % DM20_TAG_PATTERNS.length;
+      state.dm20TagActive = false;
+    }
     if (state) state._trainSessionCounted = false;
     return { ok: true, train: state ? state.train : 0 };
   }
@@ -1178,11 +1183,13 @@
     var nHits = hits || 0;
     var success = nHits >= 3;
     var minW = m.weight || 5;
-    // Humulos: every session loses 1–4 g. Tag has no per-hit gram table,
-    // so a finished session loses the published floor, 1 g.
-    state.weight = Math.max(minW, (state.weight || minW) - 1);
+    // NHOKO Ver.20th tag table: every finished round loses 2 g.
+    // 0–2 hits fail, 3–4 succeed with +1 strength, 5 hits succeed with +2.
+    var gain = nHits >= 5 ? 2 : (success ? 1 : 0);
+    state.weight = Math.max(minW, (state.weight || minW) - 2);
     state.train = (state.train || 0) + 1;
-    if (success) state.strength = Math.min(4, (state.strength || 0) + 1);
+    if (gain) state.strength = Math.min(4, (state.strength || 0) + gain);
+    state.dm20TagActive = false;
     state._trainSessionCounted = false;
     clearStrengthCall(state);
     return {

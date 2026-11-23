@@ -78,7 +78,6 @@
   var chordAt = 0;
 
   var lightSel = 0;
-  var trainPick = 0;
   var albumSel = 0;
   var connectSel = 0;
   var albumPose = 0;
@@ -134,7 +133,7 @@
       if (ctx) ctx.imageSmoothingEnabled = false;
     }
     var win = $('lcd-window');
-    if (win) win.classList.toggle('is-dark', !!(fill && is1997PlayDark()));
+    if (win) win.classList.toggle('is-dark', lcdGlassDark());
   }
 
   function currentDevice() {
@@ -643,6 +642,20 @@
   // 1997 lamp-off stays on the playfield. Sleep is the clock, not the lamp.
   // A dim is drawn over the scene so the lamp state is visible.
   // DM20 does not go dark; the sleep cell and a Z stay visible when sleeping.
+  function lcdGlassDark() {
+    var d = currentDevice();
+    var fam = d && d.family;
+    if (fam === 'dm1997' || fam === 'dm20') return is1997PlayDark();
+    // Pendulum lamp-off paints a black LCD. The letterbox has to match.
+    if (fam === 'pendulum' && view === 'play') {
+      var LO = (typeof window !== 'undefined' && window.LightsOff) || null;
+      if (LO && LO.playfieldMode) {
+        var mode = LO.playfieldMode(state, view, 'pendulum');
+        return mode === 'black' || mode === 'black-z';
+      }
+    }
+    return false;
+  }
   function is1997PlayDark() {
     var d = currentDevice();
     var fam = d && d.family;
@@ -1198,23 +1211,17 @@
     drawWallTier(u < 1 ? 0 : train.tier);
   }
   function drawDm20Tag() {
-    var high = (train.pattern || 'A').charAt(train.shot || 0) === 'A';
-    var fr = train.done
-      ? (train.success ? 'happy' : ((animTick() % 2) ? 'angry' : 'idle0'))
-      : ((animTick() % 2) ? 'attack' : 'idle0');
-    blitMon(state.mon, fx(0), fy(0), MON, fr, true);
-    blitMon(state.mon, fx(16), fy(0), MON, high ? 'attack' : 'idle0', false);
-    ctx.fillStyle = INK;
-    ctx.fillRect(fx(14), fy(high ? 1 : 13), 2 * DOT, DOT);
-    var I = items();
-    if (I) I.drawNumber(ctx, train.hits || 0, fx(26), fy(9), ITEM, 0);
-  }
-
-  function drawTrainPick() {
-    lcdBg();
-    var I = items();
-    menuItem(I, trainPick === 0, fy(2), '1');
-    menuItem(I, trainPick === 1, fy(10), '2');
+    // Bandai: tag training is just the two Digimon already on the 32×16 glass.
+    // Each cell is 16 dots, so they sit on the two halves and nothing else is
+    // drawn on top. The one you fire is on the right; the other blocks.
+    // A high block uses the guard's attack cell, a low block its idle cell.
+    var high = (train.pattern || 'A').charAt(Math.min(4, train.shot || 0)) === 'A';
+    var guardFr = train.done ? (train.success ? 'hurt' : 'happy') : (high ? 'attack' : 'idle0');
+    var shotFr = train.done ? (train.success ? 'happy' : 'angry') : 'attack';
+    var guardId = train.guard || state.mon;
+    var shotId = train.shooter || state.mon;
+    blitMon(guardId, fx(0), fy(0), MON, guardFr, false);
+    blitMon(shotId, fx(16), fy(0), MON, shotFr, true);
   }
 
   function drawMeterStops(x, idx) {
@@ -1397,7 +1404,6 @@
     else if (view === 'album' || view === 'albumView') drawAlbumMenu();
     else if (view === 'albumRecord') drawAlbumRecord();
     else if (view === 'connect') drawConnectMenu();
-    else if (view === 'trainPick') drawTrainPick();
     else if (view === 'train') drawTrain();
     else if (view === 'charge') drawCharge();
     else if (view === 'evo') drawEvo();
@@ -1412,7 +1418,7 @@
                    view === 'eat' || view === 'flush') ? (sel >= 0 ? selectable()[sel] : null) : (
       view === 'status' ? 'STATUS' :
       view === 'food' ? 'FEED' :
-      (view === 'train' || view === 'trainPick') ? 'TRAIN' :
+      view === 'train' ? 'TRAIN' :
       (view === 'lightMenu') ? 'LIGHT' :
       (view === 'album' || view === 'albumView' || view === 'albumRecord') ? 'ALBUM' :
       (view === 'connect') ? 'CONNECT' :
@@ -1421,6 +1427,8 @@
       (view === 'eggPick') ? 'STATUS' :
       (view === 'battle' || view === 'battleMenu') ? 'BATTLE' : (sel >= 0 ? selectable()[sel] : null)
     );
+    // The pendulum shell's battle mark is CONNECT. BATTLE is not on that bezel.
+    if (isPendulum() && current === 'BATTLE') current = 'CONNECT';
     document.querySelectorAll('.face-icon').forEach(function (el) {
       var id = el.getAttribute('data-icon');
       var lit = (id === current && id !== 'CALL');
@@ -1513,13 +1521,12 @@
 
   function isMenuView() {
     return view === 'clock' || view === 'status' || view === 'food' ||
-      view === 'battleMenu' || view === 'lightMenu' || view === 'trainPick' || view === 'album' ||
+      view === 'battleMenu' || view === 'lightMenu' || view === 'album' ||
       view === 'albumView' || view === 'albumRecord' || view === 'connect';
   }
 
   function cycleSel() {
     if (view === 'train') return;
-    if (view === 'trainPick') { trainPick = (trainPick + 1) % 2; return; }
     if (view === 'clock') return;
     if (view === 'evo' || view === 'battle' || view === 'dying' || view === 'grave') return;
     if (view === 'food') { foodSel = (foodSel + 1) % 2; return; }
@@ -1612,9 +1619,9 @@
     var d = currentDevice();
     var mode = 'meter';
     if (d.family === 'dm20') {
-      // Humulos: one Digimon mashes the wall; two Digimon play high/low.
-      trainPick = 0;
-      view = 'trainPick';
+      // Bandai: one Digimon on screen is the wall. Two on screen is tag.
+      // This save has one, so training is the wall.
+      startDm20Wall();
       return;
     }
     if (d.version === 1) mode = 'highlow';
@@ -1637,15 +1644,14 @@
     view = 'train';
   }
 
-  function startDm20Tag() {
+  function startDm20Tag(guardId, shooterId) {
     var pattern = window.Engine.dm20TagPattern ? window.Engine.dm20TagPattern(state.dm20TagRound || 0) : 'ABABB';
-    train = { mode: 'tag', pattern: pattern, shot: 0, hits: 0, done: false, success: false };
+    state.dm20TagActive = true;
+    train = {
+      mode: 'tag', pattern: pattern, shot: 0, hits: 0, done: false, success: false,
+      guard: guardId || state.mon, shooter: shooterId || state.mon
+    };
     view = 'train';
-  }
-
-  function confirmTrainPick() {
-    if (trainPick === 1) startDm20Tag();
-    else startDm20Wall();
   }
 
   function finishDm20Wall() {
@@ -1904,7 +1910,6 @@
   }
 
   function confirmSel() {
-    if (view === 'trainPick') { confirmTrainPick(); return; }
     if (view === 'charge') {
       // Tag battle: B stops the first meter. Single battle ignores B.
       if (charge.tag && charge.phase === 'meter') stopTagMeter();
@@ -2187,7 +2192,7 @@
         if (flushAnim.off > 24) flushAnim.on = false;
       }
     }
-    if (state && (view === 'play' || view === 'train' || view === 'trainPick' || view === 'charge' || view === 'clock' || view === 'status' || view === 'food' || view === 'battleMenu' || view === 'lightMenu' || view === 'album' || view === 'albumView' || view === 'albumRecord' || view === 'connect' || view === 'healMenu' || view === 'soundMenu')) {
+    if (state && (view === 'play' || view === 'train' || view === 'charge' || view === 'clock' || view === 'status' || view === 'food' || view === 'battleMenu' || view === 'lightMenu' || view === 'album' || view === 'albumView' || view === 'albumRecord' || view === 'connect' || view === 'healMenu' || view === 'soundMenu')) {
       var prevMon = state.mon;
       var r = (window.Devices && window.Devices.tick) ? window.Devices.tick(state, Date.now()) : window.Engine.tick(state, Date.now());
       if (r.evolved) {
