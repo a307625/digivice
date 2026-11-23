@@ -776,17 +776,22 @@
 
     if (m.stage !== 'egg') {
       var cyc = cycleSec(state);
-      if (!state.sleeping) {
+      if (state.sleeping) {
+        // Original: both heart timers pause while asleep. Shift the stamps
+        // with this step so a long night does not empty a heart on waking.
+        state.lastHungerTick = (state.lastHungerTick || 0) + step;
+        state.lastStrTick = (state.lastStrTick || 0) + step;
+      } else {
         state.awakeInStage = (state.awakeInStage || 0) + step;
+        // Hunger and strength share this species cycle at every stage.
+        // A refused extra meat counts as an overfeed; it does not freeze hunger.
         if (state.gameTime - (state.lastHungerTick || 0) >= cyc) {
           state.lastHungerTick = state.gameTime;
-          if (state.gameTime >= (state.overfeedLockUntil || 0)) {
-            var prevH = state.hunger;
-            state.hunger = Math.max(0, state.hunger - 1);
-            if (state.hunger < prevH) {
-              // New fullness cycle after a heart drops (next OF after drop).
-              state.satietyFilled = state.hunger;
-            }
+          var prevH = state.hunger;
+          state.hunger = Math.max(0, state.hunger - 1);
+          if (state.hunger < prevH) {
+            // New fullness cycle after a heart drops (next OF after drop).
+            state.satietyFilled = state.hunger;
           }
         }
         if (state.gameTime - (state.lastStrTick || 0) >= cyc) {

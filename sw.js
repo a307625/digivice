@@ -1,4 +1,4 @@
-/* Offline cache for 數碼怪獸對打機 — v41 (egg hatches at 1 min; A then B is not mute)
+/* Offline cache for 數碼怪獸對打機 — v45 (hearts drop on the species cycle)
  * - Precaches every file index.html loads plus ALL device shells (WebP,
  *   ~2.4 MB), so any device works on an offline first launch.
  * - Precache requests bypass the HTTP cache (cache: 'reload'), so a new
@@ -9,7 +9,7 @@
  * - Only same-origin, non-redirected, 200 'basic' responses are cached.
  * - Old caches are deleted only after the new one is complete.
  */
-var CACHE = 'digivice-v44';
+var CACHE = 'digivice-v45';
 var APP_SHELL = './index.html';
 var ASSETS = [
   './',

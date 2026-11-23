@@ -147,6 +147,48 @@ console.log('3) Hunger / protein / weight');
   ok(r.ok && r.refused, 'Baby I satiety 4: refuses once hearts are full');
 }
 {
+  const s = form('botamon', {
+    hunger: 4, strength: 4, satietyFilled: 4, clockOffset: 10 * 3600,
+    lastHungerTick: 0, lastStrTick: 0, gameTime: 0, simAt: 0
+  });
+  Engine.feedMeat(s);
+  advance(s, 3 * 60);
+  eq(s.hunger, 3, 'Baby I: a refused meat does not freeze hunger (3 min cycle)');
+  eq(s.strength, 3, 'Baby I: strength drops on the same 3 min cycle');
+}
+{
+  const s = form('agumon', {
+    hunger: 4, strength: 4, clockOffset: 10 * 3600,
+    lastHungerTick: 0, lastStrTick: 0, gameTime: 0, simAt: 0
+  });
+  advance(s, 73 * 60);
+  eq(s.hunger, 3, 'Child: hunger drops on the 73 min cycle');
+  eq(s.strength, 3, 'Child: strength drops with hunger');
+}
+{
+  const s = form('greymon', {
+    hunger: 4, strength: 4, clockOffset: 10 * 3600,
+    lastHungerTick: 0, lastStrTick: 0, gameTime: 0, simAt: 0
+  });
+  advance(s, 89 * 60);
+  eq(s.hunger, 3, 'Adult: hunger drops on the 89 min cycle');
+  eq(s.strength, 3, 'Adult: strength drops with hunger');
+}
+{
+  const s = form('agumon', {
+    hunger: 4, strength: 4, sleeping: true, lights: false,
+    clockOffset: 22 * 3600, lastHungerTick: 0, lastStrTick: 0,
+    gameTime: 0, simAt: 0, sleepCalledTonight: true
+  });
+  advance(s, 10 * 3600);
+  eq(s.sleeping, false, 'awake at 08:00 after a 22:00 sleep');
+  eq(s.hunger, 4, 'a full night does not drop a hunger heart on waking');
+  eq(s.strength, 4, 'a full night does not drop a strength heart on waking');
+  advance(s, 73 * 60);
+  eq(s.hunger, 3, 'Child cycle starts again only after waking');
+  eq(s.strength, 3, 'strength stays in step with hunger after waking');
+}
+{
   const s = form('agumon', { strength: 2, weight: 20, dp: 0, dpMax: 20, clockOffset: 10 * 3600 });
   Engine.feedProtein(s);
   eq(s.strength, 3, 'protein +1 strength');
