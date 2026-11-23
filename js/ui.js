@@ -702,9 +702,27 @@
     }
   }
 
+  function isEggStage() {
+    if (!state) return false;
+    try {
+      var E = engine();
+      var m = E && E.mon && E.mon(state);
+      if (m && m.stage === 'egg') return true;
+    } catch (e) {}
+    var id = String(state.mon || '');
+    return id === 'pen_egg' || id.indexOf('egg_') === 0;
+  }
+
   function walkUpdate() {
     if (!state || state.dead || state.sleeping || poseFx.name || eatAnim.on || flushAnim.on) return;
     if (view !== 'play') return;
+    // 1997 egg: two frames rock it by one dot, in the center. It does not
+    // patrol the glass the way a hatched Digimon does. Same on DM20.
+    if (isEggStage()) {
+      walk.x = 8;
+      walk.dir = -1;
+      return;
+    }
     var monW = 16;
     var maxX = Math.max(0, FW - monW - poopCols() * 8);
     var minX = 0;
@@ -735,7 +753,10 @@
     var my = fy(0);
     var mx = fx(walk.x);
     var flip = false;
-    if (state.sleeping) {
+    if (isEggStage()) {
+      mx = fx(8);
+      flip = false;
+    } else if (state.sleeping) {
       mx = fx(Math.floor((FW - monW) / 2));
       flip = false;
     } else if (eatAnim.on) {
@@ -2973,7 +2994,8 @@
         draw();
         return view;
       },
-      statusPageCount: function () { return statusPages().length; }
+      statusPageCount: function () { return statusPages().length; },
+      walkX: function () { return walk.x; }
     };
 
     var params = new URLSearchParams(location.search);
