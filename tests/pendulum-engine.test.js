@@ -275,9 +275,9 @@ console.log('8) Sleep: all wake at 08:00, bedtime per species, 8 h DP, disturb r
   ok(!Eng.isCallLit(s2) || s2.callKind !== 'bedtime' || s2.callResolved, 'no outstanding bedtime call');
 
   // 8 h sleep fills DP
-  const s3 = form('tentomon', { lights: false, sleeping: true, sleptSince: 0, dpQ: 0, dpMaxQ: 16, clockOffset: 22 * 3600 });
+  const s3 = form('tentomon', { lights: false, sleeping: true, sleptSince: 0, dpQ: 0, clockOffset: 22 * 3600 });
   advance(s3, 8 * 3600);
-  eq(Eng.dp(s3), 4, '8 h sleep fills DP (NHOKO)');
+  eq(Eng.dp(s3), 20, '8 h sleep fills Tentomon to the NHOKO cap of 20');
 
   // Wake at 08:00
   const s4 = form('tentomon', { lights: false, sleeping: true, sleptSince: 0, clockOffset: 7 * 3600 + 59 * 60, gameTime: 0 });

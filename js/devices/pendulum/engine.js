@@ -117,9 +117,11 @@
     if (state.clockInitialized == null) state.clockInitialized = true;
     if (!state.clockSet) state.clockSet = { on: false, h24: 0, min: 0 };
     if (state.dpQ == null) state.dpQ = Math.round((state.dp || 0) * 4);
-    if (state.dpMaxQ == null) {
-      var m = mon(state);
-      state.dpMaxQ = m ? Math.round((m.dpMax || 0) * 4) : 0;
+    var mCap = mon(state);
+    var capQ = mCap ? Math.round((mCap.dpMax || 0) * 4) : 0;
+    if (state.dpMaxQ == null || (capQ > 0 && state.dpMaxQ < capQ)) {
+      state.dpMaxQ = capQ;
+      if ((state.dpQ || 0) > capQ) state.dpQ = capQ;
     }
     if (!state.version || !state.deviceId) {
       var meta = verMeta(state.eggKind || 'pen_1_0');

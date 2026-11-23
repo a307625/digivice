@@ -222,6 +222,25 @@ console.log('8) Egg labels: sprite + name only, no roster spoilers');
     'no roster spoilers in Pendulum egg labels');
 }
 
+console.log('9) NHOKO chart DP, including Ultimates');
+{
+  eq(Data.monster('tentomon', '1.0').dpMax, 20, 'Tentomon DP 20');
+  eq(Data.monster('kabuterimon', '1.0').dpMax, 30, 'Kabuterimon DP 30');
+  eq(Data.monster('heracleskabuterimon', '1.0').dpMax, 50, 'HeraclesKabuterimon DP 50');
+  eq(Data.monster('hououmon', '4.0').dpMax, 45, 'Hououmon DP 45');
+  eq(Data.monster('omegamon', 'zero').dpMax, 60, 'Omegamon DP 60');
+  eq(Data.monster('garurumon', '3.0').dpMax, 30, 'Ver.3 Garurumon DP 30');
+  eq(Data.monster('garurumon', 'zero').dpMax, 36, 'ZERO Garurumon DP 36');
+  eq(Data.monster('mushmon', '4.0').dpMax, 28, 'Mushmon DP 28');
+  var missing = [];
+  Object.keys(Data.MONSTERS).forEach(function (id) {
+    var m = Data.MONSTERS[id];
+    if (!m || m.stage === 'egg') return;
+    if (m.dpMaxSource !== 'nhoko-pendulum-tooltip') missing.push(id);
+  });
+  eq(missing.join(','), '', 'every non-egg Pendulum species has an NHOKO DP');
+}
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failures.length) failures.forEach((f) => console.log('  · ' + f));
 process.exit(failed ? 1 : 0);

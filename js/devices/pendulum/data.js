@@ -162,7 +162,7 @@
     effortMax: 40,
     hungerCycleMin: 60,         // PLACEHOLDER — unpublished for PenOG
     hungerCycleSource: 'placeholder-unverified',
-    dpMaxPlaceholder: 4,        // PLACEHOLDER — per-species Max DP unpublished
+    dpMaxPlaceholder: 4,        // fallback only; species caps are NHOKO chart tooltips
     dpMaxSource: 'placeholder-unverified',
     megahitDefault: 8,          // Motimon is sourced; others placeholder
     countWindowSec: 3,          // NHOKO: 3-second COUNT
@@ -429,6 +429,51 @@
     };
   }
 
+  // NHOKO pendulum.html chart tooltips: 名前、寿命、DP、メガヒット.
+  // One shared id keeps the version that first defined it. ZERO's
+  // Garurumon (36) and WereGarurumon (36) differ and are overrides.
+  var NHOKO_DP = {
+    babumon: 20, motimon: 20,
+    tentomon: 20, gotsumon: 20, otamamon: 20,
+    kabuterimon: 30, tortomon: 25, monochromon: 30, starmon: 25, kuwagamon: 25, gekomon: 30,
+    atlurkabuterimon: 40, jagamon: 30, triceramon: 40, piccolomon: 30, okuwamon: 35, tonosamagekomon: 40,
+    heracleskabuterimon: 50, saberleomon: 45, metaletemon: 50,
+    tailmon: 30, angewomon: 40, holydramon: 50,
+    pichimon: 20, pukamon: 25,
+    gomamon: 25, ganimon: 25, shakomon: 25,
+    ikkakumon: 30, rukamon: 25, seadramon: 30, coelamon: 25, ebidramon: 30, gesomon: 25, octomon: 30,
+    zudomon: 40, whamon: 30, megaseadramon: 40, anomalocarimon: 30, hangyomon: 35, marinedevimon: 35, dagomon: 40,
+    marineangemon: 40, metalseadramon: 45, plesiomon: 50, pukumon: 50,
+    mokumon: 20, petitmeramon: 25,
+    bakumon: 30, candmon: 25, picodevimon: 25,
+    hanumon: 30, garurumon: 30, meramon: 30, wizarmon: 25, devimon: 35, bakemon: 25, dokugumon: 30,
+    mammon: 40, weregarurumon: 35, deathmeramon: 35, pumpmon: 30, vamdemon: 35, ladydevimon: 40, phantomon: 30,
+    skullmammon: 40, boltmon: 45, piemon: 50, demon: 50,
+    nyokimon: 20, pyocomon: 25,
+    piyomon: 30, floramon: 25, palmon: 20, mushmon: 28,
+    vdramon: 40, birdramon: 35, togemon: 35, kiwimon: 25, woodmon: 35, redveggiemon: 25,
+    aerovdramon: 50, garudamon: 35, blossomon: 35, lillymon: 45, deramon: 30, jureimon: 35, garbamon: 30,
+    hououmon: 45, gryphomon: 40, rosemon: 50, pinocchimon: 45,
+    choromon: 20, kapurimon: 20,
+    toyagumon: 28, kokuwamon: 26, hagurumon: 26,
+    greymon: 42, revolmon: 30, tankmon: 36, thunderballmon: 30, clockmon: 30, guardromon: 34, mechanorimon: 30,
+    metalgreymon: 48, andromon: 38, cyberdramon: 48, knightmon: 36, bigmamemon: 38, megadramon: 40, warumonzaemon: 40,
+    wargreymon: 46, metalgarurumon: 44, mugendramon: 50, venomvamdemon: 48,
+    yukimibotamon: 20, nyaromon: 20,
+    agumon: 30, gabumon: 28, plotmon: 28,
+    leomon: 38, igamon: 30, angemon: 34,
+    asuramon: 38, metalmamemon: 38, holyangemon: 40, omegamon: 60
+  };
+
+  function stampNhokoDp(id, m) {
+    if (!m || m.stage === 'egg' || NHOKO_DP[id] == null) return m;
+    m.dpMax = NHOKO_DP[id];
+    m.dpMaxSource = 'nhoko-pendulum-tooltip';
+    return m;
+  }
+
+  Object.keys(MONSTERS).forEach(function (id) { stampNhokoDp(id, MONSTERS[id]); });
+
   function registerVersion(key, def) {
     if (!def || !key) return null;
     def.key = key;
@@ -437,7 +482,9 @@
     if (def.monsters) {
       var id;
       for (id in def.monsters) {
-        if (def.monsters.hasOwnProperty(id) && !MONSTERS[id]) MONSTERS[id] = def.monsters[id];
+        if (!def.monsters.hasOwnProperty(id)) continue;
+        stampNhokoDp(id, def.monsters[id]);
+        if (!MONSTERS[id]) MONSTERS[id] = def.monsters[id];
       }
     }
     if (root.Devices && typeof root.Devices.register === 'function') {

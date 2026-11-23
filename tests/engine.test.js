@@ -547,6 +547,38 @@ console.log('10) Ver.1 training open counts; cancel does not double-count');
   eq(s.train, 2, 'a direct finishTraining (no prior open) still counts, as tests/engine use');
 }
 
+console.log('11) DM20 DP cap is the stage ladder, not the 1997 species table');
+{
+  function brick(id, egg) {
+    const s = Engine.defaultState(1, egg || 'dra_blue');
+    s.mon = id;
+    s.dp = 1;
+    Engine.applySpeciesCare(s, { setWeight: true });
+    return s;
+  }
+  eq(brick('dracomon').dpMax, 14, 'DM20 Child cap is 14');
+  eq(brick('coredramon_blue').dpMax, 28, 'DM20 Adult cap is 28');
+  eq(brick('wingdramon').dpMax, 42, 'DM20 Perfect cap is 42');
+  eq(brick('slayerdramon').dpMax, 56, 'DM20 Mega cap is 56');
+  eq(brick('examon', 'dra_blue').dpMax, 70, 'DM20 Super Ultimate cap is 70');
+  const kept = brick('coredramon_blue');
+  eq(kept.dp, 1, 'raising the cap does not refill current DP');
+  const evo = brick('dracomon');
+  evo.dp = 2;
+  Engine.evolveTo(evo, 'coredramon_blue', 'test');
+  eq(evo.dpMax, 28, 'evolution moves the cap to the new stage');
+  eq(evo.dp, 28, 'evolution on the brick refills DP');
+  const classic = form('greymon');
+  eq(classic.dpMax, 30, '1997 Greymon keeps the NHOKO species cap');
+  const saved = Engine.defaultState(1, 'ver1');
+  saved.mon = 'coredramon_blue';
+  saved.dp = 3;
+  saved.dpMax = 4;
+  Engine.migrateState(saved);
+  eq(saved.dpMax, 28, 'an existing Coredramon save takes the brick cap');
+  eq(saved.dp, 3, 'the save keeps its current DP');
+}
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failures.length) failures.forEach((f) => console.log('  · ' + f));
 process.exit(failed ? 1 : 0);

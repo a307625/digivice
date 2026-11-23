@@ -49,6 +49,12 @@
   };
   var DP_REFILL_SEC = 8 * 3600;     // 1997: 8 h continuous sleep (NHOKO / Wikimon / DMComm)
   var DM20_DP_REFILL_SEC = 3 * 3600; // DM20: 3 h sleep / nap recovers stamina (Humulos, Wikimon)
+  // Humulos + namu: one cap per stage, not the 1997 per-species table.
+  // Child 14, then +14 each evolution, 70 at Super Ultimate.
+  var DM20_DP_BY_STAGE = {
+    egg: 0, baby1: 0, baby2: 0,
+    rookie: 14, champion: 28, ultimate: 42, mega: 56, super: 70
+  };
   var DM20_NAP_SEC = 3 * 3600;       // Humulos DM20: nap lasts 3 hours
   var DM20_POOP_CAP = 4;             // DM20: injury at 4 piles, then no more poop (Humulos / community)
   var POOP_CAP = 8;                  // 1997 firmware: 8th pile injures (measured)
@@ -296,10 +302,11 @@
   }
 
   function isDm20(state) {
-    if (!state) return false;
-    var kind = state.eggKind;
-    if (kind && data.SPECIAL_EGGS && data.SPECIAL_EGGS[kind]) return true;
-    return false;
+    if (!state || !data.SPECIAL_EGGS) return false;
+    if (state.eggKind && data.SPECIAL_EGGS[state.eggKind]) return true;
+    // A special-line pet keeps the brick ladder even if the save lost eggKind.
+    var m = mon(state);
+    return !!(m && m.egg && data.SPECIAL_EGGS[m.egg]);
   }
 
   function cycleSec(state) {
@@ -452,6 +459,12 @@
     if (isDm20(state)) {
       if (DM20_SLEEP_START[m.id] != null) state.sleepStart = DM20_SLEEP_START[m.id];
       state.sleepEnd = DM20_WAKE_HOUR;
+      var cap = DM20_DP_BY_STAGE[m.stage];
+      if (cap == null) cap = 0;
+      state.dpMax = cap;
+      if ((state.dp || 0) > cap) state.dp = cap;
+      if (opts.setWeight && m.weight != null) state.weight = m.weight;
+      return;
     }
     if (m.dpMax != null) {
       if (opts.migrate) {
@@ -509,6 +522,8 @@
     if (m) state.weight = m.weight || state.weight;
     resetStageCounters(state);
     applySpeciesCare(state, { setWeight: true });
+    // namu: evolving on the 20th brick refills stamina to the new cap.
+    if (isDm20(state) && (state.dpMax || 0) > 0) state.dp = state.dpMax;
     rollEvoDueAt(state);
     albumAdd(state, toId);
     pushEvent(state, 'evolve', (data.MONSTERS[from] || {}).nameZh + ' → ' + (m ? m.nameZh : toId) + '（' + (reason || '') + '）');
@@ -1477,6 +1492,7 @@
     OVERFEED_LOCK: OVERFEED_LOCK,
     DP_REFILL_SEC: DP_REFILL_SEC,
     DM20_DP_REFILL_SEC: DM20_DP_REFILL_SEC,
+    DM20_DP_BY_STAGE: DM20_DP_BY_STAGE,
     DM20_NAP_SEC: DM20_NAP_SEC,
     POOP_INTERVAL: POOP_INTERVAL,
     poopCapOf: poopCapOf,
