@@ -9,7 +9,8 @@
   var LCD_W = 160, LCD_H = 96, MON = 2;
   /* Official 1997 playfield is 32×16 dots. A 16-dot-tall monster is a 32×32
      cell drawn at MON=2, so 1 original dot = 4 canvas px. Items and glyphs
-     use the same scale (ITEM=4). The 128×64 field is centered on 160×96. */
+     use the same scale (ITEM=4). The 1997 / DM20 glass is that 2:1 field
+     edge to edge (128×64). Other families keep a centered field on 160×96. */
   var DOT = 4;
   var FW = 32, FH = 16;
   var OX = 16, OY = 16;
@@ -112,6 +113,28 @@
     hack: 'dm20-brown', dra_blue: 'dm20-brown', dra_green: 'dm20-brown',
     anime_agumon: 'dm20-brown', anime_gabumon: 'dm20-brown'
   };
+
+  function syncLcdBox() {
+    var d = currentDevice();
+    var fam = d && d.family;
+    var fill = fam === 'dm1997' || fam === 'dm20';
+    var w = fill ? FW * DOT : 160;
+    var h = fill ? FH * DOT : 96;
+    var ox = fill ? 0 : 16;
+    var oy = fill ? 0 : 16;
+    var changed = LCD_W !== w || LCD_H !== h || OX !== ox || OY !== oy;
+    LCD_W = w;
+    LCD_H = h;
+    OX = ox;
+    OY = oy;
+    if (canvas && (changed || canvas.width !== w || canvas.height !== h)) {
+      canvas.width = w;
+      canvas.height = h;
+      if (ctx) ctx.imageSmoothingEnabled = false;
+    }
+    var win = $('lcd-window');
+    if (win) win.classList.toggle('is-dark', !!(fill && is1997PlayDark()));
+  }
 
   function currentDevice() {
     if (window.Devices && window.Devices.profileFor) {
@@ -322,6 +345,7 @@
   };
 
   function applyShell() {
+    syncLcdBox();
     var d = currentDevice();
     var dev = $('device');
     var img = $('shell-art');
@@ -880,7 +904,8 @@
   }
 
   function drawMeter(by, slow) {
-    var bx = fx(2), bw = 28 * DOT, bh = 2 * DOT;
+    // Right half only, so the monster on the left stays visible.
+    var bx = fx(17), bw = 14 * DOT, bh = 3 * DOT;
     ctx.fillStyle = 'rgba(30, 36, 28, 0.55)';
     ctx.fillRect(bx, by, bw, bh);
     var zone = Math.floor(bw * 0.18);
@@ -897,33 +922,29 @@
   function drawTrain() {
     lcdBg();
     if (!state) return;
-    blitItem('wall', fx(16), fy(0), ITEM);
     var I = items();
     var mode = train.mode || 'meter';
     var fr = train.done ? (train.success ? 'happy' : 'angry') : ((animTick() % 2) ? 'train1' : 'train0');
     if (mode === 'wall') { drawDm20Wall(); return; }
-    if (mode === 'highlow') {
-      I.drawText(ctx, 'HI', fx(23), fy(1), ITEM);   // v33: LO is 9 dots → cols 23-31
-      I.drawText(ctx, 'LO', fx(23), fy(7), ITEM);
-      var ty = train.target === 1 ? fy(1) : fy(7);
-      blitItem('arrow', fx(18), ty, ITEM);
-      I.drawNumber(ctx, (train.round || 0) + 1, fx(1), fy(1), ITEM, 0);
-      I.drawText(ctx, 'HIT', fx(1), fy(7), ITEM);
-      I.drawNumber(ctx, train.hits || 0, fx(12), fy(6), ITEM, 0);
-    } else if (mode === 'mash') {
-      var bx = fx(2), by = fy(1), bw = 28 * DOT, bh = 2 * DOT;
-      ctx.fillStyle = 'rgba(30, 36, 28, 0.55)';
-      ctx.fillRect(bx, by, bw, bh);
-      ctx.fillStyle = '#5a8a38';
-      ctx.fillRect(bx, by, Math.floor(bw * Math.min(1, train.pos)), bh);
-      I.drawText(ctx, 'MASH', fx(2), fy(5), ITEM);
-    } else if (mode === 'number') {
-      I.drawNumber(ctx, train.num || 0, fx(8), fy(1), ITEM, 0);
-      I.drawText(ctx, 'STOP', fx(2), fy(8), ITEM);
-    } else {
-      drawMeter(fy(1), mode === 'meter_slow');
-    }
+    // Monster on the left. The minigame is drawn after it so the bar,
+    // number, and HI/LO stay readable instead of disappearing under the sprite.
     blitMon(state.mon, fx(0), fy(0), MON, fr, true);
+    if (mode === 'highlow') {
+      // The word is the button to press: HI = A, LO = B. Hits sit under it.
+      I.drawText(ctx, train.target === 1 ? 'HI' : 'LO', fx(20), fy(1), ITEM);
+      I.drawNumber(ctx, train.hits || 0, fx(26), fy(9), ITEM, 0);
+    } else if (mode === 'mash') {
+      var bx = fx(17), by = fy(2), bw = 14 * DOT, bh = 3 * DOT;
+      ctx.fillStyle = 'rgba(30, 36, 28, 0.35)';
+      ctx.fillRect(bx, by, bw, bh);
+      ctx.fillStyle = INK;
+      ctx.fillRect(bx, by, Math.floor(bw * Math.min(1, train.pos)), bh);
+      I.drawNumber(ctx, train.mash || 0, fx(22), fy(8), ITEM, 0);
+    } else if (mode === 'number') {
+      I.drawNumber(ctx, train.num || 0, fx(18), fy(4), ITEM, 0);
+    } else {
+      drawMeter(fy(6), mode === 'meter_slow');
+    }
   }
 
   function drawBang(x, y) {
@@ -1077,6 +1098,7 @@
 
   function draw() {
     if (!ctx) return;
+    syncLcdBox();
     ctx.imageSmoothingEnabled = false;
     if (isDigivice() && window.Dv1999UI) {
       window.Dv1999UI.draw(penHost());
@@ -1322,7 +1344,7 @@
       t: 0, pos: 0, dir: 1, done: false, success: false,
       mode: mode, mash: 0, round: 0, hits: 0,
       target: Math.random() < 0.5 ? 1 : 0,
-      num: 0
+      num: 0, startAt: Date.now(), lastMs: Date.now(), acc: 0
     };
     view = 'train';
   }
@@ -1400,7 +1422,7 @@
   function doFlush() {
     if (!state || state.dead) return;
     var n = state.poop || 0;
-    if (n <= 0) return;
+    if (n <= 0) { playPose('refuse', 900); return; }
     flushAnim = { on: true, t: 0, n: n, off: 0 };
     window.Engine.flush(state);
     persist();
@@ -1447,8 +1469,10 @@
     if (!state) return;
     var r = window.Engine.heal(state);
     persist();
-    if (r && r.ok && !r.remaining) playPose('happy', 2000);
-    else if (r && r.ok && r.remaining) playPose('refuse', 2000);
+    // A dose that counts plays happy, including a monster that still needs
+    // another shot. Healthy (nothing to treat) plays the refuse pose.
+    if (r && r.ok) playPose('happy', 1600);
+    else playPose('refuse', 1200);
   }
 
   function openBattleMenu() {
@@ -1458,6 +1482,9 @@
     // Official: Baby I/II/Egg cannot; need DP; must not be injured.
     // Engine.canBattle covers stage, DP, injury, and species.canBattle.
     if (!window.Engine.canBattle(state)) { playPose('refuse', 2000); return; }
+    // 1997 has no battle menu: B on the battle icon fights the computer.
+    // Link play stays in 其他功能. DM20 keeps Single / Tag / Link.
+    if (currentDevice().family === 'dm1997') { cpuBattle(false); return; }
     battleSel = 0;
     view = 'battleMenu';
   }
@@ -1562,6 +1589,28 @@
   // Official (1997 Ver.1 and DM20, same CLOCK SETTING): on the clock,
   // press A and C together to enter SET. (A+C on the main screen is mute
   // on the original; we do not enter SET from play.)
+  function toggleSound() {
+    soundOn = !soundOn;
+    if (state) state.soundMuted = !soundOn;
+    try { localStorage.setItem('digivice-sound', soundOn ? '1' : '0'); } catch (e) {}
+    updateSoundBtn();
+    toast(soundOn ? '音效：開' : '音效：關');
+    if (soundOn) beep();
+  }
+
+  // Official 1997: A+C on the main screen toggles the key beep.
+  // On the clock, A+C is SET instead (maybeClockSetCombo).
+  function maybeMuteCombo() {
+    if (!state) return false;
+    if (currentDevice().family !== 'dm1997') return false;
+    if (view === 'clock' || isClockSetView()) return false;
+    if (view === 'grave' || view === 'dying' || state.dead) return false;
+    if (!(keyA && keyC)) return false;
+    toggleSound();
+    chordAt = Date.now();
+    return true;
+  }
+
   function maybeClockSetCombo() {
     if (view !== 'clock') return false;
     if (!state || !engine() || !engine().beginClockSet) return false;
@@ -1802,15 +1851,24 @@
     } else if (view === 'train' && !train.done && train.mode !== 'wall') {
       train.t = (train.t || 0) + 1;
       var mode = train.mode || 'meter';
-      var step = (mode === 'meter_slow') ? 0.009 : 0.018;
+      var nowTr = Date.now();
+      var dt = Math.min(50, nowTr - (train.lastMs || nowTr));
+      train.lastMs = nowTr;
       if (mode === 'meter' || mode === 'meter_slow') {
-        train.pos += train.dir * step;
+        // About one width per second (Ver.5 half of that), independent of frame rate.
+        var speed = (mode === 'meter_slow') ? 0.55 : 1.1;
+        train.pos += train.dir * speed * dt / 1000;
         if (train.pos >= 1) { train.pos = 1; train.dir = -1; }
         if (train.pos <= 0) { train.pos = 0; train.dir = 1; }
       } else if (mode === 'number') {
-        train.num = ((train.num || 0) + 4) % 104;
+        // One count every 50 ms, so 0–100 takes about 5 s and 96–100 stays up ~0.25 s.
+        train.acc = (train.acc || 0) + dt;
+        while (train.acc >= 50) {
+          train.acc -= 50;
+          train.num = ((train.num || 0) + 1) % 101;
+        }
       } else if (mode === 'mash') {
-        if (train.t > 200) resolveTrain();
+        if (nowTr - (train.startAt || nowTr) > 4000) resolveTrain();
       }
     }
     /* evo / battle / dying advance on the 2 Hz ANIM_MS clock above */
@@ -2507,7 +2565,7 @@
     }
     function tryChord() {
       if (recentChord()) { keyA = true; keyC = true; }
-      var r = maybeNewEggCombo() || maybeClockSetCombo();
+      var r = maybeNewEggCombo() || maybeClockSetCombo() || maybeMuteCombo();
       if (!r && isPen20() && window.Pen20UI && window.Pen20UI.maybeChord(penHost(), keyA, keyC)) {
         r = true;
       }
@@ -2543,7 +2601,14 @@
       beep();
       if (view === 'grave' || view === 'dying' || (state && state.dead)) {
         keyA = true; keyC = true; maybeNewEggCombo(); keyA = keyC = false;
+        return;
       }
+      // The pinhole resets a living pet too. Confirm so a stray tap
+      // does not wipe the raise.
+      if (!window.confirm('重置會清掉這隻數碼寶貝，重新選蛋。確定嗎？')) return;
+      hideAllOverlays();
+      fillEggGrid();
+      showOverlay('overlay-egg', true);
     }
 
     // Physical-feel buttons: pointer events (iOS 15 :active is not enough).
@@ -2696,11 +2761,7 @@
       showOverlay('overlay-battle', true);
     });
     $('btn-sound').addEventListener('click', function () {
-      soundOn = !soundOn;
-      if (state) state.soundMuted = !soundOn;
-      try { localStorage.setItem('digivice-sound', soundOn ? '1' : '0'); } catch (e) {}
-      updateSoundBtn();
-      if (soundOn) beep();
+      toggleSound();
     });
     if ($('speed')) {
       $('speed').addEventListener('change', function () {
