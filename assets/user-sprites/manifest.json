@@ -1,3 +1,27 @@
 {
-  "files": []
+  "files": [
+    "dm1997/unimon_refuse.png",
+    "dm1997/bakemon_refuse.png",
+    "dm1997/bakemon_sleep0.png",
+    "dm1997/bakemon_sleep1.png",
+    "dm1997/bakemon_sick.png",
+    "dm1997/bakemon_hurt.png",
+    "dm1997/devimon_sleep1.png",
+    "dm1997/seadramon_angry.png",
+    "dm1997/seadramon_train1.png",
+    "dm1997/seadramon_attack.png",
+    "dm1997/seadramon_eat1.png",
+    "dm1997/seadramon_sleep0.png",
+    "dm1997/monzaemon_angry.png",
+    "dm1997/banchomamemon_eat1.png",
+    "dm1997/sukamon_angry.png",
+    "dm1997/sukamon_train1.png",
+    "dm1997/sukamon_attack.png",
+    "dm1997/giromon_idle1.png",
+    "dm1997/giromon_sleep0.png",
+    "dm1997/giromon_sleep1.png",
+    "dm1997/giromon_sick.png",
+    "dm1997/giromon_hurt.png",
+    "dm1997/zurumon_idle0.png"
+  ]
 }
