@@ -276,7 +276,7 @@
       { to: "devidramon", leftover: false, stay: false, calls: [0, 3], train: [48, null] },
       { to: "flymon", leftover: false, stay: false, calls: [0, 3], train: [0, 47] },
       { to: "tuskmon", leftover: false, stay: false, calls: [4, null], train: [8, 15], overfeed: [0, 5], sleepDist: [5, null] },
-      { to: "deltamon", leftover: false, stay: false, calls: [4, null], train: [32, null], overfeed: [6, null], sleepDist: [0, 4] },
+      { to: "deltamon", leftover: false, stay: false, calls: [4, null], train: [16, null], overfeed: [6, null], sleepDist: [0, 4] },
       { to: "raremon", leftover: true, stay: false },
     ],
     greymon: [
@@ -663,8 +663,8 @@
     "20th special Digitama (Zuba/Hack/Slayerdra/Breakdra/Doru) and exclusive Digitama (anime Agumon/Gabumon, Corona, Luna, Meicoo) use eggKind on shared babies. Special-line Rookie→Champion is unconditional; Champion→Ultimate uses the firmware Perfect roll (not 80% WR); Ultimate→Mega is 0–2 care mistakes after 48 h awake. Hidden: Wingdramon→WarGreymon and Groundramon→MetalGarurumon if 3–4 care mistakes and 100+ battles (Japan wave-2 colors only; overseas / NEW WAVE all colors).",
     "20th official raisable count is 134 (nhoko / Humulos IDs 0–133). Colosseum-only and Digital Monster Color-only forms are documented in roster-audit.md and are not in this table.",
     "Weight is reserved in the condition schema; official Ver.1–5 and 20th Ver.1–5 egg lines do not use weight as an evolution gate.",
-    "Per-species care (sleep hours, 満腹, parameter cycle, Energy/体力, injury base, heal doses) comes from firmware windows where measured, otherwise the NHOKO community table (rules-audit appendix A), labelled. Some Ver.3–5 windows are extrapolated ±4 h from an NHOKO midpoint and are labelled. 20th-only forms without a measured row keep a labelled placeholder (see CARE apply).",
-    "1997 battles use the official 12×12 slot table (appendix B) plus boost, within the same stage only. Cross-stage fights clamp that result so the lower stage wins at most the stage-gap UPSET (8% / 2% / 0.5%). There is no 1997 attribute triangle."
+    "Per-species care (sleep hours, 満腹, parameter cycle, Energy/体力, injury base, heal doses) comes from firmware windows where measured, otherwise the NHOKO community table (rules-audit appendix A), labelled. Some Ver.3–5 windows are extrapolated ±4 h from an NHOKO midpoint and are labelled. 20th-only Rookies with no measured row take 20: every tabulated Child (slots A and B, Ver.1–5) is 20. Champions, Ultimates, Megas and Super Ultimates with no measured row keep a labelled placeholder (see CARE apply).",
+    "1997 battles use the official 12×12 slot table (appendix B) plus boost difference for every slotted pairing, including cross-stage. The device that presses Battle is the initiator. Forms with no 1997 slot (Mega and later) are not on that table: same stage is a 0.5 placeholder, and a stage gap uses 8% / 2% / 0.5%. There is no 1997 attribute triangle."
   ] };
 
   // Per-species 1997 care. Firmware windows win where measured.
@@ -812,7 +812,10 @@
       if (m.cycleMin == null) { m.cycleMin = 57; m.cycleSource = m.cycleSource || 'placeholder-57'; }
       if (m.satiety == null) { m.satiety = 24; m.satietySource = 'placeholder'; }
       if (m.dpMax == null) {
-        if (m.stage === 'mega' || m.stage === 'super') {
+        if (m.stage === 'rookie' && m.canBattle) {
+          // Slots A and B are 20 on every version. No other Child value exists.
+          m.dpMax = 20; m.dpSource = 'pattern-all-tabulated-rookies-20';
+        } else if (m.stage === 'mega' || m.stage === 'super') {
           m.dpMax = 4; m.dpSource = 'placeholder-not-DM20-14';
         } else if (m.canBattle) {
           m.dpMax = 4; m.dpSource = 'placeholder-4';

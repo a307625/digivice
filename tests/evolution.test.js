@@ -72,8 +72,8 @@ const leftovers = [
   { from: 'elecmon', stats: { calls: 5, train: 4, overfeed: 0, sleepDist: 0, timeInStage: 99999 }, to: 'vegimon', why: 'Elecmon irregular, train <8' },
   { from: 'elecmon', stats: { calls: 5, train: 20, overfeed: 2, sleepDist: 0, timeInStage: 99999 }, to: 'vegimon', why: 'Elecmon Whamon range but overfeed <6' },
   { from: 'elecmon', stats: { calls: 5, train: 10, overfeed: 2, sleepDist: 2, timeInStage: 99999 }, to: 'vegimon', why: 'Elecmon Yukidarumon train range but sleep <5' },
-  // Ver.5 Gizamon: train 16–31 with irregular care is a leftover gap (Deltamon needs 32+)
-  { from: 'gizamon', stats: { calls: 5, train: 20, overfeed: 8, sleepDist: 0, timeInStage: 99999 }, to: 'raremon', why: 'Gizamon irregular train 16–31 (between Tuskmon and Deltamon)' },
+  // Ver.5 Gizamon: Deltamon uses the 16-split. Train 16–31 with overfeed too low stays Raremon.
+  { from: 'gizamon', stats: { calls: 5, train: 20, overfeed: 2, sleepDist: 0, timeInStage: 99999 }, to: 'raremon', why: 'Gizamon Deltamon train range but overfeed <6' },
 ];
 
 for (const c of leftovers) {
@@ -93,7 +93,8 @@ const positives = [
   { from: 'betamon', stats: { calls: 4, train: 31, overfeed: 4, sleepDist: 8, timeInStage: 99999 }, to: 'seadramon' },
   { from: 'gabumon', stats: { calls: 0, train: 48, timeInStage: 99999 }, to: 'kabuterimon' },
   { from: 'elecmon', stats: { calls: 4, train: 16, overfeed: 6, sleepDist: 0, timeInStage: 99999 }, to: 'whamon' },
-  { from: 'gizamon', stats: { calls: 4, train: 32, overfeed: 6, sleepDist: 0, timeInStage: 99999 }, to: 'deltamon' },
+  { from: 'gizamon', stats: { calls: 4, train: 16, overfeed: 6, sleepDist: 0, timeInStage: 99999 }, to: 'deltamon' },
+  { from: 'gizamon', stats: { calls: 5, train: 20, overfeed: 8, sleepDist: 0, timeInStage: 99999 }, to: 'deltamon' },
   { from: 'koromon', stats: { calls: 3, timeInStage: 99999 }, to: 'agumon' },
   { from: 'koromon', stats: { calls: 4, timeInStage: 99999 }, to: 'betamon' },
   // Firmware: Betamon 4+ CM, 8–31 train, OF 0–3 (including 3, not 4), 9+ sleep → Airdramon
@@ -324,6 +325,15 @@ for (const [a, b, to] of newJog) {
 
 ok(data.SPECIAL_EGGS.zuba && data.SPECIAL_EGGS.meicoo && data.SPECIAL_EGGS.corona, 'SPECIAL_EGGS lists new 20th eggs');
 ok(data.MONSTERS.rasielmon && !data.MONSTERS.raguelmon, 'Meicoo mega is Rasielmon, not Raguelmon');
+
+const patternRookies = ['zubamon', 'hackmon', 'dracomon', 'dorumon', 'coronamon', 'lunamon', 'plotmon'];
+for (const id of patternRookies) {
+  const m = data.MONSTERS[id];
+  ok(m && m.dpMax === 20 && m.dpSource === 'pattern-all-tabulated-rookies-20', `${id} DP max is the tabulated Child value 20`);
+}
+ok(data.MONSTERS.coredramon_blue.dpMax === 4 && data.MONSTERS.coredramon_blue.dpSource === 'placeholder-4', 'Coredramon Blue stays a placeholder: slot D is 20, 28, or 35');
+ok(data.MONSTERS.wingdramon.dpMax === 4 && data.MONSTERS.wingdramon.dpSource === 'placeholder-4', 'Wingdramon stays a placeholder: S/A is not only slot J');
+ok(data.MONSTERS.agumon.dpMax === 20 && data.MONSTERS.agumon.dpSource === 'nhoko-体力', 'tabulated Agumon stays on the NHOKO row');
 
 console.log('\n================================');
 console.log(`Passed: ${passed}`);

@@ -2397,6 +2397,7 @@
   var lobbyTimer = null;
   var lobbyApplied = {};
   var lobbyBusy = false;
+  var lobbySeq = 0;
 
   function lobbyCode() {
     var key = 'digivice.inviteCode';
@@ -2410,20 +2411,8 @@
     }
     return cur;
   }
-  function lobbyUrlValue() {
-    var el = $('lobby-url');
-    var fromInput = el ? String(el.value || '').trim() : '';
-    if (fromInput) return fromInput;
-    try { return String(localStorage.getItem('digivice.lobbyUrl') || '').trim(); } catch (e) { return ''; }
-  }
-  function lobbyUrlOk(url) {
-    return /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec\/?$/.test(url);
-  }
-  function saveLobbyUrl() {
-    var url = lobbyUrlValue();
-    try { localStorage.setItem('digivice.lobbyUrl', url); } catch (e) {}
-    if ($('overlay-battle') && $('overlay-battle').classList.contains('show')) lobbyTick();
-  }
+  var LOBBY_URL = 'https://script.google.com/macros/s/AKfycbzz8Ax-p29EOxsy4QVw1-HPHptCt1QWrE11zeXarYJULh0LvuGw-y4k5yRSX6dJGR3u/exec';
+
   function lobbySnap() {
     var m = mon() || {};
     var enh = (window.Engine && window.Engine.enhancement) ? window.Engine.enhancement(state) : 0;
@@ -2482,12 +2471,36 @@
     var rec = window.Engine.recordBattle(state, result);
     persist();
     lobbyApplied[b.id] = true;
-    var url = lobbyUrlValue();
-    if (lobbyUrlOk(url)) lobbyCall(url, { action: 'ack', code: you, id: b.id }).catch(function () {});
+    lobbyCall(LOBBY_URL, { action: 'ack', code: you, id: b.id }).catch(function () {});
     var foeName = b.initiator === you ? (b.defenderName || b.defender) : (b.initiatorName || b.initiator);
     if (rec && rec.ok === false) toast('勝負已定，但這隻沒記入戰績');
     else toast((result === 'win' ? '你贏了' : '你輸了') + (foeName ? '（' + foeName + '）' : ''));
     if (rec && rec.ok !== false) playPose(result === 'win' ? 'happy' : 'angry', 2000);
+  }
+  function lobbyOpen_() {
+    var el = $('overlay-battle');
+    return !!(el && el.classList.contains('show'));
+  }
+  function lobbyLeaveParams() {
+    return { action: 'leave', code: lobbyCode(), seq: String(lobbySeq || '') };
+  }
+  function lobbyLeaveBeacon() {
+    if (!lobbyOpen_()) return;
+    var code = lobbyCode();
+    var seq = String(lobbySeq || '');
+    try {
+      if (navigator.sendBeacon) {
+        var body = new URLSearchParams();
+        body.set('action', 'leave');
+        body.set('code', code);
+        body.set('seq', seq);
+        navigator.sendBeacon(LOBBY_URL, body);
+      }
+    } catch (e) {}
+    try {
+      var q = 'action=leave&code=' + encodeURIComponent(code) + '&seq=' + encodeURIComponent(seq) + '&callback=dmLobby_0_1';
+      fetch(LOBBY_URL + '?' + q, { method: 'GET', mode: 'no-cors', keepalive: true }).catch(function () {});
+    } catch (e2) {}
   }
   function lobbyTick() {
     var status = $('lobby-status');
@@ -2496,22 +2509,17 @@
     if (!state || state.dead) {
       if (status) status.textContent = '還沒有在育成的數碼寶貝';
       renderLobby([]);
+      if (lobbySeq) lobbyCall(LOBBY_URL, lobbyLeaveParams()).catch(function () {});
       return;
     }
     if (!window.Engine.canBattle(state)) {
       if (status) status.textContent = '這隻現在不能對戰（幼年期、沒有 DP，或受傷）';
       renderLobby([]);
-      if (lobbyUrlOk(lobbyUrlValue())) lobbyCall(lobbyUrlValue(), { action: 'leave', code: lobbyCode() }).catch(function () {});
-      return;
-    }
-    var url = lobbyUrlValue();
-    if (!lobbyUrlOk(url)) {
-      if (status) status.textContent = '貼上 Apps Script 的 /exec 網址後就會登記';
-      renderLobby([]);
+      lobbyCall(LOBBY_URL, lobbyLeaveParams()).catch(function () {});
       return;
     }
     var snap = lobbySnap();
-    lobbyCall(url, {
+    lobbyCall(LOBBY_URL, {
       action: 'sync',
       code: snap.code,
       mon: snap.mon,
@@ -2520,25 +2528,20 @@
       stage: snap.stage,
       enhancement: snap.enhancement
     }).then(function (data) {
-      if (!$('overlay-battle') || !$('overlay-battle').classList.contains('show')) return;
+      if (!lobbyOpen_()) return;
       if (!data || data.ok === false) {
         if (status) status.textContent = (data && data.error) || '登記失敗';
         return;
       }
-      if (status) status.textContent = '已登記。點邀請碼就和對方打。';
+      if (data.seq) lobbySeq = Number(data.seq) || lobbySeq;
+      if (status) status.textContent = data.waiting === false ? '對戰中，暫時不會出現在名單' : '已登記。點邀請碼就和對方打。';
       renderLobby(data.others || []);
       (data.inbox || []).forEach(applyLobbyBattle);
     }).catch(function (e) {
-      if (status && $('overlay-battle') && $('overlay-battle').classList.contains('show')) {
-        status.textContent = e.message || '連不到對戰表';
-      }
+      if (status && lobbyOpen_()) status.textContent = e.message || '連不到對戰表';
     });
   }
   function startLobby() {
-    var urlInput = $('lobby-url');
-    if (urlInput && !urlInput.value) {
-      try { urlInput.value = localStorage.getItem('digivice.lobbyUrl') || ''; } catch (e) {}
-    }
     var mine = $('lobby-mycode');
     if (mine) mine.textContent = lobbyCode();
     lobbyTick();
@@ -2547,20 +2550,17 @@
   }
   function stopLobby() {
     if (lobbyTimer) { clearInterval(lobbyTimer); lobbyTimer = null; }
-    var url = lobbyUrlValue();
-    if (!lobbyUrlOk(url)) return;
-    lobbyCall(url, { action: 'leave', code: lobbyCode() }).catch(function () {});
+    lobbyCall(LOBBY_URL, lobbyLeaveParams()).catch(function () {});
   }
   function onLobbyClick(e) {
     var btn = e.target.closest ? e.target.closest('[data-lobby-foe]') : null;
     if (!btn || lobbyBusy) return;
-    var url = lobbyUrlValue();
-    if (!lobbyUrlOk(url)) { toast('先貼上對戰服務網址'); return; }
     lobbyBusy = true;
-    lobbyCall(url, { action: 'fight', code: lobbyCode(), foe: btn.getAttribute('data-lobby-foe') }).then(function (data) {
+    lobbyCall(LOBBY_URL, { action: 'fight', code: lobbyCode(), foe: btn.getAttribute('data-lobby-foe') }).then(function (data) {
       lobbyBusy = false;
       if (!data || data.ok === false) { toast((data && data.error) || '對戰失敗'); return; }
       applyLobbyBattle(data.battle);
+      lobbyTick();
     }).catch(function (err) {
       lobbyBusy = false;
       toast(err.message || '對戰失敗');
@@ -3210,10 +3210,6 @@
     if ($('pvp-offer')) $('pvp-offer').addEventListener('click', showOffer);
     if ($('pvp-accept')) $('pvp-accept').addEventListener('click', acceptOffer);
     if ($('pvp-result')) $('pvp-result').addEventListener('click', applyPvpResult);
-    if ($('lobby-url')) {
-      $('lobby-url').addEventListener('change', saveLobbyUrl);
-      $('lobby-url').addEventListener('blur', saveLobbyUrl);
-    }
     if ($('lobby-list')) $('lobby-list').addEventListener('click', onLobbyClick);
 
     document.querySelectorAll('.js-sync-steps').forEach(function (btn) {
@@ -3279,13 +3275,22 @@
     window.addEventListener('pageshow', function () { catchUpNow(); ingestUrl(); });
     window.addEventListener('hashchange', function () { ingestUrl(); });
     document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible') { catchUpNow(); ingestUrl(); }
-      else persist();
+      if (document.visibilityState === 'visible') {
+        catchUpNow();
+        ingestUrl();
+        if (lobbyOpen_()) startLobby();
+      } else {
+        persist();
+        if (lobbyOpen_()) stopLobby();
+      }
     });
     // v31: iOS 15 standalone may freeze rAF/timers in the background or
     // kill the page. Save on hide, catch up immediately on resume, and keep
     // a 1 s watchdog in case rAF stalls after a resume.
-    window.addEventListener('pagehide', function () { persist(); });
+    window.addEventListener('pagehide', function () {
+      persist();
+      lobbyLeaveBeacon();
+    });
     window.addEventListener('focus', function () { catchUpNow(); });
     setInterval(function () {
       if (document.visibilityState === 'hidden') return;

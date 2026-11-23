@@ -6,19 +6,15 @@
  * from the measured 12×12 slot table (Humulos / firmware 0x0D7A) plus boost
  * difference. Boost is supplied by the engine:
  *   ⌊max(min(overdoses,4) + strengthHearts − min(CM,4), 0) / 2⌋
- * There is no 1997 attribute triangle and no hit-count formula.
+ * The difference is initiator boost − defender boost, then clamped to 1–16.
+ * There is no 1997 attribute triangle, no hit-count formula, and no
+ * stage-gap cap. Slots already cover cross-stage (Child A–B, Adult C–I,
+ * Perfect J–L). The device that presses Battle is the initiator every time.
+ * PvP: the offerer presses Battle, so the offerer initiates.
  *
- * SAME STAGE: official table + boost, clamped to 1–16 sixteenths.
- *
- * CROSS-STAGE (documented choice): KEEP the stage-gap UPSET rule
- * (lower stage wins at most 8% / 2% / 0.5% for a 1 / 2 / 3+ stage gap).
- * When both pets have slots, the official table+boost chance is computed
- * first, then CLAMPED so the lower stage's win probability is at most
- * UPSET[gap]. (Not replaced wholesale with the gap odds — the table still
- * applies, then the cap.) Pairings with no slot use gap odds only
- * (cross-stage) or a labelled 0.5 placeholder (same-stage).
- *
- * CPU fights alternate initiator (player first). PvP: the offerer initiates.
+ * NO 1997 SLOT (Mega and later): not on the firmware table. Same stage uses
+ * a labelled 0.5 placeholder. A stage gap uses 8% / 2% / 0.5% for a gap of
+ * 1 / 2 / 3+. That fallback is not a firmware value.
  */
 (function (root) {
   'use strict';
@@ -43,7 +39,8 @@
     L: { A: 15, B: 15, C: 14, D: 11, E: 14, F: 11, G: 14, H: 11, I: 14, J: 5, K: 5, L: 5 }
   };
 
-  // Win chance of the LOWER stage by stage gap (1, 2, 3+). Kept by user decision.
+  // No-slot fallback only: win chance of the LOWER stage by stage gap (1, 2, 3+).
+  // Not a 1997 firmware value. Slotted fights never read this.
   var UPSET = [0.5, 0.08, 0.02, 0.005];
 
   function stageGap(self, foe) {
@@ -85,34 +82,24 @@
    * selfExtra.initiator === false means the opponent initiates (default: self initiates).
    */
   function selfWinChance(self, foe, selfExtra, foeExtra) {
-    var gap = stageGap(self, foe);
-    var underMax = UPSET[Math.min(Math.abs(gap), 3)];
     var selfInit = !(selfExtra && selfExtra.initiator === false);
     var sb = boostOf(selfExtra);
     var fb = boostOf(foeExtra);
     var ss = slotOf(self);
     var fs = slotOf(foe);
-    var official = null;
     if (ss && fs) {
       if (selfInit) {
         var w = initiatorWinsOutOf16(ss, fs, sb - fb);
-        if (w != null) official = w / 16;
+        if (w != null) return w / 16;
       } else {
         var w2 = initiatorWinsOutOf16(fs, ss, fb - sb);
-        if (w2 != null) official = 1 - w2 / 16;
+        if (w2 != null) return 1 - w2 / 16;
       }
     }
-    if (gap === 0) {
-      if (official != null) return official;
-      // Same-stage, no slot: labelled placeholder, not a firmware value.
-      return 0.5;
-    }
-    // Cross-stage: clamp official to UPSET (documented choice above).
-    if (official != null) {
-      if (gap < 0) return Math.min(official, underMax);
-      return Math.max(official, 1 - underMax);
-    }
-    // No table: gap odds only.
+    // No 1997 slot on one or both sides. Not a firmware value.
+    var gap = stageGap(self, foe);
+    if (gap === 0) return 0.5;
+    var underMax = UPSET[Math.min(Math.abs(gap), 3)];
     return gap > 0 ? 1 - underMax : underMax;
   }
 

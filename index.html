@@ -102,7 +102,7 @@
       <h3>步數</h3>
       <p>遊戲畫面開著時，可用「走路計步」靠搖晃累積步數。iPhone 也可以用「捷徑」從「健康」讀取今天的步數，每次打開就會更新。詳細設定見「步數捷徑說明」。</p>
       <h3>線上對戰</h3>
-      <p>從「其他功能」進入。一方發出邀請碼（文字或 QR），對方接受後會得到結果碼，再傳回給發起方套用。對戰結果會計入這隻數碼寶貝的勝率。1997 機身的對戰圖示只打電腦。</p>
+      <p>從「其他功能」進入。這台裝置有一組固定邀請碼，打開連線對戰就會登記到線上名單。關掉這個畫面、切走或關閉網頁就會下線。正在對戰的人不會留在名單上。點誰的邀請碼就和誰打。1997 機身的對戰圖示只打電腦。</p>
       <h3>安裝</h3>
       <p>iPhone 7 請用 Safari 的「加入主畫面」。較新的 iPhone（iOS 16.4 以上）在 Chrome 分享選單裡也可以加入。Android 用 Chrome 的「安裝應用程式」。</p>
       </div>
@@ -150,16 +150,12 @@
     <div class="panel">
       <div class="panel-body">
       <h2>連線對戰</h2>
-      <p>一方按「發出邀請」把邀請碼給對方；對方貼上後按「接受邀請」會得到結果碼，再傳回給發起方按「套用結果」。</p>
+      <p>打開這個畫面就用你的邀請碼登記。點另一個人的邀請碼就開打。</p>
       <div id="jogress-box" class="hidden"></div>
-      <textarea class="codebox" id="pvp-in" placeholder="在此貼上邀請碼或結果碼"></textarea>
-      <div class="row">
-        <button type="button" class="btn" id="pvp-offer">發出邀請</button>
-        <button type="button" class="btn" id="pvp-accept">接受邀請</button>
-        <button type="button" class="btn" id="pvp-result">套用結果</button>
-      </div>
-      <textarea class="codebox" id="pvp-out" placeholder="產生的對戰碼會顯示在這裡" readonly></textarea>
-      <div id="pvp-qr"></div>
+      <p class="steps-muted">我的邀請碼</p>
+      <p id="lobby-mycode" class="lobby-code">——</p>
+      <p id="lobby-status" class="steps-muted"></p>
+      <div id="lobby-list"></div>
       </div>
       <div class="row panel-actions"><button type="button" class="btn" data-close>關閉</button></div>
     </div>

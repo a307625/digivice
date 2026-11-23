@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Official 1997 battle table (same stage) + documented cross-stage clamp to UPSET.
+ * Official 1997 battle table for every slotted pairing, including cross-stage.
+ * Forms with no 1997 slot keep a labelled fallback.
  */
 'use strict';
 
@@ -21,8 +22,8 @@ function approx(a, b, msg) {
   ok(Math.abs(a - b) < 1e-12, msg + ' (got ' + a + ', expected ' + b + ')');
 }
 
-console.log('1997 battle table + stage-gap clamp');
-console.log('===================================\n');
+console.log('1997 battle table (slotted fights, any stage)');
+console.log('============================================\n');
 
 console.log('1) Official table cells (initiator wins / 16)');
 eq(Battle.initiatorWinsOutOf16('A', 'I', 0), 2, 'Agumon initiating vs Numemon = 2/16');
@@ -45,43 +46,42 @@ eq(Battle.initiatorWinsOutOf16('I', 'A', 0), 9, 'Numemon→Agumon 9/16');
 ok(2 + 9 !== 16, '2/16 + 9/16 ≠ 16/16 (asymmetric table)');
 const agumon = global.EvolutionData.MONSTERS.agumon;
 const numemon = global.EvolutionData.MONSTERS.numemon;
-// Numemon is Champion, Agumon is Rookie: SAME-STAGE table cells still apply, then
-// the cross-stage UPSET clamp (user decision). Official 2/16 is capped at 8%;
-// official Numemon-initiating 9/16 is raised so the higher stage is at least 92%.
+// Numemon is Champion slot I, Agumon is Rookie slot A. The table already
+// covers that cross-stage pairing. No stage-gap cap.
 ok(agumon.stage === 'rookie' && numemon.stage === 'champion', 'precondition: Numemon is a higher stage than Agumon');
-approx(Battle.selfWinChance(agumon, numemon, { initiator: true, enhancement: 0 }, { enhancement: 0 }), Battle.UPSET[1],
-  'Agumon initiating vs Numemon: official 2/16 clamped to 8% (cross-stage)');
-approx(Battle.selfWinChance(numemon, agumon, { initiator: true, enhancement: 0 }, { enhancement: 0 }), 1 - Battle.UPSET[1],
-  'Numemon initiating vs Agumon: official 9/16 raised to 92% (higher-stage floor)');
-approx(Battle.selfWinChance(agumon, numemon, { initiator: false, enhancement: 0 }, { enhancement: 0 }), Battle.UPSET[1],
-  'Agumon as opponent when Numemon initiates: official 7/16 clamped to 8%');
+approx(Battle.selfWinChance(agumon, numemon, { initiator: true, enhancement: 0 }, { enhancement: 0 }), 2 / 16,
+  'Agumon initiating vs Numemon: table A vs I = 2/16');
+approx(Battle.selfWinChance(numemon, agumon, { initiator: true, enhancement: 0 }, { enhancement: 0 }), 9 / 16,
+  'Numemon initiating vs Agumon: table I vs A = 9/16');
+approx(Battle.selfWinChance(agumon, numemon, { initiator: false, enhancement: 0 }, { enhancement: 0 }), 1 - 9 / 16,
+  'Agumon when Numemon initiates: 1 − 9/16 = 7/16');
 
-console.log('4) Same-stage uses the table only (no UPSET, no tribe triangle)');
+console.log('4) Same-stage uses the table only (no tribe triangle)');
 const gabumon = global.EvolutionData.MONSTERS.gabumon;
 approx(Battle.selfWinChance(agumon, gabumon, { initiator: true }, {}), 8 / 16, 'Agumon vs Gabumon (both Child, slot A) 8/16');
 const greymon = global.EvolutionData.MONSTERS.greymon;
 const tyranomon = global.EvolutionData.MONSTERS.tyranomon;
 approx(Battle.selfWinChance(greymon, tyranomon, { initiator: true }, {}), 9 / 16, 'Greymon vs Tyranomon 9/16');
 
-console.log('5) Cross-stage: official chance CLAMPED so the lower stage wins at most UPSET[gap]');
-// Agumon vs Greymon, initiator Agumon: table A vs C = 2/16 = 12.5%, 1-stage UPSET 8%
-const officialAC = 2 / 16;
-ok(officialAC > Battle.UPSET[1], 'precondition: official 2/16 exceeds 8% UPSET');
-approx(Battle.selfWinChance(agumon, greymon, { initiator: true }, {}), Battle.UPSET[1],
-  'Child vs Adult clamped to 8% (chose CLAMP of official 2/16, not raw gap-odds alone)');
-// Greymon initiating vs Agumon: C vs A = 14/16 = 87.5%; higher stage must have >= 92%
-approx(Battle.selfWinChance(greymon, agumon, { initiator: true }, {}), 1 - Battle.UPSET[1],
-  'Adult vs Child clamped so Adult wins at least 92%');
-// 2-stage: Agumon vs MetalGreymon A vs J = 1/16 = 6.25% → clamp to 2%
+console.log('5) Cross-stage slotted fights use the table plus boost difference');
+approx(Battle.selfWinChance(agumon, greymon, { initiator: true, enhancement: 0 }, { enhancement: 0 }), 2 / 16,
+  'Child vs Adult: table A vs C = 2/16');
+approx(Battle.selfWinChance(greymon, agumon, { initiator: true, enhancement: 0 }, { enhancement: 0 }), 14 / 16,
+  'Adult vs Child: table C vs A = 14/16');
 const metal = global.EvolutionData.MONSTERS.metalgreymon;
-approx(Battle.selfWinChance(agumon, metal, { initiator: true }, {}), Battle.UPSET[2],
-  'Child vs Perfect (2-stage) clamped to 2%');
-approx(Battle.selfWinChance(metal, agumon, { initiator: true }, {}), 1 - Battle.UPSET[2],
-  'Perfect vs Child at least 98%');
-// 3-stage: Child vs Mega, no shared official cell needed; gap odds 0.5%
+approx(Battle.selfWinChance(agumon, metal, { initiator: true, enhancement: 0 }, { enhancement: 0 }), 1 / 16,
+  'Child vs Perfect: table A vs J = 1/16');
+approx(Battle.selfWinChance(metal, agumon, { initiator: true, enhancement: 0 }, { enhancement: 0 }), 15 / 16,
+  'Perfect vs Child: table J vs A = 15/16');
+approx(Battle.selfWinChance(agumon, greymon, { initiator: true, enhancement: 4 }, { enhancement: 1 }), 5 / 16,
+  'Boost difference +3 raises A vs C from 2/16 to 5/16');
+approx(Battle.selfWinChance(greymon, agumon, { initiator: true, enhancement: 0 }, { enhancement: 4 }), 10 / 16,
+  'Defender boost 4 lowers C vs A from 14/16 to 10/16');
+// Mega has no 1997 slot, so the table cannot apply.
 const blitz = global.EvolutionData.MONSTERS.blitzgreymon;
+ok(!blitz.slot, 'precondition: Mega has no 1997 slot');
 approx(Battle.selfWinChance(agumon, blitz, { initiator: true }, {}), Battle.UPSET[3],
-  'Child vs Mega (3-stage, no 1997 mega slot) uses gap odds 0.5%');
+  'Child vs Mega (no slot) uses the labelled 0.5% stage-gap fallback');
 
 console.log('6) Same-stage without slots is a labelled 0.5 placeholder');
 const wargreymon = global.EvolutionData.MONSTERS.wargreymon;

@@ -22,8 +22,8 @@ Digital Monster Ver.1–Ver.5 official branches, plus Ver.20th Anniversary Mega 
 - 20th special Digitama (Zuba/Hack/Slayerdra/Breakdra/Doru) and exclusive Digitama (anime Agumon/Gabumon, Corona, Luna, Meicoo) use eggKind on shared babies. Special-line Rookie→Champion is unconditional; Champion→Ultimate uses the firmware Perfect roll (not 80% WR); Ultimate→Mega is 0–2 care mistakes after 48 h awake. Hidden: Wingdramon→WarGreymon and Groundramon→MetalGarurumon if 3–4 care mistakes and 100+ battles (Japan wave-2 colors only; overseas / NEW WAVE all colors).
 - 20th official raisable count is 134 (nhoko / Humulos IDs 0–133). Colosseum-only and Digital Monster Color-only forms are documented in roster-audit.md and are not in this table.
 - Weight is reserved in the condition schema; official Ver.1–5 and 20th Ver.1–5 egg lines do not use weight as an evolution gate.
-- Per-species care (sleep hours, 満腹, parameter cycle, Energy/体力, injury base, heal doses) comes from firmware windows where measured, otherwise the NHOKO community table (rules-audit appendix A), labelled. Some Ver.3–5 windows are extrapolated ±4 h from an NHOKO midpoint and are labelled. 20th-only forms without a measured row keep a labelled placeholder (see CARE apply).
-- 1997 battles use the official 12×12 slot table (appendix B) plus boost, within the same stage only. Cross-stage fights clamp that result so the lower stage wins at most the stage-gap UPSET (8% / 2% / 0.5%). There is no 1997 attribute triangle.
+- Per-species care (sleep hours, 満腹, parameter cycle, Energy/体力, injury base, heal doses) comes from firmware windows where measured, otherwise the NHOKO community table (rules-audit appendix A), labelled. Some Ver.3–5 windows are extrapolated ±4 h from an NHOKO midpoint and are labelled. 20th-only Rookies with no measured row take 20: every tabulated Child (slots A and B, Ver.1–5) is 20. Champions, Ultimates, Megas and Super Ultimates with no measured row keep a labelled placeholder (see CARE apply).
+- 1997 battles use the official 12×12 slot table (appendix B) plus boost difference for every slotted pairing, including cross-stage. The device that presses Battle is the initiator. Forms with no 1997 slot (Mega and later) are not on that table: same stage is a 0.5 placeholder, and a stage gap uses 8% / 2% / 0.5%. There is no 1997 attribute triangle.
 
 ## 階段對照
 
@@ -346,7 +346,7 @@ flowchart TD
   gizamon["基剎獸\nGizamon"] -->|育成失誤 0–3 次；訓練 48+ 次| devidramon["邪龍獸\nDevidramon"]
   gizamon["基剎獸\nGizamon"] -->|育成失誤 0–3 次；訓練 0–47 次| flymon["黃蜂獸\nFlymon"]
   gizamon["基剎獸\nGizamon"] -->|育成失誤 4+ 次；訓練 8–15 次；過食 0–5 次；睡眠打擾 5+ 次| tuskmon["大角獸\nTuskmon"]
-  gizamon["基剎獸\nGizamon"] -->|育成失誤 4+ 次；訓練 32+ 次；過食 6+ 次；睡眠打擾 0–4 次| deltamon["三頭龍獸\nDeltamon"]
+  gizamon["基剎獸\nGizamon"] -->|育成失誤 4+ 次；訓練 16+ 次；過食 6+ 次；睡眠打擾 0–4 次| deltamon["三頭龍獸\nDeltamon"]
   gizamon["基剎獸\nGizamon"] -->|其他條件皆不符合時（官方 leftover）| raremon["爛泥獸\nRaremon"]
   darktyranomon["黑暗巨龍獸\nDarkTyranomon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| metaltyranomon["鋼鐵巨龍獸\nMetalTyranomon"]
   cyclomon["獨眼龍獸\nCyclomon"] -->|完全體檢定（15 戰以上，勝分骰；非勝率 80%）| nanomon["分子獸\nNanomon"]
@@ -376,7 +376,7 @@ flowchart TD
 | **基剎獸** / Gizamon `gizamon`（成長期 / Rookie） | 1 | **邪龍獸** / Devidramon `devidramon`（成熟期 / Champion） | 育成失誤 0–3 次；訓練 48+ 次 |
 | **基剎獸** / Gizamon `gizamon`（成長期 / Rookie） | 2 | **黃蜂獸** / Flymon `flymon`（成熟期 / Champion） | 育成失誤 0–3 次；訓練 0–47 次 |
 | **基剎獸** / Gizamon `gizamon`（成長期 / Rookie） | 3 | **大角獸** / Tuskmon `tuskmon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 8–15 次；過食 0–5 次；睡眠打擾 5+ 次 |
-| **基剎獸** / Gizamon `gizamon`（成長期 / Rookie） | 4 | **三頭龍獸** / Deltamon `deltamon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 32+ 次；過食 6+ 次；睡眠打擾 0–4 次 |
+| **基剎獸** / Gizamon `gizamon`（成長期 / Rookie） | 4 | **三頭龍獸** / Deltamon `deltamon`（成熟期 / Champion） | 育成失誤 4+ 次；訓練 16+ 次；過食 6+ 次；睡眠打擾 0–4 次 |
 | **基剎獸** / Gizamon `gizamon`（成長期 / Rookie） | 5 | **爛泥獸** / Raremon `raremon`（成熟期 / Champion） | 其他條件皆不符合時（官方 leftover） |
 | **黑暗巨龍獸** / DarkTyranomon `darktyranomon`（成熟期 / Champion） | 1 | **鋼鐵巨龍獸** / MetalTyranomon `metaltyranomon`（完全體 / Ultimate） | 完全體檢定（15 戰以上，勝分骰；非勝率 80%） |
 | **黑暗巨龍獸** / DarkTyranomon `darktyranomon`（成熟期 / Champion） | 2 | （停留） | 未通過完全體檢定（15 戰以上＋勝分骰）則停留在成熟期 |

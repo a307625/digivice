@@ -482,6 +482,22 @@ body {
 #qrbox, #pvp-qr { display: flex; justify-content: center; margin: 8px 0; }
 #qrbox canvas, #pvp-qr canvas, #qrbox img, #pvp-qr img { max-width: 160px; height: auto; }
 #scan { width: 100%; max-height: 180px; background: #000; border-radius: 6px; }
+.lobby-code {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 22px;
+  letter-spacing: 0.18em;
+  margin: 2px 0 10px;
+}
+.lobby-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.lobby-row b { letter-spacing: 0.12em; }
+.lobby-row span { display: block; font-size: 12px; color: var(--muted); }
 
 .steps-note { font-size: 13px; line-height: 1.55; color: var(--text); }
 .steps-note b { color: var(--amber); font-weight: 600; }
