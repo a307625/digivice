@@ -232,6 +232,18 @@ console.log('9) NHOKO chart DP, including Ultimates');
   eq(Data.monster('garurumon', '3.0').dpMax, 30, 'Ver.3 Garurumon DP 30');
   eq(Data.monster('garurumon', 'zero').dpMax, 36, 'ZERO Garurumon DP 36');
   eq(Data.monster('mushmon', '4.0').dpMax, 28, 'Mushmon DP 28');
+  eq(Data.monster('greymon', '5.0').megahit, 4, 'Greymon Megahit is 4 shakes');
+  eq(Data.monster('wargreymon', '5.0').megahit, 7, 'WarGreymon Megahit is 7 shakes');
+  eq(Data.monster('leomon', 'zero').megahit, 4, 'Leomon Megahit is 4 shakes');
+  eq(Data.monster('garurumon', '3.0').megahit, 3, 'Ver.3 Garurumon Megahit is 3');
+  eq(Data.monster('garurumon', 'zero').megahit, 4, 'ZERO Garurumon Megahit is 4');
+  var megaMissing = [];
+  Object.keys(Data.MONSTERS).forEach(function (id) {
+    var m = Data.MONSTERS[id];
+    if (!m || m.stage === 'egg') return;
+    if (m.megahitSource === 'placeholder-unverified') megaMissing.push(id);
+  });
+  eq(megaMissing.join(','), '', 'every non-egg Pendulum species has a megahit count');
   var missing = [];
   Object.keys(Data.MONSTERS).forEach(function (id) {
     var m = Data.MONSTERS[id];

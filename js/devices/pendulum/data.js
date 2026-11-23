@@ -160,8 +160,11 @@
     deathCmInForm: 20,
     deathCmAtWindow: 5,
     effortMax: 40,
-    hungerCycleMin: 60,         // PLACEHOLDER — unpublished for PenOG
-    hungerCycleSource: 'placeholder-unverified',
+    // No manual prints the interval. With the Will playtest: about 3 hearts
+    // empty in 4 hours, same across species. NHOKO says a fuller stomach
+    // slows the drop, but prints no formula, so every heart uses 80 min.
+    hungerCycleMin: 80,
+    hungerCycleSource: 'withthewill-3hearts-per-4h',
     dpMaxPlaceholder: 4,        // fallback only; species caps are NHOKO chart tooltips
     dpMaxSource: 'placeholder-unverified',
     megahitDefault: 8,          // Motimon is sourced; others placeholder
@@ -465,10 +468,32 @@
     asuramon: 38, metalmamemon: 38, holyangemon: 40, omegamon: 60
   };
 
+  // NHOKO chart tooltip メガヒット. Only fills species the Humulos card
+  // name match left on the default of 8. ガニモン's tooltip is "メガヒット8".
+  var NHOKO_MEGAHIT = {
+    monochromon: 3, starmon: 3, piccolomon: 9,
+    pichimon: 8, gomamon: 8, ganimon: 8, shakomon: 8,
+    ikkakumon: 4, rukamon: 4, seadramon: 10, octomon: 5,
+    zudomon: 2, megaseadramon: 3, pukumon: 5,
+    mokumon: 9, bakumon: 9, candmon: 9, devimon: 4, bakemon: 4,
+    mammon: 5, piemon: 7, demon: 7,
+    nyokimon: 8, pyocomon: 8, piyomon: 8, floramon: 8,
+    kiwimon: 6, woodmon: 5, redveggiemon: 5, garbamon: 6,
+    hououmon: 7, gryphomon: 8, rosemon: 8, pinocchimon: 8,
+    choromon: 9, kapurimon: 9, greymon: 4, tankmon: 6, clockmon: 6,
+    megadramon: 4, wargreymon: 7, leomon: 4, igamon: 6
+  };
+
   function stampNhokoDp(id, m) {
-    if (!m || m.stage === 'egg' || NHOKO_DP[id] == null) return m;
-    m.dpMax = NHOKO_DP[id];
-    m.dpMaxSource = 'nhoko-pendulum-tooltip';
+    if (!m || m.stage === 'egg') return m;
+    if (NHOKO_DP[id] != null) {
+      m.dpMax = NHOKO_DP[id];
+      m.dpMaxSource = 'nhoko-pendulum-tooltip';
+    }
+    if (m.megahitSource === 'placeholder-unverified' && NHOKO_MEGAHIT[id] != null) {
+      m.megahit = NHOKO_MEGAHIT[id];
+      m.megahitSource = 'nhoko-pendulum-tooltip';
+    }
     return m;
   }
 

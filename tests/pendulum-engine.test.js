@@ -509,7 +509,8 @@ console.log('15) Heal menu order, cancel-train spends no DP, practice battle is 
 
 console.log('16) Placeholders are labelled, not passed off as official');
 {
-  eq(Data.RULES.hungerCycleSource, 'placeholder-unverified', 'hunger cycle labelled');
+  eq(Data.RULES.hungerCycleMin, 80, 'hunger drops about one heart per 80 minutes');
+  eq(Data.RULES.hungerCycleSource, 'withthewill-3hearts-per-4h', 'hunger interval is the playtest, not a manual');
   eq(Data.RULES.dpMaxSource, 'placeholder-unverified', 'DP max labelled');
   eq(Data.monster('tentomon').megahit, 8, 'Tentomon Megahit is 8 shakes');
   eq(Data.monster('tentomon').megahitSource, 'Humulos-card', 'Tentomon megahit is from the Humulos card');
