@@ -120,26 +120,23 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #0a0c10;
-  border-radius: 1.2% / 2.2%;
-}
-/* 1997 / DM20 glass is the same 2:1 hole. A hairline gap stays paper
-   (or night) instead of a black bar beside the LCD. */
-.device[data-model="dm1997"] .lcd-window,
-.device[data-model="dm20"] .lcd-window {
+  /* Paper, not black: the bitmap is contained, and the hole's leftover
+     strip must match the LCD, not show as a dark bar. */
   background: var(--lcd-paper);
+  border-radius: 1.2% / 2.2%;
 }
 .lcd-window.is-dark {
   background: var(--lcd-night);
 }
 #screen {
   display: block;
+  width: 100%;
   height: 100%;
-  width: auto;
-  max-width: 100%;
+  /* Keep 160×96 (and the 1999 square) from being stretched into the hole. */
+  object-fit: contain;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  background: var(--lcd-paper);
+  background: transparent;
 }
 
 .face-icon {
@@ -531,17 +528,19 @@ select.btn { height: 34px; }
 }
 
 
-/* 神聖計畫 / Digivice (1999): circular LCD, flanking buttons, no face icons. */
+/* 神聖計畫 / Digivice (1999): circular LCD, flanking buttons, no face icons.
+   The bezel icons belong to the brick and pendulum shells. */
+.device[data-model="digivice"] .face-icon { display: none; }
 .device[data-model="digivice"] .lcd-window {
   border-radius: 50%;
   overflow: hidden;
-  background: #08090b;
+  background: var(--lcd-paper);
 }
 .device[data-model="digivice"] #screen {
   width: 100%;
   height: 100%;
   max-width: 100%;
-  background: #c6cbb8;
+  background: transparent;
 }
 .device[data-model="digivice"] .pad:active,
 .device[data-model="digivice"] .pad.is-pressed {

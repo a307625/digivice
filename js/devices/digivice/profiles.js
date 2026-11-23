@@ -2,7 +2,8 @@
  * 神聖計畫 / Digivice (1999) device profiles.
  * Portrait / round communicator, circular LCD, three flanking buttons
  * (left confirm/A-equivalent, right-upper cycle, right-lower back)
- * measured from the official Ver.Complete 1200px front photo (Wikimon dvc1).
+ * measured on the shipped 1150×1056 shells. The glass is 303px tall;
+ * the window is that circle, centered, so it does not cover the digicode ring.
  * Ver.1 default is Taichi (white/ice face, orange outer grip, blue buttons);
  * Ver.2 default is Hikari (pink grip). Partner shells swap with the chosen starter.
  */
@@ -12,7 +13,7 @@
   var LAYOUT = {
     aspectW: 1150,
     aspectH: 1056,
-    lcd: { left: 35.217, top: 37.121, width: 28.174, height: 30.682 },
+    lcd: { left: 36.62, top: 37.88, width: 26.34, height: 28.69 },
     buttons: {
       a: { cx: 13.391, cy: 50.189, w: 17.391, h: 18.939 },
       b: { cx: 84.522, cy: 38.447, w: 13.913, h: 10.606 },
