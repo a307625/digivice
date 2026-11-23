@@ -83,8 +83,8 @@
         else { k = 0; while (s.strength < 4 && k++ < 6) E.feedProtein(s); }
       }
       if (s.poop > 0) E.flush(s);
-      if (s.sick) E.healSick(s);
-      if (s.injured) E.healInjury(s);
+      k = 0; while (s.sick && k++ < 8) E.healSick(s);
+      k = 0; while (s.injured && k++ < 10) E.healInjury(s);
       if (E.canBattle(s) && rnd() < P.battle) E.recordBattle(s, rnd() < P.win ? 'win' : 'lose');
     } else if (cfg.fam === 'pen20') {
       E = root.Pen20Engine; var p = s.pets[0]; if (!p || p.dead || p.level === 'egg') return;

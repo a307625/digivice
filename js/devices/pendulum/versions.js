@@ -23,12 +23,11 @@
  *       Woodmon/RedVeggiemon). We treat 1 as 1+ with the 2+ path so
  *       the Child always has a destination. Documented.
  *
- * Placeholders (hunger cycle, DP max, megahit targets except Motimon,
- * battle hit table) stay labelled. digivicemon Max DP of 25–50 on
- * Ver.4/5 was rejected as the wrong scale (OG training costs 0.5 DP;
- * COLOR uses a ~50 scale). NHOKO WR 70%→1/4 and the detailed
- * train-weight table were found this pass and are documented unused
- * so Ver.1.0 behaviour does not silently change.
+ * Placeholders that stay labelled: hunger-cycle minutes, per-species
+ * Max DP, the battle hit table, and megahit counts Humulos did not
+ * print. digivicemon Max DP of 25–50 on Ver.4/5 was rejected as the
+ * wrong scale (OG training costs 0.5 DP; COLOR uses a ~50 scale).
+ * The NHOKO train-result table and the 40/70/80 win-rate bands are in use.
  */
 (function (root) {
   'use strict';
@@ -571,7 +570,7 @@
       // Device-original attributes / positions (see header).
       garurumon:     { attribute: 'data',    position: 'Da1', statsSource: 'ZERO-device-attr' },
       tailmon:       { attribute: 'virus',   position: 'Vi2', statsSource: 'NHOKO-ZERO-Plotmon-line-Virus' },
-      angewomon:     { attribute: 'virus',   position: 'ViP2', jogressOnly: true, statsSource: 'NHOKO-ZERO-Plotmon-line-Virus' },
+      angewomon:     { attribute: 'virus', position: 'ViP2', jogressOnly: true, megahit: 5, megahitSource: 'Humulos-ZERO', statsSource: 'NHOKO-ZERO-Plotmon-line-Virus' },
       weregarurumon: { attribute: 'data',    position: 'DaP1', jogressOnly: false, statsSource: 'ZERO-natural-Data-Perfect' },
       greymon:       { position: 'Va1' },
       metalgreymon:  { position: 'VaP1' },

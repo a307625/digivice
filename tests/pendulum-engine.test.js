@@ -146,8 +146,9 @@ console.log('4) Perfect gates: 30 battles BEFORE window (flag stays), WR, CM, tr
   eq(lowwr.to, null, 'WR 39% is below 40%');
   const okp = Data.naturalPerfect('kabuterimon', 2, 40, 30, 40, true);
   eq(okp.to, 'atlurkabuterimon', 'Kabuterimon/Tortomon, ≤2 CM, T40+, 30 battles, 40% WR');
-  eq(okp.odds, 1 / 8, 'Wikimon 40% → 1/8');
-  eq(Data.wrOdds(60), 1 / 4, '60% → 1/4');
+  eq(okp.odds, 1 / 8, 'NHOKO 40% → 1/8');
+  eq(Data.wrOdds(60), 1 / 8, '60% is still the 40–69 band (1/8)');
+  eq(Data.wrOdds(70), 1 / 4, 'NHOKO 70% → 1/4');
   eq(Data.wrOdds(80), 1 / 2, '80% → 1/2');
   eq(Data.naturalPerfect('monochromon', 4, 40, 30, 50, true).to, 'triceramon', 'Data Adults → Triceramon, ≤4 CM');
   eq(Data.naturalPerfect('gekomon', 1, 40, 30, 50, true).to, 'okuwamon', 'Virus Adults → Okuwamon, ≤1 CM');
@@ -179,31 +180,36 @@ console.log('5) Ultimate: 0 CM, WR > 60%, Atlur/Jagamon → Heracles (File Islan
   eq(Data.naturalUltimate('okuwamon', 0, 80).to, null, 'Okuwamon is not a FI natural Heracles source');
 }
 
-console.log('6) Training: 0.5 DP, −1 g even on fail, Megahit −8 g, Effort on success only, 1.0 no MEGAHIT screen');
+console.log('6) Training: NHOKO table, fail still counts as T, Effort on success only');
 {
-  const s = form('tentomon', { dpQ: 8, dpMaxQ: 16, weight: 20, strength: 2, effort: 0 });
+  const s = form('tentomon', { dpQ: 8, dpMaxQ: 16, weight: 40, strength: 2, effort: 0 });
   ok(Eng.canTrain(s), 'can train with 2.0 DP (needs 0.5)');
   const fail = Eng.finishTraining(s, 0);
   ok(fail.ok && !fail.success, '0 Super is a fail');
-  eq(s.weight, 19, 'fail still −1 g (Humulos)');
-  eq(s.strength, 2, 'fail does not raise Strength');
-  eq(s.effort, 0, 'fail does not raise Effort (Humulos / plan)');
-  eq(s.trainSuccess, 0, 'fail does not count as T (FI / plan; NHOKO disagrees, documented)');
+  eq(s.weight, 39, '0 Super −1 g');
+  eq(s.strength, 2, '0 Super does not raise Strength');
+  eq(s.effort, 0, 'fail does not raise Effort (Humulos)');
+  eq(s.trainSuccess, 1, 'fail still counts as one T (NHOKO)');
   eq(Eng.dp(s), 1.5, 'spent 0.5 DP (2.0 → 1.5)');
+
+  const one = Eng.finishTraining(s, 1);
+  ok(one.success && !one.megahit, '1 Super is a success');
+  eq(s.strength, 3, '1 Super +1 Strength');
+  eq(s.weight, 37, '1 Super −2 g');
 
   const okT = Eng.finishTraining(s, 3);
   ok(okT.success && !okT.megahit, '3 Super is a success, not Megahit');
-  eq(s.strength, 3, '+1 Strength');
-  eq(s.effort, 1, '+1 Effort');
-  eq(s.trainSuccess, 1, 'successful T counted');
-  eq(s.weight, 18, 'success −1 g');
+  eq(s.strength, 4, '3 Super +2 Strength, capped at 4');
+  eq(s.effort, 2, '+1 Effort per success');
+  eq(s.trainSuccess, 3, 'each train counted');
+  eq(s.weight, 33, '3 Super −4 g');
 
   s.weight = 30;
   s.strength = 1;
   const mega = Eng.finishTraining(s, 5);
   ok(mega.megahit, '5 Super is Megahit');
-  eq(s.strength, 4, 'Megahit fills Strength');
-  eq(s.weight, 22, 'Megahit −8 g (Humulos); floor is the species min weight');
+  eq(s.strength, 4, 'Megahit +4 Strength, capped at 4');
+  eq(s.weight, 22, 'Megahit −8 g; floor is the species min weight');
   eq(Data.PROFILE.hasMegahitScreen, false, '1.0 hides the MEGAHIT result screen');
 
   s.dpQ = 1; // 0.25 DP
@@ -247,6 +253,9 @@ console.log('7) Food, poop, 99 g, DP, protein');
   Eng.tick(p, Date.now());
   eq(p.poop, 8, '8th pile');
   ok(p.sick, '8 piles → sick (NHOKO)');
+  const call = form('tentomon', { poop: 1, hunger: 4, strength: 4 });
+  ok(Eng.isCallLit(call), 'poop lights the call icon');
+  eq(call.callAt, null, 'poop does not start the 10-minute care timer');
 }
 
 console.log('8) Sleep: all wake at 08:00, bedtime per species, 8 h DP, disturb rules');
@@ -476,10 +485,16 @@ console.log('14) Death pools, 6 h sick, dying-save shakes, computer after death'
 console.log('15) Heal menu order, cancel-train spends no DP, practice battle is labelled app-only');
 {
   const s = form('tentomon', { sick: true, injured: true, sickSince: 0, injuredSince: 0 });
-  ok(Eng.healSick(s).ok, 'heal sick (top of official menu)');
+  ok(Eng.healSick(s, function () { return 0; }).ok, 'heal sick lands when the 50% roll hits');
   ok(!s.sick, 'cleared sick');
-  ok(Eng.healInjury(s).ok, 'heal injury (bottom, skull)');
+  s.sick = true;
+  ok(!Eng.healSick(s, function () { return 0.5; }).ok, '50% roll misses sickness');
+  ok(s.sick, 'still sick after a miss');
+  ok(Eng.healSick(s, function () { return 0; }).ok, 'next press can clear sickness');
+  ok(Eng.healInjury(s, function () { return 0; }).ok, 'heal injury lands when the 40% roll hits');
   ok(!s.injured, 'cleared injury');
+  s.injured = true;
+  ok(!Eng.healInjury(s, function () { return 0.4; }).ok, '40% roll misses injury');
 
   const t = form('tentomon', { dpQ: 8 });
   // Cancel is UI-side (no finishTraining) — DP unchanged
@@ -496,7 +511,10 @@ console.log('16) Placeholders are labelled, not passed off as official');
 {
   eq(Data.RULES.hungerCycleSource, 'placeholder-unverified', 'hunger cycle labelled');
   eq(Data.RULES.dpMaxSource, 'placeholder-unverified', 'DP max labelled');
-  eq(Data.monster('tentomon').megahitSource, 'placeholder-unverified', 'Tentomon megahit is placeholder');
+  eq(Data.monster('tentomon').megahit, 8, 'Tentomon Megahit is 8 shakes');
+  eq(Data.monster('tentomon').megahitSource, 'Humulos-card', 'Tentomon megahit is from the Humulos card');
+  eq(Data.monster('kabuterimon').megahit, 4, 'Kabuterimon Megahit is 4 shakes');
+  eq(Data.monster('heracleskabuterimon').megahit, 24, 'Heracles Megahit is 24 shakes');
   eq(Data.monster('motimon').megahitSource, 'Humulos-Motimon', 'Motimon megahit is sourced');
   eq(Data.monster('motimon').megahit, 8, 'Motimon target is 8');
 }

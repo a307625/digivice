@@ -220,15 +220,23 @@
     state.injureReason = reason || 'unknown';
   }
 
-  function healSick(state) {
+  function healRoll(state, chance, rng) {
+    rng = rng || Math.random;
+    return rng() < chance;
+  }
+
+  function healSick(state, rng) {
     if (!state.sick) return { ok: false };
+    // NHOKO: one press cures sickness half the time. Mash until it lands.
+    if (!healRoll(state, rules().healSickChance, rng)) return { ok: false, missed: true };
     state.sick = false;
     state.sickSince = null;
     return { ok: true, kind: 'sick' };
   }
 
-  function healInjury(state) {
+  function healInjury(state, rng) {
     if (!state.injured) return { ok: false };
+    if (!healRoll(state, rules().healInjuryChance, rng)) return { ok: false, missed: true };
     state.injured = false;
     state.injuredSince = null;
     return { ok: true, kind: 'injury' };
@@ -325,7 +333,11 @@
   }
 
   function isCallLit(state) {
-    return !!(state && state.callAt != null && !state.callResolved && !state.dead);
+    if (!state || state.dead) return false;
+    if (state.callAt != null && !state.callResolved) return true;
+    // NHOKO: poop lights the call icon. Missing it is not a care mistake.
+    var m = mon(state);
+    return !!(m && m.stage !== 'egg' && (state.poop || 0) > 0);
   }
 
   function startCall(state, kind) {
@@ -412,27 +424,23 @@
     return (state.dpQ || 0) >= (state.dpMaxQ || 0) && state.dpMaxQ > 0;
   }
 
-  // Training: 0 Super = fail, still −1 g; ≥1 Super = success +1 Strength,
-  // Effort +1, −1 g; 5/5 Megahit = Strength fills, −8 g. Costs 0.5 DP.
+  // NHOKO training table: Super count picks the strength and weight row.
+  // Effort rises only on a success (Humulos). A fail still counts as one T.
   // 1.0 has no MEGAHIT result screen (caller hides it). Cancel before COUNT
   // ends spends no DP (NHOKO).
   function finishTraining(state, supers) {
     if (!canTrain(state)) return { ok: false };
     spendDp(state, rules().trainDp);
     supers = supers || 0;
+    if (supers < 0) supers = 0;
+    if (supers > 5) supers = 5;
+    var row = rules().trainTable;
     var megahit = supers >= 5;
     var success = supers >= 1;
-    if (megahit) {
-      state.strength = 4;
-      applyWeight(state, rules().megahitWeight);
-    } else {
-      applyWeight(state, rules().trainWeight);
-      if (success) state.strength = clamp((state.strength || 0) + 1, 0, 4);
-    }
-    if (success) {
-      state.effort = clamp((state.effort || 0) + 1, 0, rules().effortMax);
-      state.trainSuccess = (state.trainSuccess || 0) + 1;
-    } else if (rules().trainCountsOnFail) {
+    state.strength = clamp((state.strength || 0) + row.strength[supers], 0, 4);
+    applyWeight(state, row.weight[supers]);
+    if (success) state.effort = clamp((state.effort || 0) + 1, 0, rules().effortMax);
+    if (success || rules().trainCountsOnFail) {
       state.trainSuccess = (state.trainSuccess || 0) + 1;
     }
     disturbSleep(state, 'train');

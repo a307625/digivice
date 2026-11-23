@@ -13,14 +13,14 @@
  *
  * Documented conflicts and the value used:
  *   (1) Call timeout 10/30 min (Humulos) vs 20 (File Island) → Humulos
- *   (2) Train weight −1 g / Megahit −8 g (Humulos) vs −2/−4 (FI) → Humulos
+ *   (2) Train results follow the NHOKO table (0–5 Super → strength and
+ *       weight). Humulos only spells out the ends: fail −1 g, Megahit −8 g.
  *   (3) Attribute triangle: NHOKO Vac > Virus > Data > Vac
  *       (later official; 1998 Humulos had Vac > Data — we lock NHOKO)
  *   (4) Perfect WR odds: Wikimon 40%→1/8, 60%→1/4, 80%→1/2
  *       (File Island 40%→1/5; documented, Wikimon used)
- *   (5) Evolution "Training" count: File Island + plan = successful only.
- *       NHOKO says a failed train still counts as one T. We follow FI/plan
- *       for T and Effort (Effort is successful-only per Humulos).
+ *   (5) Evolution "Training" count: NHOKO — a failed train still counts
+ *       as one T. Effort stays success-only (Humulos).
  *   (6) Hunger cycle minutes and per-species DP max were not published
  *       for PenOG on the pages we have — placeholders, labelled below.
  *   (7) Megahit shake targets: Motimon 8 (Humulos species page). Others
@@ -138,14 +138,23 @@
     proteinDp: 0.25,
     meatHunger: 1,
     meatWeight: 1,
-    trainWeight: -1,            // Humulos (even on fail)
-    megahitWeight: -8,          // Humulos
+    // NHOKO training table, index = number of Super hits.
+    // strength is added (display caps at 4); weight is applied as-is.
+    trainTable: {
+      source: 'NHOKO-pendulum.html',
+      strength: [0, 1, 1, 2, 2, 4],
+      weight: [-1, -2, -2, -4, -4, -8]
+    },
+    trainWeight: -1,            // 0 Super, same table
+    megahitWeight: -8,          // 5 Super, same table
     battleWeight: -4,           // NHOKO / File Island
     dpSleepHours: 8,            // NHOKO: 8 h sleep fills DP
     wakeHour: 8,                // all species, Humulos / NHOKO
     wakeDelayCapHour: 14,
     disturbSickStreak: 10,
     sickDeathHours: 6,
+    healSickChance: 0.5,        // NHOKO: one bandage press cures sickness 50%
+    healInjuryChance: 0.4,      // NHOKO: one bandage press cures injury 40%
     deathSickInForm: 20,
     deathInjuryInForm: 20,
     deathCmInForm: 20,
@@ -158,21 +167,64 @@
     megahitDefault: 8,          // Motimon is sourced; others placeholder
     countWindowSec: 3,          // NHOKO: 3-second COUNT
     battleHp: 3,                // NHOKO: 3 HP, single=1, super=2
-    wrOdds: {                   // Wikimon (FI 40%→1/5 documented, unused)
-      source: 'Wikimon-Pendulum-1.0',
+    wrOdds: {                   // NHOKO: 40–69 → 1/8, 70–79 → 1/4, 80+ → 1/2
+      source: 'NHOKO-pendulum.html',
       40: 1 / 8,
-      60: 1 / 4,
+      70: 1 / 4,
       80: 1 / 2
     },
     perfectBattlesRequired: 30,
     perfectMinWr: 40,
     dyingSaveShakes: 100,
     dyingSaveSec: 60,
-    trainCountsOnFail: false,   // FI/plan; NHOKO disagrees, documented
+    trainCountsOnFail: true,    // NHOKO: a failed train still counts as one T
     setPausesGrowth: true,      // Humulos
     ageAtMidnight: true,        // NHOKO AM12:00 = 00:00
     triangle: TRIANGLE
   };
+
+  // Humulos evolution cards (NHOKO tooltip: minimum shakes for a Megahit).
+  // Names Humulos did not print stay on the labelled default of 8.
+  var MEGAHIT = {
+    bubbmon: 8, pabumon: 8, mochimon: 8, motimon: 8,
+    tentomon: 8, gottsumon: 8, gotsumon: 8, otamamon: 8,
+    kabuterimon: 4, tortamon: 4, tortomon: 4, kuwagamon: 5, gekomon: 5,
+    atlurkabuterimon: 14, megakabuterimon: 14, jyagamon: 14, jagamon: 14,
+    angewomon: 14, triceramon: 9, okuwamon: 13, tonosamagekomon: 13,
+    heraklekabuterimon: 24, herculeskabuterimon: 24, heracleskabuterimon: 24,
+    holydramon: 24, magnadramon: 24, saberleomon: 26, metaletemon: 23,
+    pukamon: 8, bukamon: 8, coelamon: 10, ebidramon: 10, gesomon: 5,
+    whamon: 2, anomalocarimon: 3, hangyomon: 3, divermon: 3,
+    marinedevimon: 4, marindevimon: 4, dagomon: 4, dragomon: 4,
+    marineangemon: 7, marinangemon: 7, metalseadramon: 6, plesiomon: 6,
+    petimeramon: 9, petitmeramon: 9, picodevimon: 9,
+    hanumon: 3, apemon: 3, garurumon: 3, meramon: 6, wizarmon: 6,
+    dokugumon: 4, weregarurumon: 5, deathmeramon: 4,
+    pumpmon: 4, pumpkinmon: 4, vamdemon: 5, myotismon: 5,
+    ladydevimon: 5, fantomon: 5, phantomon: 5,
+    skullmammon: 6, skullmammothmon: 6, boltmon: 4,
+    palmon: 8, mushmon: 8, mushroommon: 8, vdramon: 4, veedramon: 4,
+    birdramon: 4, togemon: 6, aerovdramon: 7, aeroveedramon: 7, garudamon: 7,
+    blossomon: 5, lilimon: 5, lillymon: 5, delumon: 5, deramon: 5,
+    jureimon: 6, jyureimon: 6, gerbemon: 6,
+    toyagumon: 9, kokuwamon: 9, hagurumon: 9, revolmon: 4, thunderballmon: 6,
+    guardromon: 5, mechanorimon: 5, mekanorimon: 5, metalgreymon: 5,
+    andromon: 5, cyberdramon: 5, knightmon: 4, bigmamemon: 4, warumonzaemon: 4,
+    metalgarurumon: 8, mugendramon: 8, machinedramon: 8,
+    venomvamdemon: 8, venommyotismon: 8,
+    yukimibotamon: 9, snowbotamon: 9, nyaromon: 9, agumon: 9, gabumon: 9,
+    plotmon: 9, salamon: 9, angemon: 4, tailmon: 4, gatomon: 4,
+    asuramon: 5, metalmamemon: 4, holyangemon: 4, omegamon: 8, omnimon: 8
+  };
+  function megahitFor(nameEn) {
+    var parts = String(nameEn || '').split(/[\/|,]/);
+    var i, k;
+    for (i = 0; i < parts.length; i++) {
+      k = parts[i].toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (MEGAHIT[k] != null) return MEGAHIT[k];
+    }
+    return null;
+  }
 
   function src(sleepH, sleepM, minW, stomach, lifeH, attr, stage, nameTw, nameEn, extra) {
     var o = {
@@ -194,6 +246,11 @@
       position: null            // Jogress slot, set below
     };
     if (extra) for (var k in extra) o[k] = extra[k];
+    var shakes = megahitFor(o.nameEn);
+    if (shakes != null && o.megahitSource === 'placeholder-unverified') {
+      o.megahit = shakes;
+      o.megahitSource = 'Humulos-card';
+    }
     return o;
   }
 
@@ -412,7 +469,7 @@
 
   function wrOdds(wr) {
     if (wr >= 80) return RULES.wrOdds[80];
-    if (wr >= 60) return RULES.wrOdds[60];
+    if (wr >= 70) return RULES.wrOdds[70];
     if (wr >= 40) return RULES.wrOdds[40];
     return 0;
   }
