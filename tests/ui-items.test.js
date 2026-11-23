@@ -96,6 +96,14 @@ ok(!/Agumon|Gabumon|Tailmon|Hikari|亞古獸|加布獸|迪路|太一/.test((dv1 
 ok(items.EGG_PICKER.filter((e) => /^dv1999/.test(e.dataEgg)).length === 2, 'only Ver.1+Ver.2 Digivice start units in the picker');
 
 
+console.log('3) Flush wave is the shared Ver.1–5 scroll, drawn in front of every column');
+{
+  const ui = fs.readFileSync(path.join(__dirname, '../js/ui.js'), 'utf8');
+  ok(/Ver\.1–5 share this system graphic/.test(ui), 'flush comment covers Ver.1 through Ver.5');
+  ok(/for \(c = 0; c < cols; c\+\+\)[\s\S]{0,220}poopwave/.test(ui), 'each poop column scrolls a wave');
+  ok(/if \(!flushAnim\.on\) return;[\s\S]{0,80}for \(c = 0/.test(ui), 'waves are drawn after the piles, so the upper pile cannot hide them');
+}
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 
 process.exit(failed ? 1 : 0);

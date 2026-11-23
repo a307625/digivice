@@ -811,28 +811,33 @@
     return Math.ceil(poopCount() / 2);
   }
 
-  /* Official berational / 1997 layout on a 32×16 field (dots):
-     even i: lower row y=8, x = 24, 16, 8, 0
-     odd  i: upper row y=0, same x as the previous even pile.
-     Flush: piles and wave slide down 1 dot / 50 ms for 24 dots. */
+  /* Ver.1–5 share this system graphic (not a per-version minigame).
+     Piles: lower row y=8, upper row y=0, columns from the right.
+     Flush: piles slide down, and a column of waves scrolls in front
+     of them, 1 dot / 50 ms, until they leave the 16-dot glass. */
   function drawPoop() {
     if (!state && !flushAnim.on) return;
     var n = poopCount();
     if (n <= 0) return;
     var off = flushAnim.on ? flushAnim.off : 0;
-    var flip = (animTick() % 2) === 1;
+    // Sitting poop wiggles. During a flush the scroll is the motion;
+    // mirroring the wave makes the water flip instead of flow.
+    var flip = !flushAnim.on && (animTick() % 2) === 1;
     var pw = 8;
-    for (var i = 0; i < n; i++) {
-      var x, y;
-      if (i % 2 === 0) {
-        x = FW - pw - pw * (i / 2);
-        y = pw + off;
-        if (flushAnim.on) blitItem('poopwave', fx(x), fy(y - pw), ITEM, flip);
-        blitItem('poop', fx(x), fy(y), ITEM, flip);
-      } else {
-        x = FW - pw - pw * ((i - 1) / 2);
-        y = 0 + off;
-        blitItem('poop', fx(x), fy(y), ITEM, flip);
+    var cols = Math.ceil(n / 2);
+    var i, c, t, x, y, wy;
+    for (i = 0; i < n; i++) {
+      c = Math.floor(i / 2);
+      x = FW - pw - pw * c;
+      y = ((i % 2 === 0) ? pw : 0) + off;
+      if (y < FH) blitItem('poop', fx(x), fy(y), ITEM, flip);
+    }
+    if (!flushAnim.on) return;
+    for (c = 0; c < cols; c++) {
+      x = FW - pw - pw * c;
+      for (t = -1; t <= 2; t++) {
+        wy = t * pw + (off % pw);
+        if (wy > -pw && wy < FH) blitItem('poopwave', fx(x), fy(wy), ITEM, false);
       }
     }
   }
