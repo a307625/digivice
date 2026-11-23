@@ -169,7 +169,21 @@ console.log('3) Stage III unlocks two-pet + NSO/MEM eggs; C switches; second egg
   ok(s.gameTime - s.pets[0].stageEnteredGame >= 3600 - 1, 'hidden pet 0 still ages');
 }
 
-console.log('4) Tentomon Adult evos: CM + Effort hearts (4 trainings = 1 heart, even on fail)');
+console.log('4) Stage gate: egg cannot train; Stage I through VI can (Humulos trains the baby)');
+{
+  const s = sk();
+  eq(Eng.train(s, 'success').ok, false, 'egg refuses training');
+  hatch(s);
+  eq(s.pets[0].level, 'I', 'hatched at Stage I');
+  eq(Eng.train(s, 'fail').ok, true, 'Stage I can train');
+  ['mochi', 'tento', 'kabuteri', 'atlurkabuteri', 'heraklekabuteri'].forEach((id) => {
+    Eng.applyMon(s.pets[0], id, s.gameTime);
+    const lv = s.pets[0].level;
+    eq(Eng.train(s, 'fail').ok, true, 'level ' + lv + ' (' + id + ') can train');
+  });
+}
+
+console.log('4b) Tentomon Adult evos: CM + Effort hearts (4 trainings = 1 heart, even on fail)');
 {
   const s = sk();
   hatch(s);

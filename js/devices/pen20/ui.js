@@ -448,6 +448,12 @@
   }
 
   function startTrain(host) {
+    var pet = E().activePet(host.state);
+    // Humulos: train the hatched Digimon, including Stage I. The egg has no training.
+    if (!pet || pet.dead || pet.level === 'egg') {
+      if (host.playPose) host.playPose('refuse', 900);
+      return false;
+    }
     train = { on: true, shakes: 0, startedAt: (typeof performance !== 'undefined' ? performance.now() : Date.now()), phase: 'count', result: null, tag: false };
     host.setView('train');
     if (root.PendulumShake && root.PendulumShake.requestPermission) {
