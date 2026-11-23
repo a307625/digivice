@@ -16,7 +16,9 @@
  *
  * The US Interactive Digivice is a different product (Select/OK/Cancel)
  * and is never used as a JP Ver.1/Ver.2 rules source.
- * DIGIVICE Ver.REVIVAL (2026) is a later remake and is not used as 1999.
+ * DIGIVICE Ver.15th / Complete / Revival are later remakes. Only the
+ * three DP blanks the 1999 manuals never printed follow them:
+ * 100 steps +1, a loss −2, meat +2. The rest of those devices is not copied.
  */
 (function (root) {
   'use strict';
@@ -91,11 +93,14 @@
   // Wikimon V1 / FI "per island" read as per area).
   var HELP_CHANCE = 0.25; // PLACEHOLDER
 
-  // PLACEHOLDER DP economy (1999 gain rate unpublished; Revival's
-  // "100 steps = 1 DP" is 2026 and is not used). Start with 6 (two evos);
-  // +1 DP per victory.
-  var DP_START = 6; // PLACEHOLDER
-  var DP_PER_WIN = 1; // PLACEHOLDER
+  // 1999 never printed how DP rises, what a loss costs, or what meat does.
+  // Those three follow the Ver.15th / Complete / Revival manuals.
+  // That manual also prints no starting gift, so a new game begins at 0.
+  var DP_START = 0;
+  var DP_STEPS = 100;      // steps per +1 DP
+  var DP_PER_STEPS = 1;
+  var DP_LOSS = 2;
+  var DP_MEAT = 2;
 
   // PLACEHOLDER HP/ATK (no official 1999 table published; TofGF only
   // confirms DP/WIN/HP/ATTACK appear on screen). Stage-scaled so battles
@@ -149,13 +154,11 @@
     venomvamdemon: 'V', piemon: 'V'
   };
 
-  // FI Intro item effects (plan-recommended). Wikimon Toy conflicts:
-  //   Meat "Adds 2 DP"; Power Up "Ensures a One-hit KO".
-  // We follow File Island: Protein doubles HP next fight; Meat no effect
-  // ever noticed; Power Up doubles all stats next fight.
+  // Protein and Power Up follow File Island. Meat follows the later
+  // manual (+2 DP); File Island's 1999 playtest saw no effect.
   var ITEM_EFFECTS = {
     protein: 'double_hp',   // FI
-    meat: 'none',           // FI: "unknown, no effect ever noticed"
+    meat: 'add_dp',         // Ver.15th / Complete / Revival: +2 DP
     powerUp: 'double_all'   // FI
   };
 
@@ -222,7 +225,10 @@
     ENCOUNTER_EVERY: ENCOUNTER_EVERY,
     HELP_CHANCE: HELP_CHANCE,
     DP_START: DP_START,
-    DP_PER_WIN: DP_PER_WIN,
+    DP_STEPS: DP_STEPS,
+    DP_PER_STEPS: DP_PER_STEPS,
+    DP_LOSS: DP_LOSS,
+    DP_MEAT: DP_MEAT,
     STATS: STATS,
     AREAS_V1: AREAS_V1,
     AREAS_V2: AREAS_V2,

@@ -151,6 +151,42 @@ console.log('5) Map: 7 areas, Wikimon V1 step counts, phone Steps drive countdow
   eq(s.areaRemaining, before - 105, 'shake decrements remaining');
 }
 
+console.log('5b) DP follows Ver.15th: 100 steps +1, loss −2, meat +2; a win adds none');
+{
+  const s = boot(v1(), 0);
+  toChild(s);
+  eq(s.dp, 0, 'a new game starts at 0');
+  Eng.applySteps(s, 99);
+  eq(s.dp, 0, '99 steps are not yet a point');
+  eq(s.dpStepBank, 99, 'the remainder is kept');
+  Eng.applySteps(s, 1);
+  eq(s.dp, 1, '100 steps → 1 DP');
+  eq(s.dpStepBank, 0, 'bank clears on the point');
+  Eng.applySteps(s, 250);
+  eq(s.dp, 3, 'another 250 steps → two more points');
+  eq(s.dpStepBank, 50, '50 steps left in the bank');
+
+  s.encounter = { id: 'gizamon', isBoss: false, optional: true };
+  Eng.startBattle(s);
+  const before = s.dp;
+  s.battle.result = 'win';
+  Eng.finishBattle(s);
+  eq(s.dp, before, 'a win does not add DP');
+
+  const sLoss = boot(v1(), 0);
+  toChild(sLoss);
+  sLoss.dp = 5;
+  sLoss.encounter = { id: 'gizamon', isBoss: false, optional: true };
+  Eng.startBattle(sLoss);
+  sLoss.battle.result = 'lose';
+  Eng.finishBattle(sLoss);
+  eq(sLoss.dp, 3, 'a loss costs 2 DP');
+  sLoss.battle.result = 'lose';
+  sLoss.dp = 1;
+  Eng.finishBattle(sLoss);
+  eq(sLoss.dp, 0, 'DP does not go below 0');
+}
+
 console.log('6) Boss at 0 remaining, optional fights, unhappy if backing out');
 {
   const s = boot(v1(), 0);
@@ -247,8 +283,10 @@ console.log('8) Medical Kit treats skull; items (FI effects)');
   s.items.powerUp = 1;
   ok(Eng.useItem(s, 'protein'), 'protein used');
   eq(s.nextBattleBuff.protein, true, 'double HP next fight (FI)');
+  const dpBeforeMeat = s.dp;
   ok(Eng.useItem(s, 'meat'), 'meat consumed');
-  eq(s.nextBattleBuff.protein, true, 'meat has no effect (FI)');
+  eq(s.dp, dpBeforeMeat + Data.DP_MEAT, 'meat +2 DP (Ver.15th)');
+  eq(s.nextBattleBuff.protein, true, 'meat does not change the protein buff');
   eq(s.items.meat, 0, 'meat gone');
   ok(Eng.useItem(s, 'powerUp'), 'power up');
   eq(s.nextBattleBuff.powerUp, true, 'double all stats next fight (FI)');

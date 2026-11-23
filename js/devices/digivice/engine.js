@@ -71,6 +71,7 @@
       speedMigrated: true,
       clockOffset: 12 * 3600,
       totalSteps: 0,
+      dpStepBank: 0,
       area: 0,
       areaRemaining: areas[0].steps,
       areasCleared: 0,
@@ -106,6 +107,7 @@
   function migrateState(state) {
     if (!state || state.family !== 'digivice') return state;
     if (state.dp == null) state.dp = D().DP_START;
+    if (state.dpStepBank == null) state.dpStepBank = 0;
     if (!state.items) state.items = { protein: 0, meat: 0, powerUp: 0 };
     if (!state.nextBattleBuff) state.nextBattleBuff = { protein: false, powerUp: false };
     if (!state.help) {
@@ -294,12 +296,22 @@
 
   /* ---------- steps (phone Steps + shake) ---------- */
 
+  function addStepDp(state, delta) {
+    var Da = D();
+    var bank = (state.dpStepBank || 0) + delta;
+    var step = Da.DP_STEPS;
+    var gain = Math.floor(bank / step);
+    state.dpStepBank = bank - gain * step;
+    if (gain > 0) state.dp = (state.dp || 0) + gain * Da.DP_PER_STEPS;
+  }
+
   function applySteps(state, delta) {
     delta = Math.floor(delta || 0);
     if (!state || delta <= 0) return state;
     if (state.phase !== 'play') return state;
     if (state.battle) return state; // no walking mid-fight
     state.totalSteps = (state.totalSteps || 0) + delta;
+    addStepDp(state, delta);
     // Injured partners still walk (1999 untreated-skull death unpublished;
     // we do not stop the pedometer).
     if (mapComplete(state)) return state;
@@ -475,7 +487,6 @@
       if (b.result === 'win') {
         p.wins = (p.wins || 0) + 1;
         p.stageWins = (p.stageWins || 0) + 1;
-        state.dp = (state.dp || 0) + Da.DP_PER_WIN;
         // PLACEHOLDER item-drop rate: 1/4, uniform among the three items.
         if (Math.random() < 0.25) {
           var k = ['protein', 'meat', 'powerUp'][Math.floor(Math.random() * 3)];
@@ -498,7 +509,9 @@
         maybeUnlockVDramon(state);
       } else {
         // Skull = loss. FI: treat with Medical Kit.
+        // Ver.15th / Complete / Revival: a loss costs 2 DP.
         p.injured = true;
+        state.dp = Math.max(0, (state.dp || 0) - Da.DP_LOSS);
       }
     }
     // HELP may appear after battles (FI).
@@ -703,8 +716,8 @@
   function useItem(state, kind) {
     if (!state.items || !state.items[kind]) return false;
     if (kind === 'meat') {
-      // FI: no effect ever noticed. Consume, do nothing.
       state.items.meat -= 1;
+      state.dp = (state.dp || 0) + D().DP_MEAT;
       return true;
     }
     if (kind === 'protein') {
