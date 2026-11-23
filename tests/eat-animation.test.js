@@ -62,6 +62,9 @@ console.log('1) Official 2 Hz clock and food-shrink phases (1997 source, shared)
   ok(/return \(eatAnim\.t % 2\) \? 'eat1' : 'eat0'/.test(src), '1997 mouth alternates eat0/eat1 on t%2');
   ok(/playPose\('happy', 2000\)/.test(src), 'happy pose held 2.0 s when not returning to food');
   ok(/poseFx\.name === 'refuse'/.test(src) && /animTick\(\) % 2/.test(src), 'refuse head-shake flips on the 2 Hz clock');
+  ok(/poseFx\.name === 'angry'[\s\S]{0,80}'angry' : 'idle0'/.test(src), 'angry alternates with the walk frame');
+  ok(/fam === 'dm1997'/.test(src) && /one Z over the head/.test(src), '1997 sleep draws a Z over the head');
+  ok(/\(animTick\(\) % 2\) \? 'hurt' : 'sick'/.test(src), 'injury alternates hurt and sick, not the standing walk');
 
   // Three bites: full, full-lowered, half, half, empty.
   const meat = [0, 1, 2, 3, 4].map((t) => eatFood('meat', t));

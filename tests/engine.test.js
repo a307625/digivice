@@ -102,6 +102,25 @@ console.log('1) Calls: 20 min, one CM per empty period, hunger+strength is one c
   eq(s.calls, 15, 'calls stay capped at 15');
 }
 
+{
+  const s = form('agumon', { hunger: 4, strength: 4, poop: 1, clockOffset: 10 * 3600 });
+  ok(Engine.isCallLit(s), 'poop lights the call icon');
+  advance(s, 21 * 60);
+  eq(s.calls, 0, 'a poop call is not the 20 min empty-heart mistake');
+  ok(Engine.isCallLit(s), 'the icon stays on until the poop is flushed');
+  Engine.flush(s);
+  ok(!Engine.isCallLit(s), 'flush turns the poop call off');
+}
+{
+  const s = form('agumon', { hunger: 4, strength: 4, injured: true, clockOffset: 10 * 3600 });
+  ok(Engine.isCallLit(s), 'an injury lights the call icon');
+  Engine.heal(s);
+  ok(s.injured && Engine.isCallLit(s), 'Agumon still needs a second dose');
+  Engine.heal(s);
+  ok(!s.injured, 'second dose clears the injury');
+  ok(!Engine.isCallLit(s), 'a healed injury turns the call off');
+}
+
 console.log('2) 12 h starve from the call (hunger or strength), 13 h catch-up can fire it');
 {
   const s = form('agumon', { hunger: 0, strength: 4, clockOffset: 10 * 3600 });

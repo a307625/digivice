@@ -436,10 +436,17 @@
     if (!el) return;
     if (on) el.classList.add('show');
     else el.classList.remove('show');
+    if (id === 'overlay-battle') {
+      if (on) startLobby();
+      else stopLobby();
+    }
   }
   function hideAllOverlays() {
+    var battle = $('overlay-battle');
+    var lobbyOpen = battle && battle.classList.contains('show');
     document.querySelectorAll('.overlay').forEach(function (el) { el.classList.remove('show'); });
     stopScan();
+    if (lobbyOpen) stopLobby();
   }
   function anyOverlay() {
     return !!document.querySelector('.overlay.show');
@@ -595,7 +602,8 @@
       if (poseFx.name === 'sleep') return (animTick() % 2) ? 'sleep1' : 'sleep0';
       if (poseFx.name === 'eat') return (animTick() % 2) ? 'eat1' : 'eat0';
       if (poseFx.name === 'happy') return 'happy';
-      if (poseFx.name === 'angry') return 'angry';
+      // Classic brick: angry alternates with the walk frame. A frozen roar is not the fail pose.
+      if (poseFx.name === 'angry') return (animTick() % 2) ? 'angry' : 'idle0';
       if (poseFx.name === 'refuse') return 'refuse';
     } else if (poseFx.name && performance.now() >= poseFx.until) {
       poseFx = { name: null, until: 0, extra: null };
@@ -604,8 +612,8 @@
       return (eatAnim.t % 2) ? 'eat1' : 'eat0';
     }
     if (state.injured) {
-      var sp = window.SpriteAtlas && window.SpriteAtlas.SPRITES[state.mon];
-      if (sp && sp.frames.sick) return (animTick() % 2) ? 'sick' : 'idle0';
+      // Injured 1 / Injured 2. Do not cut back to the standing walk.
+      return (animTick() % 2) ? 'hurt' : 'sick';
     }
     return idleFrame();
   }
@@ -779,11 +787,18 @@
   }
   function drawSleepZ() {
     if (!state || !state.sleeping) return;
-    if (currentDevice().family !== 'dm20') return;
+    var fam = currentDevice().family;
+    if (fam !== 'dm20' && fam !== 'dm1997') return;
     var I = items();
     if (!I || !I.drawText) return;
-    // "A big Z will appear over the Digimon's head" (WTW / Humulos Z's).
     var mx = fx(Math.floor((FW - 16) / 2));
+    if (fam === 'dm1997') {
+      // 1997: one Z over the head. It swaps height on the 2 Hz clock (big / small).
+      var big = (animTick() % 2) === 0;
+      I.drawText(ctx, 'Z', mx + 14 * DOT, fy(big ? 0 : 1), ITEM);
+      return;
+    }
+    // DM20: "A big Z will appear over the Digimon's head" (WTW / Humulos Z's).
     I.drawText(ctx, 'Z', mx + 14 * DOT, fy(0), ITEM);
     I.drawText(ctx, 'Z', mx + 18 * DOT, fy(2), ITEM); // cols 26-30: inside the 32-dot LCD
   }
@@ -834,7 +849,7 @@
   }
 
   function walkUpdate() {
-    if (!state || state.dead || state.sleeping || poseFx.name || eatAnim.on || flushAnim.on) return;
+    if (!state || state.dead || state.sleeping || state.injured || isCalling() || poseFx.name || eatAnim.on || flushAnim.on) return;
     if (view !== 'play') return;
     // 1997 egg: two frames rock it by one dot, in the center. It does not
     // patrol the glass the way a hatched Digimon does. Same on DM20.
@@ -873,6 +888,7 @@
     var my = fy(0);
     var mx = fx(walk.x);
     var flip = false;
+    var calling = isCalling() && !state.sleeping && !eatAnim.on && !poseFx.name && !state.injured;
     if (isEggStage()) {
       mx = fx(8);
       flip = false;
@@ -889,6 +905,11 @@
     } else if (poseFx.name) {
       mx = fx(Math.floor((FW - monW) / 2));
       flip = false;
+    } else if (state.injured || calling) {
+      // Sick, or the attention hop: stay put. A call lifts the sprite one dot.
+      mx = fx(Math.floor((FW - monW) / 2));
+      flip = false;
+      if (calling && (animTick() % 2) === 1) my = fy(0) - DOT;
     } else {
       flip = walk.dir > 0;
     }
@@ -1091,7 +1112,9 @@
     if (!state) return;
     var I = items();
     var mode = train.mode || 'meter';
-    var fr = train.done ? (train.success ? 'happy' : 'angry') : ((animTick() % 2) ? 'train1' : 'train0');
+    var fr = train.done
+      ? (train.success ? 'happy' : ((animTick() % 2) ? 'angry' : 'idle0'))
+      : ((animTick() % 2) ? 'train1' : 'train0');
     if (mode === 'wall') { drawDm20Wall(); return; }
     // Monster on the left. The minigame is drawn after it so the bar,
     // number, and HI/LO stay readable instead of disappearing under the sprite.
@@ -1203,8 +1226,8 @@
     var win = battleFx.result === 'win';
     var selfFr = 'idle0', foeFr = 'idle0';
     if (t >= 10) {
-      selfFr = win ? 'happy' : 'angry';
-      foeFr = win ? 'angry' : 'happy';
+      selfFr = win ? 'happy' : ((t % 2) ? 'angry' : 'idle0');
+      foeFr = win ? ((t % 2) ? 'angry' : 'idle0') : 'happy';
     } else if (t >= 7) {
       selfFr = win ? 'attack' : 'hurt';
       foeFr = win ? 'hurt' : 'attack';
@@ -2309,10 +2332,9 @@
               stopScan();
               $('import-code').value = r.data;
               if (/^DM20B\./.test(r.data.trim())) {
-                $('pvp-in').value = r.data;
                 hideAllOverlays();
                 showOverlay('overlay-battle', true);
-                toast('已讀取對戰碼，請按對應按鈕');
+                toast('連線對戰已改成線上名單');
               } else {
                 doImportText(r.data);
               }

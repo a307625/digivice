@@ -685,6 +685,10 @@
         state.gameTime - state.callLightsAt < callTimeout(state)) {
       return true;
     }
+    // Poop and an untreated injury light the same call icon. They are not
+    // the 20-minute empty-heart mistake; flush and medicine clear them.
+    if ((state.poop || 0) > 0) return true;
+    if (state.injured) return true;
     return false;
   }
 
