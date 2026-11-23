@@ -833,11 +833,18 @@
       var effort = Math.min(4, Math.floor((s.train || 0) / 4));
       I.drawHearts(ctx, fx(0), fy(4), effort, 4, ITEM);
     } else if (page === 'dp') {
-      I.drawText(ctx, 'DP', fx(1), fy(3), ITEM);
-      I.drawNumber(ctx, s.dp || 0, fx(12), fy(3), ITEM, 0);
-      if (s.dpMax) {
-        I.drawText(ctx, 'MAX', fx(1), fy(10), ITEM);
-        I.drawNumber(ctx, s.dpMax, fx(14), fy(9), ITEM, 0);
+      if (is1997Brick()) {
+        // Official gauge is four hearts, same size and row as hunger.
+        // The words DP / MAX are wider than the 32-dot glass and are not on the brick.
+        var dpHearts = Math.max(0, Math.min(4, s.dp || 0));
+        I.drawHearts(ctx, fx(0), fy(4), dpHearts, 4, ITEM);
+      } else {
+        I.drawText(ctx, 'DP', fx(1), fy(3), ITEM);
+        I.drawNumber(ctx, s.dp || 0, fx(12), fy(3), ITEM, 0);
+        if (s.dpMax) {
+          I.drawText(ctx, 'MAX', fx(1), fy(10), ITEM);
+          I.drawNumber(ctx, s.dpMax, fx(14), fy(9), ITEM, 0);
+        }
       }
     } else {
       var pct = Math.round((s.winRate || 0) * 100);
@@ -854,7 +861,14 @@
     blitItem('pill', fx(10), fy(8), ITEM);
   }
 
+  function is1997Brick() {
+    var d = currentDevice();
+    return !!(d && d.family === 'dm1997');
+  }
+
   function battleMenuItems() {
+    // 1997 has no battle list. DM20 is Single / Tag / Link.
+    // Anything else that still shares this screen (should not) is not a 1997 menu.
     if (currentDevice().family === 'dm20') return ['SINGLE', 'TAG', 'LINK'];
     return ['1P', 'LINK'];
   }
@@ -941,7 +955,8 @@
       ctx.fillRect(bx, by, Math.floor(bw * Math.min(1, train.pos)), bh);
       I.drawNumber(ctx, train.mash || 0, fx(22), fy(8), ITEM, 0);
     } else if (mode === 'number') {
-      I.drawNumber(ctx, train.num || 0, fx(18), fy(4), ITEM, 0);
+      // Up to 3 digits (100). 3×5 dots starting at col 17 ends on col 31.
+      I.drawNumber(ctx, train.num || 0, fx(17), fy(4), ITEM, 0);
     } else {
       drawMeter(fy(6), mode === 'meter_slow');
     }
@@ -1018,8 +1033,48 @@
     if (id) blitMon(id, fx(8), fy(0), MON, efr, false);
   }
 
+  function drawShot(fromRight, u, yDot) {
+    var start = fromRight ? fx(20) : fx(12);
+    var end = fromRight ? fx(8) : fx(24);
+    var px = start + (end - start) * u;
+    blitItem('shot', px, fy(yDot), ITEM, fromRight);
+    if (u > 0.55) blitItem('hit', end - 4 * DOT, fy(yDot - 2), ITEM);
+  }
+
+  /* 1997 battle is not a menu. The brick plays four exchanges: three
+     single shots, then the winner fires twice. Both sprites stay on the
+     32×16 glass (16 dots each). */
+  function drawBattle1997() {
+    var self = state && state.mon;
+    var t = battleFx.t;
+    var win = battleFx.result === 'win';
+    var selfFr = 'idle0', foeFr = 'idle0';
+    if (t >= 10) {
+      selfFr = win ? 'happy' : 'angry';
+      foeFr = win ? 'angry' : 'happy';
+    } else if (t >= 7) {
+      selfFr = win ? 'attack' : 'hurt';
+      foeFr = win ? 'hurt' : 'attack';
+    } else if (t >= 1) {
+      var fromRight = (Math.floor((t - 1) / 2) % 2) === 1;
+      selfFr = fromRight ? 'hurt' : 'attack';
+      foeFr = fromRight ? 'attack' : 'hurt';
+    }
+    blitMon(self, fx(0), fy(0), MON, selfFr, true);
+    blitMon(battleFx.foe, fx(16), fy(0), MON, foeFr, false);
+    if (t >= 1 && t < 7) {
+      var fromRight2 = (Math.floor((t - 1) / 2) % 2) === 1;
+      drawShot(fromRight2, ((t - 1) % 2) * 0.55 + 0.2, 4);
+    } else if (t >= 7 && t < 10) {
+      var u = (t - 7) / 3;
+      drawShot(!win, Math.min(1, u + 0.15), 3);
+      drawShot(!win, Math.min(1, u), 8);
+    }
+  }
+
   function drawBattleFx() {
     lcdBg();
+    if (is1997Brick()) { drawBattle1997(); return; }
     var self = state && state.mon;
     var t = battleFx.t;
     var selfFr = 'idle0', foeFr = 'idle0';
@@ -1035,12 +1090,7 @@
     blitMon(battleFx.foe, fx(16), fy(0), MON, foeFr, false);
     if (t >= 2 && t < 5) {
       var goingRight = battleFx.result === 'win';
-      var u = (t - 2) / 3;
-      var start = goingRight ? fx(12) : fx(20);
-      var end = goingRight ? fx(24) : fx(8);
-      var px = start + (end - start) * u;
-      blitItem('shot', px, fy(4), ITEM, !goingRight);
-      if (u > 0.6) blitItem('hit', end - 4 * DOT, fy(2), ITEM);
+      drawShot(!goingRight, (t - 2) / 3, 4);
     }
   }
 
@@ -1249,7 +1299,10 @@
     if (view === 'clock') return;
     if (view === 'evo' || view === 'battle' || view === 'dying' || view === 'grave') return;
     if (view === 'food') { foodSel = (foodSel + 1) % 2; return; }
-    if (view === 'battleMenu') { battleSel = (battleSel + 1) % battleMenuItems().length; return; }
+    // 1997 A never walks a 1P/LINK list. A always moves to the next icon,
+    // and the icon after MEDIC is blank, not BATTLE.
+    if (view === 'battleMenu' && is1997Brick()) view = 'play';
+    else if (view === 'battleMenu') { battleSel = (battleSel + 1) % battleMenuItems().length; return; }
     if (view === 'lightMenu') { lightSel = (lightSel + 1) % 2; return; }
     if (view === 'album') { albumSel = (albumSel + 1) % 4; return; }
     if (view === 'albumView') { albumPose = (albumPose + 1) % 4; return; }
@@ -1482,9 +1535,10 @@
     // Official: Baby I/II/Egg cannot; need DP; must not be injured.
     // Engine.canBattle covers stage, DP, injury, and species.canBattle.
     if (!window.Engine.canBattle(state)) { playPose('refuse', 2000); return; }
-    // 1997 has no battle menu: B on the battle icon fights the computer.
-    // Link play stays in 其他功能. DM20 keeps Single / Tag / Link.
-    if (currentDevice().family === 'dm1997') { cpuBattle(false); return; }
+    // 1997 has no battle menu. B on the battle icon starts the fight.
+    // A does not open a second list, and LINK stays in 其他功能.
+    // DM20 keeps Single / Tag / Link.
+    if (is1997Brick()) { cpuBattle(false); return; }
     battleSel = 0;
     view = 'battleMenu';
   }
@@ -1551,6 +1605,7 @@
     if (view === 'albumView' || view === 'albumRecord') { view = 'album'; return; }
     if (view === 'connect') { confirmConnect(); return; }
     if (view === 'battleMenu') {
+      if (is1997Brick()) { cpuBattle(false); return; }
       var itemsB = battleMenuItems();
       var pick = itemsB[battleSel];
       if (pick === '1P' || pick === 'SINGLE') cpuBattle(false);
@@ -1800,7 +1855,9 @@
       }
       if (view === 'battle') {
         battleFx.t++;
-        if (battleFx.t > 8) finishBattleFx();
+        // 1997: stance + 3 exchanges + double hit + result (about 6 s).
+        var battleEnd = is1997Brick() ? 12 : 8;
+        if (battleFx.t > battleEnd) finishBattleFx();
       }
       if (view === 'dying') {
         dyingT++;
