@@ -1299,8 +1299,7 @@
     if (view === 'clock') return;
     if (view === 'evo' || view === 'battle' || view === 'dying' || view === 'grave') return;
     if (view === 'food') { foodSel = (foodSel + 1) % 2; return; }
-    // 1997 A never walks a 1P/LINK list. A always moves to the next icon,
-    // and the icon after MEDIC is blank, not BATTLE.
+    // 1997 A never walks a 1P/LINK list.
     if (view === 'battleMenu' && is1997Brick()) view = 'play';
     else if (view === 'battleMenu') { battleSel = (battleSel + 1) % battleMenuItems().length; return; }
     if (view === 'lightMenu') { lightSel = (lightSel + 1) % 2; return; }
@@ -1312,7 +1311,17 @@
     if (isMenuView()) view = 'play';
     var list = selectable();
     sel = (sel + 1);
-    if (sel >= list.length) sel = -1;
+    if (sel >= list.length) {
+      // 1997: 治療 is the last icon. The next A returns to 儀表板
+      // (STATUS, the first icon). It must not go blank and must not
+      // land on BATTLE.
+      if (is1997Brick()) {
+        var home = list.indexOf('STATUS');
+        sel = home >= 0 ? home : 0;
+      } else {
+        sel = -1;
+      }
+    }
   }
 
   function disturb(reason) {
@@ -1591,6 +1600,14 @@
   function finishBattleFx() {
     view = 'play';
     battleFx.active = false;
+    battleSel = 0;
+    // Leave the fight on the dashboard icon. Do not stay on BATTLE,
+    // and do not reopen a different battle list.
+    if (is1997Brick()) {
+      var list = selectable();
+      var home = list.indexOf('STATUS');
+      sel = home >= 0 ? home : 0;
+    }
     playPose(battleFx.result === 'win' ? 'happy' : 'angry', 2000);
   }
 
