@@ -191,11 +191,11 @@ console.log('Clock-SET operation tests');
   eq(s.sleeping, false, 'Baby I is not put to sleep by a clock jump');
 }
 
-// --- egg hatch: 10 min (1997) / 1 min (DM20) after first SET, not before ---
+// --- egg hatch: 1 min after first SET, not before ---
 {
   const s = Engine.defaultState(1);
   eq(s.clockInitialized, false, 'a new 1997 egg has not had its clock set');
-  eq(Engine.eggHatchMinutes(s), 10, '1997 hatch is 10 minutes after SET');
+  eq(Engine.eggHatchMinutes(s), 1, '1997 hatch is 1 minute after SET');
   s.speed = 1;
   advance(s, 12 * 60);
   ok(s.mon === 'egg_v1' || (Engine.mon(s) && Engine.mon(s).stage === 'egg'),
@@ -207,12 +207,21 @@ console.log('Clock-SET operation tests');
   Engine.beginClockSet(s);
   const c = Engine.confirmClockSet(s);
   ok(c.first && c.hatchStarted, 'first confirm starts the 1997 hatch timer');
-  eq(s.evoDueAt, 10, 'hatch due is 10 minutes');
+  eq(s.evoDueAt, 1, 'hatch due is 1 minute');
   eq(s.stageEnteredGame, s.gameTime, 'hatch timer starts at the moment of SET');
-  advance(s, 9 * 60);
-  ok(Engine.mon(s).stage === 'egg', 'still an egg at 9 minutes');
-  advance(s, 2 * 60);
-  ok(Engine.mon(s).stage !== 'egg', '1997 egg hatches 10 minutes after the clock is set (mon=' + s.mon + ')');
+  advance(s, 50);
+  ok(Engine.mon(s).stage === 'egg', 'still an egg at 50 seconds');
+  advance(s, 20);
+  ok(Engine.mon(s).stage !== 'egg', '1997 egg hatches 1 minute after the clock is set (mon=' + s.mon + ')');
+}
+{
+  const s = Engine.defaultState(1);
+  s.speed = 1;
+  Engine.beginClockSet(s);
+  Engine.confirmClockSet(s);
+  s.evoDueAt = 10;
+  advance(s, 70);
+  ok(Engine.mon(s).stage !== 'egg', 'a save still carrying the old 10-minute due hatches at 1 minute (mon=' + s.mon + ')');
 }
 {
   const s = Engine.defaultState(1, 'zuba');

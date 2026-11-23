@@ -629,10 +629,9 @@
     canvas.style.height = (LCD_H * s) + 'px';
   }
 
-  // 1997 lights-off play screen: a blank dark LCD — no monster, poop, or Z.
-  // Menus and the clock still paint on paper (a button can open them).
-  // DM20 does not go dark (Pendulum 20th / DM20-class: "the screen doesn't
-  // go dark like the old ones"); the sleep cell and a Z stay visible.
+  // 1997 lamp-off stays on the playfield. Sleep is the clock, not the lamp.
+  // A dim is drawn over the scene so the lamp state is visible.
+  // DM20 does not go dark; the sleep cell and a Z stay visible when sleeping.
   function is1997PlayDark() {
     var d = currentDevice();
     var fam = d && d.family;
@@ -906,6 +905,11 @@
     }
     drawPoop();
     drawSleepZ();
+    // Lamp off: dim the glass. The pose stays whatever the clock chose.
+    if (state.lights === false && currentDevice().family === 'dm1997') {
+      ctx.fillStyle = 'rgba(16, 20, 28, 0.28)';
+      ctx.fillRect(0, 0, LCD_W, LCD_H);
+    }
   }
 
   function drawClock() {
@@ -1721,9 +1725,13 @@
     }
     var foe = (chargeTier != null && charge.foe) ? charge.foe : window.Battle.pickCpuFoe(state.mon);
     var selfSnap = window.Battle.snapshot(state);
-    selfSnap.initiator = window.Engine.nextCpuInitiator ? window.Engine.nextCpuInitiator(state) : true;
+    // 1997: pressing Battle makes this device the initiator. A CPU stand-in
+    // has no hearts, protein, or care mistakes, so its boost is 0 and the
+    // difference is the player's boost alone.
+    selfSnap.initiator = true;
+    if (window.Engine.nextCpuInitiator) window.Engine.nextCpuInitiator(state);
     if (chargeTier != null && window.Battle.chargeBoost) selfSnap.enhancement = (selfSnap.enhancement || 0) + window.Battle.chargeBoost(chargeTier);
-    var result = window.Battle.resolveBattle(state.mon, foe, Date.now() >>> 0, selfSnap, { mon: foe, strength: 2, weight: 20, enhancement: 0 });
+    var result = window.Battle.resolveBattle(state.mon, foe, Date.now() >>> 0, selfSnap, { mon: foe, enhancement: 0 });
     hideAllOverlays();
     battleFx = { t: 0, foe: foe, result: result, active: true };
     view = 'battle';
@@ -2773,14 +2781,10 @@
     try { soundOn = localStorage.getItem('digivice-sound') === '1'; } catch (e) {}
     updateSoundBtn();
 
-    var downAt = { A: 0, B: 0, C: 0 };
-    function mark(k) { downAt[k] = Date.now(); }
-    function recentChord() {
-      var n = Date.now(), w = 700;
-      return (n - downAt.A < w && (n - downAt.C < w || n - downAt.B < w));
-    }
     function tryChord() {
-      if (recentChord()) { keyA = true; keyC = true; }
+      // Mute, clock SET, and the grave's new-egg chord only count while
+      // both keys are still down. A tap on A, then a tap on B or C, is
+      // select then confirm/cancel — not the sound toggle.
       var r = maybeNewEggCombo() || maybeClockSetCombo() || maybeMuteCombo();
       if (!r && isPen20() && window.Pen20UI && window.Pen20UI.maybeChord(penHost(), keyA, keyC)) {
         r = true;
@@ -2795,7 +2799,7 @@
       return r;
     }
     function downA(e) {
-      keyA = true; mark('A');
+      keyA = true;
       if (tryChord()) return;
       if (isClockSetView()) {
         getClockHold().onPointerDown('h');
@@ -2803,14 +2807,14 @@
     }
     function upA() { keyA = false; getClockHold().onPointerUp(); }
     function downB(e) {
-      keyB = true; mark('B');
+      keyB = true;
       if (tryChord()) return;
       if (isClockSetView()) {
         getClockHold().onPointerDown('m');
       }
     }
     function upB() { keyB = false; getClockHold().onPointerUp(); }
-    function downC(e) { keyC = true; mark('C'); tryChord(); }
+    function downC(e) { keyC = true; tryChord(); }
     function upC() { keyC = false; }
     function resetTap(e) {
       if (e) e.preventDefault();

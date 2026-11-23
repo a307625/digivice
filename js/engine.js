@@ -198,11 +198,11 @@
     var m = mon(state);
     return !!(m && m.stage !== 'baby1' && m.stage !== 'egg' && !state.dead);
   }
-  // Official: 1997 egg hatches 10 min after the clock is first set (this
-  // game's CARE / user). DM20 Bandai / Humulos: 1 minute after name+clock.
-  // Some Japanese community pages say 5 min for 1997 — documented, not used.
+  // The egg hatches 1 minute after the clock is first set. It does not
+  // hatch at all before that SET. The old 10 was egg lifespanMin, a CARE
+  // placeholder, and it left the egg sitting after a full minute.
   function eggHatchMinutes(state) {
-    return isDm20(state) ? 1 : 10;
+    return 1;
   }
   function beginClockSet(state) {
     if (!state) return { ok: false };
@@ -526,10 +526,9 @@
     if (isDm20(state) && DM20_STAGE_MIN[m.stage] != null) return DM20_STAGE_MIN[m.stage];
     var due = state.evoDueAt;
     var lo = m.lifespanMin || 0;
-    // After the first clock SET, the egg's hatch window is the official
-    // figure we stored (1997: 10 min, DM20: 1 min) and must not be raised
-    // back to a CARE placeholder of 10.
-    if (m.stage === 'egg' && state.clockInitialized && due != null) return due;
+    // After the first clock SET, hatch at 1 minute. A save that stored the
+    // old 10-minute placeholder must not keep the egg waiting.
+    if (m.stage === 'egg' && state.clockInitialized) return eggHatchMinutes(state);
     // Stale due from an earlier form (e.g. tests that swap mon after defaultState):
     if (due == null || due < lo) due = lo;
     return due;
@@ -539,8 +538,8 @@
     if (state.dead) return false;
     var m = mon(state);
     if (!m) return false;
-    // Official 1997: the egg does not hatch until the clock has been set.
-    // The hatch timer itself starts on the first confirm (10 min / DM20 1 min).
+    // Official: the egg does not hatch until the clock has been set.
+    // The hatch timer itself starts on the first confirm (1 minute).
     if (m.stage === 'egg' && !state.clockInitialized) return false;
     var rng = rngOf(rngOrOpts);
 
@@ -578,7 +577,10 @@
 
     // DM20 timing is gated above (awake-only Humulos table); do not let the
     // 1997 lifespanMin in the species data hold the evolution back.
-    var stats = buildStats(state, isDm20(state) ? Math.max(mins, m.lifespanMin || 0) : mins);
+    // Egg data still says lifespanMin 10 (the old placeholder). Once the
+    // 1-minute hatch is due, do not let that field hold the egg.
+    var statMins = (isDm20(state) || m.stage === 'egg') ? Math.max(mins, m.lifespanMin || 0) : mins;
+    var stats = buildStats(state, statMins);
 
     if (hasPerfectRoll(m)) {
       if (!state.perfectRolledThisStage) {
@@ -814,8 +816,9 @@
         state.emptySince = null;
       }
 
-      // sleep — official DMC / 1997 schedule and disturbance window
-      var shouldSleep = m.stage !== 'baby1' && isSleepHours(state);
+      // Sleep follows the clock. The lamp does not start it (toggleLights
+      // only flips state.lights). Egg and Baby I have no bedtime.
+      var shouldSleep = m.stage !== 'baby1' && m.stage !== 'egg' && isSleepHours(state);
       var inDisturbAwake = !!(state.awakeUntil && state.gameTime < state.awakeUntil);
       if (state.sleeping) {
         state.sleptContinuously = (state.sleptContinuously || 0) + step;
@@ -1228,9 +1231,10 @@
   }
 
   function nextCpuInitiator(state) {
-    var init = state.cpuPlayerInitiates !== false;
-    state.cpuPlayerInitiates = !init;
-    return init;
+    // 1997: the device that presses Battle is the initiator on every fight.
+    // CPU battles do not take turns. Link battles use the offerer instead.
+    if (state) state.cpuPlayerInitiates = true;
+    return true;
   }
 
   function tryJogress(state, partnerId) {
