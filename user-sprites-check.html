@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>自訂圖檔檢查 · User sprites check</title>
+<style>
+  body { font: 14px/1.5 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; margin: 16px; background: #f4f4ef; color: #222; }
+  h1 { font-size: 20px; margin: 0 0 8px; }
+  .sum { margin: 8px 0 16px; padding: 8px 12px; background: #fff; border: 1px solid #ccc; border-radius: 6px; }
+  .ok { color: #17702a; } .err { color: #b3261e; } .miss { color: #888; }
+  table { border-collapse: collapse; background: #fff; width: 100%; }
+  th, td { border: 1px solid #ddd; padding: 3px 6px; text-align: left; vertical-align: middle; }
+  th { background: #eee; position: sticky; top: 0; }
+  canvas { image-rendering: pixelated; background: #c6cbb8; display: block; }
+  label { margin-right: 12px; }
+</style>
+</head>
+<body>
+<h1>自訂圖檔檢查（assets/user-sprites）</h1>
+<div>這一頁讀取 <code>assets/user-sprites/manifest.json</code>，列出每個檔案是否成功載入。預覽以遊戲相同的點大小（每點 4 px）顯示。</div>
+<div class="sum" id="sum">載入中…</div>
+<div>
+  <label><input type="checkbox" id="onlyListed" checked> 只顯示 manifest 有列出的檔案</label>
+  <label>機種 <select id="fam"><option value="">全部</option><option value="dm1997">1997 (dm1997)</option><option value="pendulum">Pendulum 1.0 (pendulum)</option></select></label>
+</div>
+<table><thead><tr><th>檔名</th><th>狀態</th><th>說明</th><th>預覽</th></tr></thead><tbody id="rows"></tbody></table>
+<script src="./js/user-sprites.js"></script>
+<script>
+(function () {
+  var US = window.UserSprites;
+  var expected = [];
+  function draw(entry) {
+    var c = document.createElement('canvas');
+    var k = 4;
+    c.width = entry.w * k; c.height = entry.h * k;
+    var src = document.createElement('canvas'); src.width = entry.w; src.height = entry.h;
+    var sx = src.getContext('2d'); var im = sx.createImageData(entry.w, entry.h); im.data.set(entry.data); sx.putImageData(im, 0, 0);
+    var x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(src, 0, 0, c.width, c.height);
+    return c;
+  }
+  function render(rep) {
+    var listed = {}; (rep.listed || []).forEach(function (f) { listed[f] = true; });
+    var status = {};
+    US.log().forEach(function (l) { status[l.file] = l; });
+    var all = expected.slice();
+    Object.keys(status).forEach(function (f) { if (all.indexOf(f) < 0) all.push(f); });
+    var only = document.getElementById('onlyListed').checked, fam = document.getElementById('fam').value;
+    var tb = document.getElementById('rows'); tb.innerHTML = '';
+    all.forEach(function (f) {
+      if (only && !listed[f] && !status[f]) return;
+      if (fam && f.indexOf(fam + '/') !== 0) return;
+      var st = status[f], tr = document.createElement('tr');
+      var p = US.parseName(f);
+      var e = p && US.getExact(p.family, p.id, p.frame);
+      var cls = st ? (st.status === 'loaded' ? 'ok' : 'err') : 'miss';
+      var txt = st ? (st.status === 'loaded' ? '已載入 ✓' : '錯誤 ✗') : '未提供（使用內建圖）';
+      if (st && st.status === 'loaded' && expected.indexOf(f) < 0) { txt = '已載入，但遊戲不會用到（檔名不在清單）'; cls = 'err'; }
+      // Every 1997 / Pendulum 1.0 sprite box is 16x16 dots (64x64 px on the LCD).
+      if (e && !US.fitScale(e.w, e.h, 64, 64)) { txt = '尺寸不符 ✗（需要 16×16；遊戲改用同一隻的其他影格）'; cls = 'err'; }
+      tr.innerHTML = '<td><code>' + f + '</code></td><td class="' + cls + '">' + txt + '</td><td>' +
+        (st && st.reason ? st.reason : (e ? e.w + '×' + e.h + ' 點' : '')) + '</td><td></td>';
+      if (e) tr.lastChild.appendChild(draw(e));
+      tb.appendChild(tr);
+    });
+    var unknown = rep.loaded.filter(function (f) { return expected.indexOf(f) < 0; });
+    document.getElementById('sum').innerHTML =
+      'manifest：' + (rep.manifestError ? '<span class="err">讀不到（' + rep.manifestError + '）</span>' : '<span class="ok">OK</span>，列出 ' + (rep.listed || []).length + ' 個檔案') +
+      '<br>成功載入：<b class="ok">' + rep.loaded.length + '</b>　錯誤：<b class="err">' + rep.errors.length + '</b>' +
+      '　檔名不在清單：<b class="err">' + unknown.length + '</b>　遊戲可用的檔名總數：' + expected.length;
+  }
+  fetch('./assets/user-sprites/expected.json', { cache: 'no-cache' }).then(function (r) { return r.json(); })
+    .then(function (j) { expected = j.files || []; }, function () {})
+    .then(function () { return US.load(); })
+    .then(function (rep) {
+      rep.listed = (US.manifest && US.manifest()) || [];
+      window.__userSpritesReport = rep;
+      render(rep);
+      document.getElementById('onlyListed').onchange = function () { render(rep); };
+      document.getElementById('fam').onchange = function () { render(rep); };
+    });
+})();
+</script>
+</body>
+</html>

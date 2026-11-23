@@ -88,3 +88,13 @@ GitHub Pages 會自動提供 HTTPS。PWA 安裝、離線快取與相機掃描 QR
 ## 授權與來源
 
 本作為粉絲向個人專案，與萬代（Bandai）或官方遊戲無關。數碼寶貝及其角色為權利人所有。請勿用於商業用途。
+
+
+## v35: user sprite overrides / 自訂怪獸圖檔
+
+Put your own 16×16 PNGs in `assets/user-sprites/dm1997/` (1997 Ver.1–5) or
+`assets/user-sprites/pendulum/` (Pendulum 1.0), named `<speciesId>_<frame>.png`,
+and list them in `assets/user-sprites/manifest.json`. They replace the built-in
+frames at the same dot size and work offline. Guide (繁體中文):
+`USER-SPRITES-GUIDE.md`; full file list: `docs/user-sprites-list.csv`; check page:
+`user-sprites-check.html`. Regenerate the list with `node scripts/user-sprite-list.js`.

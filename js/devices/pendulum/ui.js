@@ -57,7 +57,16 @@
     try {
       var sp = (root.PendulumSprites && root.PendulumSprites.SPRITES[id]) || (root.PendulumSpritesExtra && root.PendulumSpritesExtra.SPRITES[id]) || (A.SPRITES && A.SPRITES[id]);
       if (!sp) return;
-      var img = A.renderToImageData(sp, frame || 'idle0', host.MON || 2);
+      // v35: user PNG override (assets/user-sprites/pendulum/<id>_<frame>.png)
+      // in the built-in sprite's box at the same dot size; else built-in.
+      var sc = host.MON || 2;
+      var US = root.UserSprites;
+      // The egg on screen is 'pen_egg'; a user file for this version's egg
+      // (egg_<eggKind>, e.g. egg_pen_1_0) wins over a shared pen_egg file.
+      var eggUser = (id === 'pen_egg' && host.state && host.state.eggKind) ? 'egg_' + host.state.eggKind : null;
+      var img = (US && eggUser && US.canvasFor('pendulum', eggUser, frame || 'idle0', sp.w * sc, sp.h * sc, false)) ||
+        (US && US.canvasFor('pendulum', id, frame || 'idle0', sp.w * sc, sp.h * sc, false)) ||
+        A.renderToImageData(sp, frame || 'idle0', sc);
       if (!img) return;
       if (flip) {
         var w = img.width, h = img.height;
@@ -265,11 +274,17 @@
       text(host, 'DP', host.fx(1), host.fy(1), host.ITEM);
       var dp = Eng().dp(s);
       var mx = Eng().dpMax(s);
-      // Show halves: e.g. 3.5 / 4
-      num(host, Math.floor(dp), host.fx(10), host.fy(8), host.ITEM, 1);
-      if (dp - Math.floor(dp) >= 0.5) text(host, '.', host.fx(16), host.fy(8), host.ITEM);
-      text(host, '/', host.fx(20), host.fy(8), host.ITEM);
-      num(host, Math.floor(mx), host.fx(24), host.fy(8), host.ITEM, 1);
+      // v35: values up to 2 digits fit at the native dot size. Fields
+      // (5-col digit pitch): DP cols 4-12 (right-aligned), '.' (half) col 13,
+      // '/' cols 16-18, max cols 22-30 (right-aligned). 1 digit sits in the
+      // right half of its field. Values are capped at 99 for display.
+      var dpi = Math.min(99, Math.floor(dp)), mxi = Math.min(99, Math.floor(mx));
+      if (dpi >= 10) num(host, dpi, host.fx(4), host.fy(8), host.ITEM, 2);
+      else num(host, dpi, host.fx(9), host.fy(8), host.ITEM, 1);
+      if (dp - Math.floor(dp) >= 0.5) text(host, '.', host.fx(13), host.fy(8), host.ITEM);
+      text(host, '/', host.fx(16), host.fy(8), host.ITEM);
+      if (mxi >= 10) num(host, mxi, host.fx(22), host.fy(8), host.ITEM, 2);
+      else num(host, mxi, host.fx(27), host.fy(8), host.ITEM, 1);
     } else if (page === 'type') {
       var attr = (m && m.attribute) || 'free';
       var label = attr === 'vaccine' ? 'VAC' : attr === 'data' ? 'DATA' : attr === 'virus' ? 'VIR' : 'FREE';
@@ -286,11 +301,13 @@
     }
   }
 
-  function menuRow(host, selected, y, label) {
+  function menuRow(host, selected, y, label, maxDots) {
     item(host, selected ? 'triangle' : 'empty_triangle', host.fx(0), y);
     // v33: cursor ink is cols 0-3, label owns cols 5-31 at the native dot
     // size; a longer word (JOGRESS) scrolls while selected.
-    fitText(host, label, host.fx(5), y, 27, 0, !selected);
+    // v35: rows with an 8-dot icon at cols 24-31 pass maxDots 18 (cols 5-22)
+    // so the label never runs under the icon (it scrolls inside cols 5-22).
+    fitText(host, label, host.fx(5), y, maxDots || 27, 0, !selected);
   }
 
   function drawFood(host) {
@@ -312,7 +329,7 @@
     lcdPaper(host, false);
     // Official: top = sick (dots), bottom = injury (skull)
     menuRow(host, subSel === 0, host.fy(2), 'SICK');
-    menuRow(host, subSel === 1, host.fy(10), 'INJURY');
+    menuRow(host, subSel === 1, host.fy(10), 'INJURY', 18); // v35: was under the skull
     item(host, 'skull', host.fx(24), host.fy(8));
   }
 

@@ -152,6 +152,49 @@ body {
   50%, 100% { background: transparent; box-shadow: none; }
 }
 
+/* v35: app-drawn icons over the shell's printed icon panel (layout.iconArt). */
+.face-icon.has-art,
+.face-icon.has-art.on,
+.face-icon.has-art.call-blink {
+  background: transparent;
+  box-shadow: none;
+  animation: none;
+  border-radius: 0;
+}
+.face-icon .icon-art { position: absolute; inset: 0; }
+/* Mask over the shell's printed icon. The printed icons extend past the slot
+   box (top row upward, bottom row downward), so the mask reaches further on
+   that side. */
+.face-icon .icon-mask {
+  position: absolute;
+  left: -8.5%; right: -8.5%;
+  top: -4%; bottom: -4%;
+}
+.face-icon .icon-art.row-top .icon-mask { top: -62%; }
+.face-icon .icon-art.row-bot .icon-mask { bottom: -62%; }
+.face-icon .icon-glyph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.face-icon .icon-art img {
+  height: 92%;
+  width: auto;
+  max-width: 100%;
+  opacity: 0.22;
+  filter: grayscale(1);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.face-icon.has-art.on .icon-art img { opacity: 0.92; }
+.face-icon.has-art.call-blink .icon-art img { animation: iconartblink 1s steps(1) infinite; }
+@keyframes iconartblink {
+  0%, 49% { opacity: 0.92; }
+  50%, 100% { opacity: 0.22; }
+}
+
 .pad {
   position: absolute;
   z-index: 4;

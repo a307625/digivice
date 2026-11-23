@@ -130,6 +130,41 @@ for (const v of ['1_0', '1_5', '2_0', '2_5', '3_0', '3_5', '4_0', '4_5', '5_0', 
   for (const ph of ['ready', 'count', 'shots', 'result']) { screens++; drawn += audit(F, `pen ${v} train ${ph}`, () => { UI.setTrainForShot(ph, { shakes: 99, shot: 4, supers: 2, result: { success: ph === 'result' } }); UI.draw(host(s, 'train')); }) || 0; }
   for (const ph of ['ready', 'count', 'shots', 'result']) { screens++; drawn += audit(F, `pen ${v} battle ${ph}`, () => { const b = UI.getBattle(); Object.assign(b, { phase: ph, shakes: 99, hpS: 3, hpF: 3, result: 'lose' }); UI.draw(host(s, 'battle')); }) || 0; }
 }
+// v35: Pendulum DP page — every DP / max pair 0..99 (and halves) draws with no
+// two glyph boxes overlapping, inside the 32x16 field, at the native dot.
+{
+  const UI = global.PendulumUI;
+  const pages = ['age', 'hunger', 'strength', 'win', 'dp', 'type', 'bj'];
+  let pairs = 0, clean = 0;
+  for (const mx of [1, 4, 9, 10, 16, 40, 99]) for (let dq = 0; dq <= mx * 4; dq += (mx > 20 ? 7 : 2)) {
+    const s = global.PendulumEngine.defaultState('pen_1_0');
+    s.clockInitialized = true; s.clockSet = { on: false, h24: 10, min: 34 }; s.mon = 'tentomon';
+    s.dpQ = dq; s.dpMaxQ = mx * 4;
+    recs = [];
+    UI.setStatusPage(pages.indexOf('dp')); UI.draw(host(s, 'status'));
+    const row = recs.filter((t) => t.y >= 16 + 8 * DOT);
+    let good = row.length >= 3 && recs.every((t) => t.scale === DOT && t.x >= 16 && t.x + t.w <= 144);
+    for (let i = 0; i < row.length; i++) for (let j = i + 1; j < row.length; j++) {
+      const a = row[i], b = row[j];
+      if (a.x < b.x + b.w && b.x < a.x + a.w) good = false;
+    }
+    pairs++; if (good) clean++;
+    if (!good) ok(false, `pen DP ${dq / 4}/${mx}: glyphs overlap or leave the field ${JSON.stringify(row.map((t) => [t.text, t.x, t.w]))}`);
+  }
+  ok(pairs === clean && pairs > 50, `pen DP page: ${clean}/${pairs} DP/max pairs (0-99, halves) fit without overlap`);
+}
+// v35: Pendulum heal menu — INJURY stays clear of the skull icon (cols 24-31).
+{
+  const s = global.PendulumEngine.defaultState('pen_1_0');
+  s.clockInitialized = true; s.clockSet = { on: false, h24: 10, min: 34 }; s.mon = 'tentomon';
+  for (const i of [0, 1]) {
+    recs = [];
+    global.PendulumUI.setSubSel(i); global.PendulumUI.draw(host(s, 'healMenu'));
+    const inj = recs.filter((t) => /INJURY/.test(String(t.text)));
+    ok(inj.length > 0, `pen heal menu ${i}: INJURY label drawn`);
+    for (const t of inj) ok(t.scale === DOT && t.x + t.w <= 16 + 24 * DOT, `pen heal menu ${i}: INJURY ends at x=${t.x + t.w} (skull starts at ${16 + 24 * DOT}), dot ${t.scale}px`);
+  }
+}
 // Pen20 SK / SB
 for (const egg of ['pen_20th_sk', 'pen_20th_sb']) {
   const s = global.Pen20Engine.defaultState(egg);

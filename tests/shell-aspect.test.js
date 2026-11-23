@@ -44,8 +44,12 @@ for (const f of shells) {
   ok(!!sz, f + ': readable WebP header');
   if (!sz) continue;
   const fam = /^pen-20th/.test(f) ? 'pen20' : /^pen-/.test(f) ? 'pen' : /^digivice/.test(f) ? 'dv' : 'dm';
-  const err = Math.abs((sz.w / sz.h) / FAM[fam] - 1);
-  ok(err < 0.01, `${f}: natural ${sz.w}x${sz.h} (${(sz.w / sz.h).toFixed(4)}) vs layout ${FAM[fam].toFixed(4)} → ${(err * 100).toFixed(2)}% (< 1%)`);
+  // v35: Pendulum versions on the round-4 shell use their own layout.
+  const verKey = (f.match(/^pen-(\d)-(\d)\.webp$/) || []).slice(1).join('.');
+  const PL = global.PendulumData && verKey && global.PendulumData.layoutFor ? global.PendulumData.layoutFor(verKey) : null;
+  const want = PL ? PL.aspectW / PL.aspectH : FAM[fam];
+  const err = Math.abs((sz.w / sz.h) / want - 1);
+  ok(err < 0.01, `${f}: natural ${sz.w}x${sz.h} (${(sz.w / sz.h).toFixed(4)}) vs layout ${want.toFixed(4)} → ${(err * 100).toFixed(2)}% (< 1%)`);
 }
 const css = src('css/style.css'), ui = src('js/ui.js');
 ok(/\.shell-art\s*\{[^}]*object-fit:\s*contain/.test(css), '.shell-art never stretches (object-fit: contain)');
@@ -55,6 +59,33 @@ ok(/function syncShellAspect\(\)[\s\S]{0,400}naturalWidth[\s\S]{0,300}--shell-aw
 for (const f of shells.filter((s) => /^pen-(\d-\d|zero)\.webp$/.test(s))) {
   const n = fs.statSync(path.join(dir, f)).size;
   ok(n < 95000, `${f}: v33 clean-silhouette art (${n} bytes; v30 cut-out was ~100 KB)`);
+}
+// v35: round-4 shell (README coords) for Pendulum 1.0 and 1.5 only; 2.0+ keep v34.
+{
+  const D = global.PendulumData;
+  ok(!!(D && D.LAYOUT_10 && D.layoutFor), 'PendulumData exports LAYOUT_10 / layoutFor');
+  if (D && D.LAYOUT_10) {
+    const L = D.LAYOUT_10, near = (a, b) => Math.abs(a - b) < 1e-9;
+    ok(L.aspectW === 1329 && L.aspectH === 921, 'round-4 aspect 1329x921');
+    ok(near(L.lcd.left, 17.908) && near(L.lcd.top, 36.265) && near(L.lcd.width, 31.076) && near(L.lcd.height, 29.425), 'round-4 LCD rect');
+    ['a', 'b', 'c'].forEach((k, i) => ok(near(L.buttons[k].cx, 82.553) && near(L.buttons[k].cy, [28.282, 51.189, 74.096][i]) && near(L.buttons[k].w, 11.227) && near(L.buttons[k].h, 16.2), 'round-4 button ' + k));
+    ok(near(L.buttons.reset.cx, 75.024) && near(L.buttons.reset.cy, 62.603) && near(L.buttons.reset.w, 5.957) && near(L.buttons.reset.h, 8.596), 'round-4 reset button');
+    [17.908, 25.959, 34.011, 42.062].forEach((l, i) => {
+      ok(near(L.icons_top[i].left, l) && near(L.icons_top[i].top, 30.51) && near(L.icons_top[i].width, 6.922) && near(L.icons_top[i].height, 5.646), 'round-4 top icon slot ' + i);
+      ok(near(L.icons_bot[i].left, l) && near(L.icons_bot[i].top, 65.907) && near(L.icons_bot[i].width, 6.922) && near(L.icons_bot[i].height, 5.646), 'round-4 bottom icon slot ' + i);
+    });
+    ok(L.iconArt && L.iconArt.bgTop === '#badccc' && L.iconArt.bgBot === '#80a577', 'icon masks #badccc / #80a577');
+    const names = L.names_top.concat(L.names_bot);
+    ok(names.every((n) => L.iconArt.src[n] && fs.existsSync(path.join(ROOT, 'icons/bezel', L.iconArt.src[n] + '.png'))), 'every slot has v34 icon art in icons/bezel');
+    ok(D.layoutFor('1.0') === L && D.layoutFor('1.5') === L, '1.0 and 1.5 use the round-4 layout');
+    ['2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0', '5.5', 'zero'].forEach((k) => ok(D.layoutFor(k) === D.LAYOUT, k + ' keeps the v34 layout'));
+    const R = global.Devices;
+    if (R && R.profileById) {
+      ok(R.profileById('pen-1-0') && R.profileById('pen-1-0').layout === L, 'registered pen-1-0 profile uses round-4 layout');
+      ok(R.profileById('pen-1-5') && R.profileById('pen-1-5').layout === L, 'registered pen-1-5 profile uses round-4 layout');
+      ok(R.profileById('pen-2-0') && R.profileById('pen-2-0').layout === D.LAYOUT, 'registered pen-2-0 profile keeps v34 layout');
+    }
+  }
 }
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed ? 1 : 0);

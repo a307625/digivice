@@ -1,4 +1,4 @@
-/* Offline cache for 數碼怪獸對打機 — v31
+/* Offline cache for 數碼怪獸對打機 — v35 (user-sprite overrides added)
  * - Precaches every file index.html loads plus ALL device shells (WebP,
  *   ~2.4 MB), so any device works on an offline first launch.
  * - Precache requests bypass the HTTP cache (cache: 'reload'), so a new
@@ -9,7 +9,7 @@
  * - Only same-origin, non-redirected, 200 'basic' responses are cached.
  * - Old caches are deleted only after the new one is complete.
  */
-var CACHE = 'digivice-v34';
+var CACHE = 'digivice-v35';
 var APP_SHELL = './index.html';
 var ASSETS = [
   './',
@@ -19,6 +19,8 @@ var ASSETS = [
   './js/evolution-data.js',
   './js/evolution.js',
   './js/sprites.js',
+  './js/user-sprites.js',
+  './assets/user-sprites/manifest.json',
   './js/items.js',
   './js/save.js',
   './icons/bezel/status.png',
@@ -107,7 +109,7 @@ self.addEventListener('install', function (event) {
           if (!res || !res.ok) throw new Error('precache ' + url + ' ' + (res && res.status));
           return Promise.resolve(cleanResponse(res)).then(function (clean) { return cache.put(url, clean); });
         });
-      }));
+      })).then(function () { return precacheUserSprites(cache); });
     }).then(function () { return self.skipWaiting(); })
   );
 });
@@ -135,6 +137,30 @@ function cacheable(res) {
   return res && res.status === 200 && res.type === 'basic' && !res.redirected;
 }
 
+// v35: user-supplied sprite PNGs (assets/user-sprites/, listed in its
+// manifest.json). Best effort: a missing or broken file never blocks install.
+var USER_SPRITES_DIR = './assets/user-sprites/';
+function userSpriteUrls(manifest) {
+  var files = (manifest && Array.isArray(manifest.files)) ? manifest.files : [];
+  return files.filter(function (f) {
+    return typeof f === 'string' && /^[a-z0-9_-]+\/[a-z0-9_-]+_[a-z0-9]+\.png$/i.test(f);
+  }).map(function (f) { return USER_SPRITES_DIR + f; });
+}
+function precacheUserSprites(cache) {
+  return fetch(new Request(USER_SPRITES_DIR + 'manifest.json', { cache: 'reload' })).then(function (res) {
+    return res.ok ? res.json() : null;
+  }).then(function (m) {
+    return Promise.all(userSpriteUrls(m).map(function (url) {
+      return fetch(new Request(url, { cache: 'reload' })).then(function (res) {
+        if (cacheable(res)) return cache.put(url, res);
+      }).catch(function () {});
+    }));
+  }).catch(function () {});
+}
+function isUserSprite(url) {
+  return url.pathname.indexOf('/assets/user-sprites/') !== -1;
+}
+
 function appShell() {
   return caches.match(APP_SHELL, { ignoreSearch: true }).then(function (r) {
     return r || caches.match('./', { ignoreSearch: true });
@@ -156,6 +182,24 @@ self.addEventListener('fetch', function (event) {
         if (cached) return cached;
         return fetch(req).catch(function () {
           return new Response('<h1>Offline</h1>', { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+        });
+      })
+    );
+    return;
+  }
+  if (isUserSprite(url)) {
+    // Network first so a newly uploaded PNG or manifest shows up on the next
+    // online launch; the cached copy serves offline.
+    event.respondWith(
+      fetch(new Request(req, { cache: 'no-cache' })).then(function (res) {
+        if (cacheable(res)) {
+          var copy = res.clone();
+          caches.open(CACHE).then(function (cache) { cache.put(req, copy); });
+        }
+        return res;
+      }).catch(function () {
+        return caches.match(req, { ignoreSearch: true }).then(function (cached) {
+          return cached || new Response('', { status: 504, statusText: 'offline' });
         });
       })
     );

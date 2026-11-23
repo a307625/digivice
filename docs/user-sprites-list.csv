@@ -1,0 +1,1459 @@
+﻿機種,版本,檔名（放在 assets/user-sprites/ 之下）,怪獸 ID,中文名,英文名,階段,影格,影格說明,尺寸（點）,必要性
+1997 Ver.1,1,dm1997/egg_v1_idle0.png,egg_v1,版本一數碼蛋,Ver.1 Digitama,數碼蛋,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/egg_v1_idle1.png,egg_v1,版本一數碼蛋,Ver.1 Digitama,數碼蛋,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/egg_v1_hatch.png,egg_v1,版本一數碼蛋,Ver.1 Digitama,數碼蛋,hatch,孵化（裂開）,16x16,建議
+1997 Ver.1,1,dm1997/botamon_idle0.png,botamon,黑球獸,Botamon,幼年期Ⅰ,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/botamon_idle1.png,botamon,黑球獸,Botamon,幼年期Ⅰ,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/botamon_eat0.png,botamon,黑球獸,Botamon,幼年期Ⅰ,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/botamon_eat1.png,botamon,黑球獸,Botamon,幼年期Ⅰ,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/botamon_happy.png,botamon,黑球獸,Botamon,幼年期Ⅰ,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/botamon_angry.png,botamon,黑球獸,Botamon,幼年期Ⅰ,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/botamon_refuse.png,botamon,黑球獸,Botamon,幼年期Ⅰ,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/botamon_sleep0.png,botamon,黑球獸,Botamon,幼年期Ⅰ,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/botamon_sleep1.png,botamon,黑球獸,Botamon,幼年期Ⅰ,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/botamon_train0.png,botamon,黑球獸,Botamon,幼年期Ⅰ,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/botamon_train1.png,botamon,黑球獸,Botamon,幼年期Ⅰ,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/botamon_attack.png,botamon,黑球獸,Botamon,幼年期Ⅰ,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/botamon_sick.png,botamon,黑球獸,Botamon,幼年期Ⅰ,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/botamon_hurt.png,botamon,黑球獸,Botamon,幼年期Ⅰ,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/botamon_lose.png,botamon,黑球獸,Botamon,幼年期Ⅰ,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/koromon_idle0.png,koromon,滾球獸,Koromon,幼年期Ⅱ,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/koromon_idle1.png,koromon,滾球獸,Koromon,幼年期Ⅱ,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/koromon_eat0.png,koromon,滾球獸,Koromon,幼年期Ⅱ,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/koromon_eat1.png,koromon,滾球獸,Koromon,幼年期Ⅱ,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/koromon_happy.png,koromon,滾球獸,Koromon,幼年期Ⅱ,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/koromon_angry.png,koromon,滾球獸,Koromon,幼年期Ⅱ,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/koromon_refuse.png,koromon,滾球獸,Koromon,幼年期Ⅱ,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/koromon_sleep0.png,koromon,滾球獸,Koromon,幼年期Ⅱ,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/koromon_sleep1.png,koromon,滾球獸,Koromon,幼年期Ⅱ,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/koromon_train0.png,koromon,滾球獸,Koromon,幼年期Ⅱ,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/koromon_train1.png,koromon,滾球獸,Koromon,幼年期Ⅱ,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/koromon_attack.png,koromon,滾球獸,Koromon,幼年期Ⅱ,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/koromon_sick.png,koromon,滾球獸,Koromon,幼年期Ⅱ,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/koromon_hurt.png,koromon,滾球獸,Koromon,幼年期Ⅱ,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/koromon_lose.png,koromon,滾球獸,Koromon,幼年期Ⅱ,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/agumon_idle0.png,agumon,亞古獸,Agumon,成長期,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/agumon_idle1.png,agumon,亞古獸,Agumon,成長期,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/agumon_eat0.png,agumon,亞古獸,Agumon,成長期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/agumon_eat1.png,agumon,亞古獸,Agumon,成長期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/agumon_happy.png,agumon,亞古獸,Agumon,成長期,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/agumon_angry.png,agumon,亞古獸,Agumon,成長期,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/agumon_refuse.png,agumon,亞古獸,Agumon,成長期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/agumon_sleep0.png,agumon,亞古獸,Agumon,成長期,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/agumon_sleep1.png,agumon,亞古獸,Agumon,成長期,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/agumon_train0.png,agumon,亞古獸,Agumon,成長期,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/agumon_train1.png,agumon,亞古獸,Agumon,成長期,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/agumon_attack.png,agumon,亞古獸,Agumon,成長期,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/agumon_sick.png,agumon,亞古獸,Agumon,成長期,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/agumon_hurt.png,agumon,亞古獸,Agumon,成長期,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/agumon_lose.png,agumon,亞古獸,Agumon,成長期,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/betamon_idle0.png,betamon,比特獸,Betamon,成長期,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/betamon_idle1.png,betamon,比特獸,Betamon,成長期,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/betamon_eat0.png,betamon,比特獸,Betamon,成長期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/betamon_eat1.png,betamon,比特獸,Betamon,成長期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/betamon_happy.png,betamon,比特獸,Betamon,成長期,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/betamon_angry.png,betamon,比特獸,Betamon,成長期,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/betamon_refuse.png,betamon,比特獸,Betamon,成長期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/betamon_sleep0.png,betamon,比特獸,Betamon,成長期,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/betamon_sleep1.png,betamon,比特獸,Betamon,成長期,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/betamon_train0.png,betamon,比特獸,Betamon,成長期,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/betamon_train1.png,betamon,比特獸,Betamon,成長期,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/betamon_attack.png,betamon,比特獸,Betamon,成長期,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/betamon_sick.png,betamon,比特獸,Betamon,成長期,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/betamon_hurt.png,betamon,比特獸,Betamon,成長期,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/betamon_lose.png,betamon,比特獸,Betamon,成長期,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/greymon_idle0.png,greymon,暴龍獸,Greymon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/greymon_idle1.png,greymon,暴龍獸,Greymon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/greymon_eat0.png,greymon,暴龍獸,Greymon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/greymon_eat1.png,greymon,暴龍獸,Greymon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/greymon_happy.png,greymon,暴龍獸,Greymon,成熟期,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/greymon_angry.png,greymon,暴龍獸,Greymon,成熟期,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/greymon_refuse.png,greymon,暴龍獸,Greymon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/greymon_sleep0.png,greymon,暴龍獸,Greymon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/greymon_sleep1.png,greymon,暴龍獸,Greymon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/greymon_train0.png,greymon,暴龍獸,Greymon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/greymon_train1.png,greymon,暴龍獸,Greymon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/greymon_attack.png,greymon,暴龍獸,Greymon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/greymon_sick.png,greymon,暴龍獸,Greymon,成熟期,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/greymon_hurt.png,greymon,暴龍獸,Greymon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/greymon_lose.png,greymon,暴龍獸,Greymon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_idle0.png,tyranomon,巨龍獸,Tyranomon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/tyranomon_idle1.png,tyranomon,巨龍獸,Tyranomon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_eat0.png,tyranomon,巨龍獸,Tyranomon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_eat1.png,tyranomon,巨龍獸,Tyranomon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_happy.png,tyranomon,巨龍獸,Tyranomon,成熟期,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_angry.png,tyranomon,巨龍獸,Tyranomon,成熟期,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_refuse.png,tyranomon,巨龍獸,Tyranomon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_sleep0.png,tyranomon,巨龍獸,Tyranomon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_sleep1.png,tyranomon,巨龍獸,Tyranomon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_train0.png,tyranomon,巨龍獸,Tyranomon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_train1.png,tyranomon,巨龍獸,Tyranomon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_attack.png,tyranomon,巨龍獸,Tyranomon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_sick.png,tyranomon,巨龍獸,Tyranomon,成熟期,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_hurt.png,tyranomon,巨龍獸,Tyranomon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/tyranomon_lose.png,tyranomon,巨龍獸,Tyranomon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/devimon_idle0.png,devimon,惡魔獸,Devimon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/devimon_idle1.png,devimon,惡魔獸,Devimon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/devimon_eat0.png,devimon,惡魔獸,Devimon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/devimon_eat1.png,devimon,惡魔獸,Devimon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/devimon_happy.png,devimon,惡魔獸,Devimon,成熟期,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/devimon_angry.png,devimon,惡魔獸,Devimon,成熟期,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/devimon_refuse.png,devimon,惡魔獸,Devimon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/devimon_sleep0.png,devimon,惡魔獸,Devimon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/devimon_sleep1.png,devimon,惡魔獸,Devimon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/devimon_train0.png,devimon,惡魔獸,Devimon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/devimon_train1.png,devimon,惡魔獸,Devimon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/devimon_attack.png,devimon,惡魔獸,Devimon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/devimon_sick.png,devimon,惡魔獸,Devimon,成熟期,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/devimon_hurt.png,devimon,惡魔獸,Devimon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/devimon_lose.png,devimon,惡魔獸,Devimon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/meramon_idle0.png,meramon,火焰獸,Meramon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/meramon_idle1.png,meramon,火焰獸,Meramon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/meramon_eat0.png,meramon,火焰獸,Meramon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/meramon_eat1.png,meramon,火焰獸,Meramon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/meramon_happy.png,meramon,火焰獸,Meramon,成熟期,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/meramon_angry.png,meramon,火焰獸,Meramon,成熟期,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/meramon_refuse.png,meramon,火焰獸,Meramon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/meramon_sleep0.png,meramon,火焰獸,Meramon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/meramon_sleep1.png,meramon,火焰獸,Meramon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/meramon_train0.png,meramon,火焰獸,Meramon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/meramon_train1.png,meramon,火焰獸,Meramon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/meramon_attack.png,meramon,火焰獸,Meramon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/meramon_sick.png,meramon,火焰獸,Meramon,成熟期,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/meramon_hurt.png,meramon,火焰獸,Meramon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/meramon_lose.png,meramon,火焰獸,Meramon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_idle0.png,airdramon,飛龍獸,Airdramon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/airdramon_idle1.png,airdramon,飛龍獸,Airdramon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_eat0.png,airdramon,飛龍獸,Airdramon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_eat1.png,airdramon,飛龍獸,Airdramon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_happy.png,airdramon,飛龍獸,Airdramon,成熟期,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_angry.png,airdramon,飛龍獸,Airdramon,成熟期,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_refuse.png,airdramon,飛龍獸,Airdramon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_sleep0.png,airdramon,飛龍獸,Airdramon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_sleep1.png,airdramon,飛龍獸,Airdramon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_train0.png,airdramon,飛龍獸,Airdramon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_train1.png,airdramon,飛龍獸,Airdramon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_attack.png,airdramon,飛龍獸,Airdramon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_sick.png,airdramon,飛龍獸,Airdramon,成熟期,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_hurt.png,airdramon,飛龍獸,Airdramon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/airdramon_lose.png,airdramon,飛龍獸,Airdramon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_idle0.png,seadramon,海龍獸,Seadramon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/seadramon_idle1.png,seadramon,海龍獸,Seadramon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_eat0.png,seadramon,海龍獸,Seadramon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_eat1.png,seadramon,海龍獸,Seadramon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_happy.png,seadramon,海龍獸,Seadramon,成熟期,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_angry.png,seadramon,海龍獸,Seadramon,成熟期,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_refuse.png,seadramon,海龍獸,Seadramon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_sleep0.png,seadramon,海龍獸,Seadramon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_sleep1.png,seadramon,海龍獸,Seadramon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_train0.png,seadramon,海龍獸,Seadramon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_train1.png,seadramon,海龍獸,Seadramon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_attack.png,seadramon,海龍獸,Seadramon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_sick.png,seadramon,海龍獸,Seadramon,成熟期,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_hurt.png,seadramon,海龍獸,Seadramon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/seadramon_lose.png,seadramon,海龍獸,Seadramon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/numemon_idle0.png,numemon,鼻涕獸,Numemon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/numemon_idle1.png,numemon,鼻涕獸,Numemon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/numemon_eat0.png,numemon,鼻涕獸,Numemon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/numemon_eat1.png,numemon,鼻涕獸,Numemon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/numemon_happy.png,numemon,鼻涕獸,Numemon,成熟期,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/numemon_angry.png,numemon,鼻涕獸,Numemon,成熟期,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/numemon_refuse.png,numemon,鼻涕獸,Numemon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/numemon_sleep0.png,numemon,鼻涕獸,Numemon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/numemon_sleep1.png,numemon,鼻涕獸,Numemon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/numemon_train0.png,numemon,鼻涕獸,Numemon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/numemon_train1.png,numemon,鼻涕獸,Numemon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/numemon_attack.png,numemon,鼻涕獸,Numemon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/numemon_sick.png,numemon,鼻涕獸,Numemon,成熟期,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/numemon_hurt.png,numemon,鼻涕獸,Numemon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/numemon_lose.png,numemon,鼻涕獸,Numemon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_idle0.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/metalgreymon_idle1.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_eat0.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_eat1.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_happy.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_angry.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_refuse.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_sleep0.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_sleep1.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_train0.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_train1.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_attack.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_sick.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_hurt.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/metalgreymon_lose.png,metalgreymon,機械暴龍獸 (病毒種),MetalGreymon (Virus),完全體,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_idle0.png,mamemon,豆豆獸,Mamemon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/mamemon_idle1.png,mamemon,豆豆獸,Mamemon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_eat0.png,mamemon,豆豆獸,Mamemon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_eat1.png,mamemon,豆豆獸,Mamemon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_happy.png,mamemon,豆豆獸,Mamemon,完全體,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_angry.png,mamemon,豆豆獸,Mamemon,完全體,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_refuse.png,mamemon,豆豆獸,Mamemon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_sleep0.png,mamemon,豆豆獸,Mamemon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_sleep1.png,mamemon,豆豆獸,Mamemon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_train0.png,mamemon,豆豆獸,Mamemon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_train1.png,mamemon,豆豆獸,Mamemon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_attack.png,mamemon,豆豆獸,Mamemon,完全體,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_sick.png,mamemon,豆豆獸,Mamemon,完全體,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_hurt.png,mamemon,豆豆獸,Mamemon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/mamemon_lose.png,mamemon,豆豆獸,Mamemon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_idle0.png,monzaemon,熊仔獸,Monzaemon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/monzaemon_idle1.png,monzaemon,熊仔獸,Monzaemon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_eat0.png,monzaemon,熊仔獸,Monzaemon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_eat1.png,monzaemon,熊仔獸,Monzaemon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_happy.png,monzaemon,熊仔獸,Monzaemon,完全體,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_angry.png,monzaemon,熊仔獸,Monzaemon,完全體,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_refuse.png,monzaemon,熊仔獸,Monzaemon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_sleep0.png,monzaemon,熊仔獸,Monzaemon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_sleep1.png,monzaemon,熊仔獸,Monzaemon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_train0.png,monzaemon,熊仔獸,Monzaemon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_train1.png,monzaemon,熊仔獸,Monzaemon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_attack.png,monzaemon,熊仔獸,Monzaemon,完全體,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_sick.png,monzaemon,熊仔獸,Monzaemon,完全體,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_hurt.png,monzaemon,熊仔獸,Monzaemon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/monzaemon_lose.png,monzaemon,熊仔獸,Monzaemon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_idle0.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/blitzgreymon_idle1.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_eat0.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_eat1.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_happy.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_angry.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_refuse.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_sleep0.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_sleep1.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_train0.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_train1.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_attack.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_sick.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_hurt.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/blitzgreymon_lose.png,blitzgreymon,電光暴龍獸,BlitzGreymon,究極體,lose,輸／倒下,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_idle0.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,idle0,待機 1,16x16,必要
+1997 Ver.1,1,dm1997/banchomamemon_idle1.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,idle1,待機 2,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_eat0.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_eat1.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_happy.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,happy,開心,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_angry.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,angry,生氣,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_refuse.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_sleep0.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,sleep0,睡覺 1,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_sleep1.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,sleep1,睡覺 2,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_train0.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,train0,訓練 1,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_train1.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,train1,訓練 2,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_attack.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,attack,攻擊,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_sick.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,sick,生病,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_hurt.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,hurt,受傷／被打,16x16,建議
+1997 Ver.1,1,dm1997/banchomamemon_lose.png,banchomamemon,番長豆豆獸,BanchoMamemon,究極體,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/egg_v2_idle0.png,egg_v2,版本二數碼蛋,Ver.2 Digitama,數碼蛋,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/egg_v2_idle1.png,egg_v2,版本二數碼蛋,Ver.2 Digitama,數碼蛋,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/egg_v2_hatch.png,egg_v2,版本二數碼蛋,Ver.2 Digitama,數碼蛋,hatch,孵化（裂開）,16x16,建議
+1997 Ver.2,2,dm1997/punimon_idle0.png,punimon,普尼獸,Punimon,幼年期Ⅰ,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/punimon_idle1.png,punimon,普尼獸,Punimon,幼年期Ⅰ,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/punimon_eat0.png,punimon,普尼獸,Punimon,幼年期Ⅰ,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/punimon_eat1.png,punimon,普尼獸,Punimon,幼年期Ⅰ,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/punimon_happy.png,punimon,普尼獸,Punimon,幼年期Ⅰ,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/punimon_angry.png,punimon,普尼獸,Punimon,幼年期Ⅰ,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/punimon_refuse.png,punimon,普尼獸,Punimon,幼年期Ⅰ,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/punimon_sleep0.png,punimon,普尼獸,Punimon,幼年期Ⅰ,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/punimon_sleep1.png,punimon,普尼獸,Punimon,幼年期Ⅰ,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/punimon_train0.png,punimon,普尼獸,Punimon,幼年期Ⅰ,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/punimon_train1.png,punimon,普尼獸,Punimon,幼年期Ⅰ,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/punimon_attack.png,punimon,普尼獸,Punimon,幼年期Ⅰ,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/punimon_sick.png,punimon,普尼獸,Punimon,幼年期Ⅰ,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/punimon_hurt.png,punimon,普尼獸,Punimon,幼年期Ⅰ,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/punimon_lose.png,punimon,普尼獸,Punimon,幼年期Ⅰ,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_idle0.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/tsunomon_idle1.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_eat0.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_eat1.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_happy.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_angry.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_refuse.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_sleep0.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_sleep1.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_train0.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_train1.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_attack.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_sick.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_hurt.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/tsunomon_lose.png,tsunomon,獨角獸,Tsunomon,幼年期Ⅱ,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_idle0.png,gabumon,加布獸,Gabumon,成長期,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/gabumon_idle1.png,gabumon,加布獸,Gabumon,成長期,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_eat0.png,gabumon,加布獸,Gabumon,成長期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_eat1.png,gabumon,加布獸,Gabumon,成長期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_happy.png,gabumon,加布獸,Gabumon,成長期,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_angry.png,gabumon,加布獸,Gabumon,成長期,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_refuse.png,gabumon,加布獸,Gabumon,成長期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_sleep0.png,gabumon,加布獸,Gabumon,成長期,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_sleep1.png,gabumon,加布獸,Gabumon,成長期,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_train0.png,gabumon,加布獸,Gabumon,成長期,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_train1.png,gabumon,加布獸,Gabumon,成長期,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_attack.png,gabumon,加布獸,Gabumon,成長期,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_sick.png,gabumon,加布獸,Gabumon,成長期,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_hurt.png,gabumon,加布獸,Gabumon,成長期,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/gabumon_lose.png,gabumon,加布獸,Gabumon,成長期,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_idle0.png,elecmon,艾力獸,Elecmon,成長期,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/elecmon_idle1.png,elecmon,艾力獸,Elecmon,成長期,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_eat0.png,elecmon,艾力獸,Elecmon,成長期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_eat1.png,elecmon,艾力獸,Elecmon,成長期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_happy.png,elecmon,艾力獸,Elecmon,成長期,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_angry.png,elecmon,艾力獸,Elecmon,成長期,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_refuse.png,elecmon,艾力獸,Elecmon,成長期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_sleep0.png,elecmon,艾力獸,Elecmon,成長期,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_sleep1.png,elecmon,艾力獸,Elecmon,成長期,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_train0.png,elecmon,艾力獸,Elecmon,成長期,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_train1.png,elecmon,艾力獸,Elecmon,成長期,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_attack.png,elecmon,艾力獸,Elecmon,成長期,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_sick.png,elecmon,艾力獸,Elecmon,成長期,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_hurt.png,elecmon,艾力獸,Elecmon,成長期,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/elecmon_lose.png,elecmon,艾力獸,Elecmon,成長期,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_idle0.png,kabuterimon,比多獸,Kabuterimon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/kabuterimon_idle1.png,kabuterimon,比多獸,Kabuterimon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_eat0.png,kabuterimon,比多獸,Kabuterimon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_eat1.png,kabuterimon,比多獸,Kabuterimon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_happy.png,kabuterimon,比多獸,Kabuterimon,成熟期,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_angry.png,kabuterimon,比多獸,Kabuterimon,成熟期,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_refuse.png,kabuterimon,比多獸,Kabuterimon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_sleep0.png,kabuterimon,比多獸,Kabuterimon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_sleep1.png,kabuterimon,比多獸,Kabuterimon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_train0.png,kabuterimon,比多獸,Kabuterimon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_train1.png,kabuterimon,比多獸,Kabuterimon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_attack.png,kabuterimon,比多獸,Kabuterimon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_sick.png,kabuterimon,比多獸,Kabuterimon,成熟期,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_hurt.png,kabuterimon,比多獸,Kabuterimon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/kabuterimon_lose.png,kabuterimon,比多獸,Kabuterimon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_idle0.png,garurumon,加魯魯獸,Garurumon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/garurumon_idle1.png,garurumon,加魯魯獸,Garurumon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_eat0.png,garurumon,加魯魯獸,Garurumon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_eat1.png,garurumon,加魯魯獸,Garurumon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_happy.png,garurumon,加魯魯獸,Garurumon,成熟期,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_angry.png,garurumon,加魯魯獸,Garurumon,成熟期,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_refuse.png,garurumon,加魯魯獸,Garurumon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_sleep0.png,garurumon,加魯魯獸,Garurumon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_sleep1.png,garurumon,加魯魯獸,Garurumon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_train0.png,garurumon,加魯魯獸,Garurumon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_train1.png,garurumon,加魯魯獸,Garurumon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_attack.png,garurumon,加魯魯獸,Garurumon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_sick.png,garurumon,加魯魯獸,Garurumon,成熟期,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_hurt.png,garurumon,加魯魯獸,Garurumon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/garurumon_lose.png,garurumon,加魯魯獸,Garurumon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/angemon_idle0.png,angemon,天使獸,Angemon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/angemon_idle1.png,angemon,天使獸,Angemon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/angemon_eat0.png,angemon,天使獸,Angemon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/angemon_eat1.png,angemon,天使獸,Angemon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/angemon_happy.png,angemon,天使獸,Angemon,成熟期,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/angemon_angry.png,angemon,天使獸,Angemon,成熟期,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/angemon_refuse.png,angemon,天使獸,Angemon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/angemon_sleep0.png,angemon,天使獸,Angemon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/angemon_sleep1.png,angemon,天使獸,Angemon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/angemon_train0.png,angemon,天使獸,Angemon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/angemon_train1.png,angemon,天使獸,Angemon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/angemon_attack.png,angemon,天使獸,Angemon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/angemon_sick.png,angemon,天使獸,Angemon,成熟期,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/angemon_hurt.png,angemon,天使獸,Angemon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/angemon_lose.png,angemon,天使獸,Angemon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_idle0.png,yukidarumon,雪人獸,Yukidarumon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/yukidarumon_idle1.png,yukidarumon,雪人獸,Yukidarumon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_eat0.png,yukidarumon,雪人獸,Yukidarumon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_eat1.png,yukidarumon,雪人獸,Yukidarumon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_happy.png,yukidarumon,雪人獸,Yukidarumon,成熟期,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_angry.png,yukidarumon,雪人獸,Yukidarumon,成熟期,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_refuse.png,yukidarumon,雪人獸,Yukidarumon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_sleep0.png,yukidarumon,雪人獸,Yukidarumon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_sleep1.png,yukidarumon,雪人獸,Yukidarumon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_train0.png,yukidarumon,雪人獸,Yukidarumon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_train1.png,yukidarumon,雪人獸,Yukidarumon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_attack.png,yukidarumon,雪人獸,Yukidarumon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_sick.png,yukidarumon,雪人獸,Yukidarumon,成熟期,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_hurt.png,yukidarumon,雪人獸,Yukidarumon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/yukidarumon_lose.png,yukidarumon,雪人獸,Yukidarumon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_idle0.png,birdramon,巴多拉獸,Birdramon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/birdramon_idle1.png,birdramon,巴多拉獸,Birdramon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_eat0.png,birdramon,巴多拉獸,Birdramon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_eat1.png,birdramon,巴多拉獸,Birdramon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_happy.png,birdramon,巴多拉獸,Birdramon,成熟期,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_angry.png,birdramon,巴多拉獸,Birdramon,成熟期,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_refuse.png,birdramon,巴多拉獸,Birdramon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_sleep0.png,birdramon,巴多拉獸,Birdramon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_sleep1.png,birdramon,巴多拉獸,Birdramon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_train0.png,birdramon,巴多拉獸,Birdramon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_train1.png,birdramon,巴多拉獸,Birdramon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_attack.png,birdramon,巴多拉獸,Birdramon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_sick.png,birdramon,巴多拉獸,Birdramon,成熟期,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_hurt.png,birdramon,巴多拉獸,Birdramon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/birdramon_lose.png,birdramon,巴多拉獸,Birdramon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/whamon_idle0.png,whamon,巨鯨獸,Whamon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/whamon_idle1.png,whamon,巨鯨獸,Whamon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/whamon_eat0.png,whamon,巨鯨獸,Whamon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/whamon_eat1.png,whamon,巨鯨獸,Whamon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/whamon_happy.png,whamon,巨鯨獸,Whamon,成熟期,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/whamon_angry.png,whamon,巨鯨獸,Whamon,成熟期,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/whamon_refuse.png,whamon,巨鯨獸,Whamon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/whamon_sleep0.png,whamon,巨鯨獸,Whamon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/whamon_sleep1.png,whamon,巨鯨獸,Whamon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/whamon_train0.png,whamon,巨鯨獸,Whamon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/whamon_train1.png,whamon,巨鯨獸,Whamon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/whamon_attack.png,whamon,巨鯨獸,Whamon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/whamon_sick.png,whamon,巨鯨獸,Whamon,成熟期,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/whamon_hurt.png,whamon,巨鯨獸,Whamon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/whamon_lose.png,whamon,巨鯨獸,Whamon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_idle0.png,vegimon,鼻屎獸,Vegimon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/vegimon_idle1.png,vegimon,鼻屎獸,Vegimon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_eat0.png,vegimon,鼻屎獸,Vegimon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_eat1.png,vegimon,鼻屎獸,Vegimon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_happy.png,vegimon,鼻屎獸,Vegimon,成熟期,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_angry.png,vegimon,鼻屎獸,Vegimon,成熟期,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_refuse.png,vegimon,鼻屎獸,Vegimon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_sleep0.png,vegimon,鼻屎獸,Vegimon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_sleep1.png,vegimon,鼻屎獸,Vegimon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_train0.png,vegimon,鼻屎獸,Vegimon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_train1.png,vegimon,鼻屎獸,Vegimon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_attack.png,vegimon,鼻屎獸,Vegimon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_sick.png,vegimon,鼻屎獸,Vegimon,成熟期,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_hurt.png,vegimon,鼻屎獸,Vegimon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/vegimon_lose.png,vegimon,鼻屎獸,Vegimon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_idle0.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/skullgreymon_idle1.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_eat0.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_eat1.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_happy.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_angry.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_refuse.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_sleep0.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_sleep1.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_train0.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_train1.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_attack.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_sick.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_hurt.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/skullgreymon_lose.png,skullgreymon,喪屍暴龍獸,SkullGreymon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_idle0.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/metalmamemon_idle1.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_eat0.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_eat1.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_happy.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_angry.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_refuse.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_sleep0.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_sleep1.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_train0.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_train1.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_attack.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_sick.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_hurt.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/metalmamemon_lose.png,metalmamemon,鋼鐵豆豆獸,MetalMamemon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/vademon_idle0.png,vademon,入侵者獸,Vademon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/vademon_idle1.png,vademon,入侵者獸,Vademon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/vademon_eat0.png,vademon,入侵者獸,Vademon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/vademon_eat1.png,vademon,入侵者獸,Vademon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/vademon_happy.png,vademon,入侵者獸,Vademon,完全體,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/vademon_angry.png,vademon,入侵者獸,Vademon,完全體,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/vademon_refuse.png,vademon,入侵者獸,Vademon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/vademon_sleep0.png,vademon,入侵者獸,Vademon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/vademon_sleep1.png,vademon,入侵者獸,Vademon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/vademon_train0.png,vademon,入侵者獸,Vademon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/vademon_train1.png,vademon,入侵者獸,Vademon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/vademon_attack.png,vademon,入侵者獸,Vademon,完全體,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/vademon_sick.png,vademon,入侵者獸,Vademon,完全體,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/vademon_hurt.png,vademon,入侵者獸,Vademon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/vademon_lose.png,vademon,入侵者獸,Vademon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_idle0.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/skullmammon_idle1.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_eat0.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_eat1.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_happy.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_angry.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_refuse.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_sleep0.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_sleep1.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_train0.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_train1.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_attack.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_sick.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_hurt.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/skullmammon_lose.png,skullmammon,喪屍長毛象獸,SkullMammon,究極體,lose,輸／倒下,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_idle0.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,idle0,待機 1,16x16,必要
+1997 Ver.2,2,dm1997/cresgarurumon_idle1.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,idle1,待機 2,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_eat0.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_eat1.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_happy.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,happy,開心,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_angry.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,angry,生氣,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_refuse.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_sleep0.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,sleep0,睡覺 1,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_sleep1.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,sleep1,睡覺 2,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_train0.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,train0,訓練 1,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_train1.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,train1,訓練 2,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_attack.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,attack,攻擊,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_sick.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,sick,生病,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_hurt.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,hurt,受傷／被打,16x16,建議
+1997 Ver.2,2,dm1997/cresgarurumon_lose.png,cresgarurumon,偃月加魯魯獸,CresGarurumon,究極體,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/egg_v3_idle0.png,egg_v3,版本三數碼蛋,Ver.3 Digitama,數碼蛋,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/egg_v3_idle1.png,egg_v3,版本三數碼蛋,Ver.3 Digitama,數碼蛋,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/egg_v3_hatch.png,egg_v3,版本三數碼蛋,Ver.3 Digitama,數碼蛋,hatch,孵化（裂開）,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_idle0.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/poyomon_idle1.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_eat0.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_eat1.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_happy.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_angry.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_refuse.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_sleep0.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_sleep1.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_train0.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_train1.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_attack.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_sick.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_hurt.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/poyomon_lose.png,poyomon,浮游獸,Poyomon,幼年期Ⅰ,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_idle0.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/tokomon_idle1.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_eat0.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_eat1.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_happy.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_angry.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_refuse.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_sleep0.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_sleep1.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_train0.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_train1.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_attack.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_sick.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_hurt.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/tokomon_lose.png,tokomon,迪哥獸,Tokomon,幼年期Ⅱ,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/patamon_idle0.png,patamon,巴達獸,Patamon,成長期,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/patamon_idle1.png,patamon,巴達獸,Patamon,成長期,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/patamon_eat0.png,patamon,巴達獸,Patamon,成長期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/patamon_eat1.png,patamon,巴達獸,Patamon,成長期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/patamon_happy.png,patamon,巴達獸,Patamon,成長期,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/patamon_angry.png,patamon,巴達獸,Patamon,成長期,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/patamon_refuse.png,patamon,巴達獸,Patamon,成長期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/patamon_sleep0.png,patamon,巴達獸,Patamon,成長期,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/patamon_sleep1.png,patamon,巴達獸,Patamon,成長期,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/patamon_train0.png,patamon,巴達獸,Patamon,成長期,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/patamon_train1.png,patamon,巴達獸,Patamon,成長期,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/patamon_attack.png,patamon,巴達獸,Patamon,成長期,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/patamon_sick.png,patamon,巴達獸,Patamon,成長期,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/patamon_hurt.png,patamon,巴達獸,Patamon,成長期,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/patamon_lose.png,patamon,巴達獸,Patamon,成長期,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_idle0.png,kunemon,古尼獸,Kunemon,成長期,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/kunemon_idle1.png,kunemon,古尼獸,Kunemon,成長期,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_eat0.png,kunemon,古尼獸,Kunemon,成長期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_eat1.png,kunemon,古尼獸,Kunemon,成長期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_happy.png,kunemon,古尼獸,Kunemon,成長期,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_angry.png,kunemon,古尼獸,Kunemon,成長期,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_refuse.png,kunemon,古尼獸,Kunemon,成長期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_sleep0.png,kunemon,古尼獸,Kunemon,成長期,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_sleep1.png,kunemon,古尼獸,Kunemon,成長期,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_train0.png,kunemon,古尼獸,Kunemon,成長期,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_train1.png,kunemon,古尼獸,Kunemon,成長期,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_attack.png,kunemon,古尼獸,Kunemon,成長期,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_sick.png,kunemon,古尼獸,Kunemon,成長期,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_hurt.png,kunemon,古尼獸,Kunemon,成長期,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/kunemon_lose.png,kunemon,古尼獸,Kunemon,成長期,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/unimon_idle0.png,unimon,獨角馬獸,Unimon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/unimon_idle1.png,unimon,獨角馬獸,Unimon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/unimon_eat0.png,unimon,獨角馬獸,Unimon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/unimon_eat1.png,unimon,獨角馬獸,Unimon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/unimon_happy.png,unimon,獨角馬獸,Unimon,成熟期,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/unimon_angry.png,unimon,獨角馬獸,Unimon,成熟期,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/unimon_refuse.png,unimon,獨角馬獸,Unimon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/unimon_sleep0.png,unimon,獨角馬獸,Unimon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/unimon_sleep1.png,unimon,獨角馬獸,Unimon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/unimon_train0.png,unimon,獨角馬獸,Unimon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/unimon_train1.png,unimon,獨角馬獸,Unimon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/unimon_attack.png,unimon,獨角馬獸,Unimon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/unimon_sick.png,unimon,獨角馬獸,Unimon,成熟期,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/unimon_hurt.png,unimon,獨角馬獸,Unimon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/unimon_lose.png,unimon,獨角馬獸,Unimon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_idle0.png,centalmon,人馬獸,Centalmon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/centalmon_idle1.png,centalmon,人馬獸,Centalmon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_eat0.png,centalmon,人馬獸,Centalmon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_eat1.png,centalmon,人馬獸,Centalmon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_happy.png,centalmon,人馬獸,Centalmon,成熟期,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_angry.png,centalmon,人馬獸,Centalmon,成熟期,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_refuse.png,centalmon,人馬獸,Centalmon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_sleep0.png,centalmon,人馬獸,Centalmon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_sleep1.png,centalmon,人馬獸,Centalmon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_train0.png,centalmon,人馬獸,Centalmon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_train1.png,centalmon,人馬獸,Centalmon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_attack.png,centalmon,人馬獸,Centalmon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_sick.png,centalmon,人馬獸,Centalmon,成熟期,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_hurt.png,centalmon,人馬獸,Centalmon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/centalmon_lose.png,centalmon,人馬獸,Centalmon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_idle0.png,ogremon,奧加獸,Ogremon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/ogremon_idle1.png,ogremon,奧加獸,Ogremon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_eat0.png,ogremon,奧加獸,Ogremon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_eat1.png,ogremon,奧加獸,Ogremon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_happy.png,ogremon,奧加獸,Ogremon,成熟期,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_angry.png,ogremon,奧加獸,Ogremon,成熟期,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_refuse.png,ogremon,奧加獸,Ogremon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_sleep0.png,ogremon,奧加獸,Ogremon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_sleep1.png,ogremon,奧加獸,Ogremon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_train0.png,ogremon,奧加獸,Ogremon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_train1.png,ogremon,奧加獸,Ogremon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_attack.png,ogremon,奧加獸,Ogremon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_sick.png,ogremon,奧加獸,Ogremon,成熟期,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_hurt.png,ogremon,奧加獸,Ogremon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/ogremon_lose.png,ogremon,奧加獸,Ogremon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_idle0.png,bakemon,猛鬼獸,Bakemon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/bakemon_idle1.png,bakemon,猛鬼獸,Bakemon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_eat0.png,bakemon,猛鬼獸,Bakemon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_eat1.png,bakemon,猛鬼獸,Bakemon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_happy.png,bakemon,猛鬼獸,Bakemon,成熟期,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_angry.png,bakemon,猛鬼獸,Bakemon,成熟期,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_refuse.png,bakemon,猛鬼獸,Bakemon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_sleep0.png,bakemon,猛鬼獸,Bakemon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_sleep1.png,bakemon,猛鬼獸,Bakemon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_train0.png,bakemon,猛鬼獸,Bakemon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_train1.png,bakemon,猛鬼獸,Bakemon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_attack.png,bakemon,猛鬼獸,Bakemon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_sick.png,bakemon,猛鬼獸,Bakemon,成熟期,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_hurt.png,bakemon,猛鬼獸,Bakemon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/bakemon_lose.png,bakemon,猛鬼獸,Bakemon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_idle0.png,shellmon,貝殼獸,Shellmon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/shellmon_idle1.png,shellmon,貝殼獸,Shellmon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_eat0.png,shellmon,貝殼獸,Shellmon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_eat1.png,shellmon,貝殼獸,Shellmon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_happy.png,shellmon,貝殼獸,Shellmon,成熟期,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_angry.png,shellmon,貝殼獸,Shellmon,成熟期,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_refuse.png,shellmon,貝殼獸,Shellmon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_sleep0.png,shellmon,貝殼獸,Shellmon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_sleep1.png,shellmon,貝殼獸,Shellmon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_train0.png,shellmon,貝殼獸,Shellmon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_train1.png,shellmon,貝殼獸,Shellmon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_attack.png,shellmon,貝殼獸,Shellmon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_sick.png,shellmon,貝殼獸,Shellmon,成熟期,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_hurt.png,shellmon,貝殼獸,Shellmon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/shellmon_lose.png,shellmon,貝殼獸,Shellmon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_idle0.png,drimogemon,鑽地獸,Drimogemon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/drimogemon_idle1.png,drimogemon,鑽地獸,Drimogemon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_eat0.png,drimogemon,鑽地獸,Drimogemon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_eat1.png,drimogemon,鑽地獸,Drimogemon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_happy.png,drimogemon,鑽地獸,Drimogemon,成熟期,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_angry.png,drimogemon,鑽地獸,Drimogemon,成熟期,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_refuse.png,drimogemon,鑽地獸,Drimogemon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_sleep0.png,drimogemon,鑽地獸,Drimogemon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_sleep1.png,drimogemon,鑽地獸,Drimogemon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_train0.png,drimogemon,鑽地獸,Drimogemon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_train1.png,drimogemon,鑽地獸,Drimogemon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_attack.png,drimogemon,鑽地獸,Drimogemon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_sick.png,drimogemon,鑽地獸,Drimogemon,成熟期,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_hurt.png,drimogemon,鑽地獸,Drimogemon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/drimogemon_lose.png,drimogemon,鑽地獸,Drimogemon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_idle0.png,sukamon,大便獸,Sukamon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/sukamon_idle1.png,sukamon,大便獸,Sukamon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_eat0.png,sukamon,大便獸,Sukamon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_eat1.png,sukamon,大便獸,Sukamon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_happy.png,sukamon,大便獸,Sukamon,成熟期,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_angry.png,sukamon,大便獸,Sukamon,成熟期,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_refuse.png,sukamon,大便獸,Sukamon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_sleep0.png,sukamon,大便獸,Sukamon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_sleep1.png,sukamon,大便獸,Sukamon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_train0.png,sukamon,大便獸,Sukamon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_train1.png,sukamon,大便獸,Sukamon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_attack.png,sukamon,大便獸,Sukamon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_sick.png,sukamon,大便獸,Sukamon,成熟期,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_hurt.png,sukamon,大便獸,Sukamon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/sukamon_lose.png,sukamon,大便獸,Sukamon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/andromon_idle0.png,andromon,安杜路獸,Andromon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/andromon_idle1.png,andromon,安杜路獸,Andromon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/andromon_eat0.png,andromon,安杜路獸,Andromon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/andromon_eat1.png,andromon,安杜路獸,Andromon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/andromon_happy.png,andromon,安杜路獸,Andromon,完全體,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/andromon_angry.png,andromon,安杜路獸,Andromon,完全體,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/andromon_refuse.png,andromon,安杜路獸,Andromon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/andromon_sleep0.png,andromon,安杜路獸,Andromon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/andromon_sleep1.png,andromon,安杜路獸,Andromon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/andromon_train0.png,andromon,安杜路獸,Andromon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/andromon_train1.png,andromon,安杜路獸,Andromon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/andromon_attack.png,andromon,安杜路獸,Andromon,完全體,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/andromon_sick.png,andromon,安杜路獸,Andromon,完全體,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/andromon_hurt.png,andromon,安杜路獸,Andromon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/andromon_lose.png,andromon,安杜路獸,Andromon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/giromon_idle0.png,giromon,砲彈獸,Giromon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/giromon_idle1.png,giromon,砲彈獸,Giromon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/giromon_eat0.png,giromon,砲彈獸,Giromon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/giromon_eat1.png,giromon,砲彈獸,Giromon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/giromon_happy.png,giromon,砲彈獸,Giromon,完全體,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/giromon_angry.png,giromon,砲彈獸,Giromon,完全體,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/giromon_refuse.png,giromon,砲彈獸,Giromon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/giromon_sleep0.png,giromon,砲彈獸,Giromon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/giromon_sleep1.png,giromon,砲彈獸,Giromon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/giromon_train0.png,giromon,砲彈獸,Giromon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/giromon_train1.png,giromon,砲彈獸,Giromon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/giromon_attack.png,giromon,砲彈獸,Giromon,完全體,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/giromon_sick.png,giromon,砲彈獸,Giromon,完全體,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/giromon_hurt.png,giromon,砲彈獸,Giromon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/giromon_lose.png,giromon,砲彈獸,Giromon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/etemon_idle0.png,etemon,悟空獸,Etemon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/etemon_idle1.png,etemon,悟空獸,Etemon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/etemon_eat0.png,etemon,悟空獸,Etemon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/etemon_eat1.png,etemon,悟空獸,Etemon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/etemon_happy.png,etemon,悟空獸,Etemon,完全體,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/etemon_angry.png,etemon,悟空獸,Etemon,完全體,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/etemon_refuse.png,etemon,悟空獸,Etemon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/etemon_sleep0.png,etemon,悟空獸,Etemon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/etemon_sleep1.png,etemon,悟空獸,Etemon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/etemon_train0.png,etemon,悟空獸,Etemon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/etemon_train1.png,etemon,悟空獸,Etemon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/etemon_attack.png,etemon,悟空獸,Etemon,完全體,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/etemon_sick.png,etemon,悟空獸,Etemon,完全體,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/etemon_hurt.png,etemon,悟空獸,Etemon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/etemon_lose.png,etemon,悟空獸,Etemon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_idle0.png,hiandromon,高級安杜路獸,HiAndromon,究極體,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/hiandromon_idle1.png,hiandromon,高級安杜路獸,HiAndromon,究極體,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_eat0.png,hiandromon,高級安杜路獸,HiAndromon,究極體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_eat1.png,hiandromon,高級安杜路獸,HiAndromon,究極體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_happy.png,hiandromon,高級安杜路獸,HiAndromon,究極體,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_angry.png,hiandromon,高級安杜路獸,HiAndromon,究極體,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_refuse.png,hiandromon,高級安杜路獸,HiAndromon,究極體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_sleep0.png,hiandromon,高級安杜路獸,HiAndromon,究極體,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_sleep1.png,hiandromon,高級安杜路獸,HiAndromon,究極體,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_train0.png,hiandromon,高級安杜路獸,HiAndromon,究極體,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_train1.png,hiandromon,高級安杜路獸,HiAndromon,究極體,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_attack.png,hiandromon,高級安杜路獸,HiAndromon,究極體,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_sick.png,hiandromon,高級安杜路獸,HiAndromon,究極體,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_hurt.png,hiandromon,高級安杜路獸,HiAndromon,究極體,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/hiandromon_lose.png,hiandromon,高級安杜路獸,HiAndromon,究極體,lose,輸／倒下,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_idle0.png,kingetemon,大王悟空獸,KingEtemon,究極體,idle0,待機 1,16x16,必要
+1997 Ver.3,3,dm1997/kingetemon_idle1.png,kingetemon,大王悟空獸,KingEtemon,究極體,idle1,待機 2,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_eat0.png,kingetemon,大王悟空獸,KingEtemon,究極體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_eat1.png,kingetemon,大王悟空獸,KingEtemon,究極體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_happy.png,kingetemon,大王悟空獸,KingEtemon,究極體,happy,開心,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_angry.png,kingetemon,大王悟空獸,KingEtemon,究極體,angry,生氣,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_refuse.png,kingetemon,大王悟空獸,KingEtemon,究極體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_sleep0.png,kingetemon,大王悟空獸,KingEtemon,究極體,sleep0,睡覺 1,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_sleep1.png,kingetemon,大王悟空獸,KingEtemon,究極體,sleep1,睡覺 2,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_train0.png,kingetemon,大王悟空獸,KingEtemon,究極體,train0,訓練 1,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_train1.png,kingetemon,大王悟空獸,KingEtemon,究極體,train1,訓練 2,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_attack.png,kingetemon,大王悟空獸,KingEtemon,究極體,attack,攻擊,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_sick.png,kingetemon,大王悟空獸,KingEtemon,究極體,sick,生病,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_hurt.png,kingetemon,大王悟空獸,KingEtemon,究極體,hurt,受傷／被打,16x16,建議
+1997 Ver.3,3,dm1997/kingetemon_lose.png,kingetemon,大王悟空獸,KingEtemon,究極體,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/egg_v4_idle0.png,egg_v4,版本四數碼蛋,Ver.4 Digitama,數碼蛋,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/egg_v4_idle1.png,egg_v4,版本四數碼蛋,Ver.4 Digitama,數碼蛋,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/egg_v4_hatch.png,egg_v4,版本四數碼蛋,Ver.4 Digitama,數碼蛋,hatch,孵化（裂開）,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_idle0.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/yuramon_idle1.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_eat0.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_eat1.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_happy.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_angry.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_refuse.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_sleep0.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_sleep1.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_train0.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_train1.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_attack.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_sick.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_hurt.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/yuramon_lose.png,yuramon,浮球獸,Yuramon,幼年期Ⅰ,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_idle0.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/tanemon_idle1.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_eat0.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_eat1.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_happy.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_angry.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_refuse.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_sleep0.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_sleep1.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_train0.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_train1.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_attack.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_sick.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_hurt.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/tanemon_lose.png,tanemon,種子獸,Tanemon,幼年期Ⅱ,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_idle0.png,piyomon,比丘獸,Piyomon,成長期,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/piyomon_idle1.png,piyomon,比丘獸,Piyomon,成長期,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_eat0.png,piyomon,比丘獸,Piyomon,成長期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_eat1.png,piyomon,比丘獸,Piyomon,成長期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_happy.png,piyomon,比丘獸,Piyomon,成長期,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_angry.png,piyomon,比丘獸,Piyomon,成長期,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_refuse.png,piyomon,比丘獸,Piyomon,成長期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_sleep0.png,piyomon,比丘獸,Piyomon,成長期,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_sleep1.png,piyomon,比丘獸,Piyomon,成長期,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_train0.png,piyomon,比丘獸,Piyomon,成長期,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_train1.png,piyomon,比丘獸,Piyomon,成長期,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_attack.png,piyomon,比丘獸,Piyomon,成長期,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_sick.png,piyomon,比丘獸,Piyomon,成長期,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_hurt.png,piyomon,比丘獸,Piyomon,成長期,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/piyomon_lose.png,piyomon,比丘獸,Piyomon,成長期,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/palmon_idle0.png,palmon,巴魯獸,Palmon,成長期,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/palmon_idle1.png,palmon,巴魯獸,Palmon,成長期,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/palmon_eat0.png,palmon,巴魯獸,Palmon,成長期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/palmon_eat1.png,palmon,巴魯獸,Palmon,成長期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/palmon_happy.png,palmon,巴魯獸,Palmon,成長期,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/palmon_angry.png,palmon,巴魯獸,Palmon,成長期,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/palmon_refuse.png,palmon,巴魯獸,Palmon,成長期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/palmon_sleep0.png,palmon,巴魯獸,Palmon,成長期,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/palmon_sleep1.png,palmon,巴魯獸,Palmon,成長期,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/palmon_train0.png,palmon,巴魯獸,Palmon,成長期,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/palmon_train1.png,palmon,巴魯獸,Palmon,成長期,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/palmon_attack.png,palmon,巴魯獸,Palmon,成長期,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/palmon_sick.png,palmon,巴魯獸,Palmon,成長期,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/palmon_hurt.png,palmon,巴魯獸,Palmon,成長期,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/palmon_lose.png,palmon,巴魯獸,Palmon,成長期,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_idle0.png,monochromon,角龍獸,Monochromon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/monochromon_idle1.png,monochromon,角龍獸,Monochromon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_eat0.png,monochromon,角龍獸,Monochromon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_eat1.png,monochromon,角龍獸,Monochromon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_happy.png,monochromon,角龍獸,Monochromon,成熟期,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_angry.png,monochromon,角龍獸,Monochromon,成熟期,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_refuse.png,monochromon,角龍獸,Monochromon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_sleep0.png,monochromon,角龍獸,Monochromon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_sleep1.png,monochromon,角龍獸,Monochromon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_train0.png,monochromon,角龍獸,Monochromon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_train1.png,monochromon,角龍獸,Monochromon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_attack.png,monochromon,角龍獸,Monochromon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_sick.png,monochromon,角龍獸,Monochromon,成熟期,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_hurt.png,monochromon,角龍獸,Monochromon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/monochromon_lose.png,monochromon,角龍獸,Monochromon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_idle0.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/cockatrimon_idle1.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_eat0.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_eat1.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_happy.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_angry.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_refuse.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_sleep0.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_sleep1.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_train0.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_train1.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_attack.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_sick.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_hurt.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/cockatrimon_lose.png,cockatrimon,巨雞獸,Cockatrimon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/leomon_idle0.png,leomon,獅子獸,Leomon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/leomon_idle1.png,leomon,獅子獸,Leomon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/leomon_eat0.png,leomon,獅子獸,Leomon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/leomon_eat1.png,leomon,獅子獸,Leomon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/leomon_happy.png,leomon,獅子獸,Leomon,成熟期,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/leomon_angry.png,leomon,獅子獸,Leomon,成熟期,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/leomon_refuse.png,leomon,獅子獸,Leomon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/leomon_sleep0.png,leomon,獅子獸,Leomon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/leomon_sleep1.png,leomon,獅子獸,Leomon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/leomon_train0.png,leomon,獅子獸,Leomon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/leomon_train1.png,leomon,獅子獸,Leomon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/leomon_attack.png,leomon,獅子獸,Leomon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/leomon_sick.png,leomon,獅子獸,Leomon,成熟期,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/leomon_hurt.png,leomon,獅子獸,Leomon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/leomon_lose.png,leomon,獅子獸,Leomon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_idle0.png,kuwagamon,古加獸,Kuwagamon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/kuwagamon_idle1.png,kuwagamon,古加獸,Kuwagamon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_eat0.png,kuwagamon,古加獸,Kuwagamon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_eat1.png,kuwagamon,古加獸,Kuwagamon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_happy.png,kuwagamon,古加獸,Kuwagamon,成熟期,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_angry.png,kuwagamon,古加獸,Kuwagamon,成熟期,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_refuse.png,kuwagamon,古加獸,Kuwagamon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_sleep0.png,kuwagamon,古加獸,Kuwagamon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_sleep1.png,kuwagamon,古加獸,Kuwagamon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_train0.png,kuwagamon,古加獸,Kuwagamon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_train1.png,kuwagamon,古加獸,Kuwagamon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_attack.png,kuwagamon,古加獸,Kuwagamon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_sick.png,kuwagamon,古加獸,Kuwagamon,成熟期,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_hurt.png,kuwagamon,古加獸,Kuwagamon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/kuwagamon_lose.png,kuwagamon,古加獸,Kuwagamon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_idle0.png,coelamon,西拉獸,Coelamon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/coelamon_idle1.png,coelamon,西拉獸,Coelamon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_eat0.png,coelamon,西拉獸,Coelamon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_eat1.png,coelamon,西拉獸,Coelamon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_happy.png,coelamon,西拉獸,Coelamon,成熟期,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_angry.png,coelamon,西拉獸,Coelamon,成熟期,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_refuse.png,coelamon,西拉獸,Coelamon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_sleep0.png,coelamon,西拉獸,Coelamon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_sleep1.png,coelamon,西拉獸,Coelamon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_train0.png,coelamon,西拉獸,Coelamon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_train1.png,coelamon,西拉獸,Coelamon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_attack.png,coelamon,西拉獸,Coelamon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_sick.png,coelamon,西拉獸,Coelamon,成熟期,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_hurt.png,coelamon,西拉獸,Coelamon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/coelamon_lose.png,coelamon,西拉獸,Coelamon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_idle0.png,mojyamon,毛人獸,Mojyamon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/mojyamon_idle1.png,mojyamon,毛人獸,Mojyamon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_eat0.png,mojyamon,毛人獸,Mojyamon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_eat1.png,mojyamon,毛人獸,Mojyamon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_happy.png,mojyamon,毛人獸,Mojyamon,成熟期,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_angry.png,mojyamon,毛人獸,Mojyamon,成熟期,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_refuse.png,mojyamon,毛人獸,Mojyamon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_sleep0.png,mojyamon,毛人獸,Mojyamon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_sleep1.png,mojyamon,毛人獸,Mojyamon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_train0.png,mojyamon,毛人獸,Mojyamon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_train1.png,mojyamon,毛人獸,Mojyamon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_attack.png,mojyamon,毛人獸,Mojyamon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_sick.png,mojyamon,毛人獸,Mojyamon,成熟期,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_hurt.png,mojyamon,毛人獸,Mojyamon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/mojyamon_lose.png,mojyamon,毛人獸,Mojyamon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_idle0.png,nanimon,亞伯獸,Nanimon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/nanimon_idle1.png,nanimon,亞伯獸,Nanimon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_eat0.png,nanimon,亞伯獸,Nanimon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_eat1.png,nanimon,亞伯獸,Nanimon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_happy.png,nanimon,亞伯獸,Nanimon,成熟期,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_angry.png,nanimon,亞伯獸,Nanimon,成熟期,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_refuse.png,nanimon,亞伯獸,Nanimon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_sleep0.png,nanimon,亞伯獸,Nanimon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_sleep1.png,nanimon,亞伯獸,Nanimon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_train0.png,nanimon,亞伯獸,Nanimon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_train1.png,nanimon,亞伯獸,Nanimon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_attack.png,nanimon,亞伯獸,Nanimon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_sick.png,nanimon,亞伯獸,Nanimon,成熟期,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_hurt.png,nanimon,亞伯獸,Nanimon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/nanimon_lose.png,nanimon,亞伯獸,Nanimon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_idle0.png,megadramon,超蛇龍獸,Megadramon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/megadramon_idle1.png,megadramon,超蛇龍獸,Megadramon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_eat0.png,megadramon,超蛇龍獸,Megadramon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_eat1.png,megadramon,超蛇龍獸,Megadramon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_happy.png,megadramon,超蛇龍獸,Megadramon,完全體,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_angry.png,megadramon,超蛇龍獸,Megadramon,完全體,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_refuse.png,megadramon,超蛇龍獸,Megadramon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_sleep0.png,megadramon,超蛇龍獸,Megadramon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_sleep1.png,megadramon,超蛇龍獸,Megadramon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_train0.png,megadramon,超蛇龍獸,Megadramon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_train1.png,megadramon,超蛇龍獸,Megadramon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_attack.png,megadramon,超蛇龍獸,Megadramon,完全體,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_sick.png,megadramon,超蛇龍獸,Megadramon,完全體,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_hurt.png,megadramon,超蛇龍獸,Megadramon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/megadramon_lose.png,megadramon,超蛇龍獸,Megadramon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_idle0.png,piccolomon,妖精獸,Piccolomon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/piccolomon_idle1.png,piccolomon,妖精獸,Piccolomon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_eat0.png,piccolomon,妖精獸,Piccolomon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_eat1.png,piccolomon,妖精獸,Piccolomon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_happy.png,piccolomon,妖精獸,Piccolomon,完全體,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_angry.png,piccolomon,妖精獸,Piccolomon,完全體,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_refuse.png,piccolomon,妖精獸,Piccolomon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_sleep0.png,piccolomon,妖精獸,Piccolomon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_sleep1.png,piccolomon,妖精獸,Piccolomon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_train0.png,piccolomon,妖精獸,Piccolomon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_train1.png,piccolomon,妖精獸,Piccolomon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_attack.png,piccolomon,妖精獸,Piccolomon,完全體,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_sick.png,piccolomon,妖精獸,Piccolomon,完全體,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_hurt.png,piccolomon,妖精獸,Piccolomon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/piccolomon_lose.png,piccolomon,妖精獸,Piccolomon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_idle0.png,digitamamon,蛋蛋獸,Digitamamon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/digitamamon_idle1.png,digitamamon,蛋蛋獸,Digitamamon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_eat0.png,digitamamon,蛋蛋獸,Digitamamon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_eat1.png,digitamamon,蛋蛋獸,Digitamamon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_happy.png,digitamamon,蛋蛋獸,Digitamamon,完全體,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_angry.png,digitamamon,蛋蛋獸,Digitamamon,完全體,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_refuse.png,digitamamon,蛋蛋獸,Digitamamon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_sleep0.png,digitamamon,蛋蛋獸,Digitamamon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_sleep1.png,digitamamon,蛋蛋獸,Digitamamon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_train0.png,digitamamon,蛋蛋獸,Digitamamon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_train1.png,digitamamon,蛋蛋獸,Digitamamon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_attack.png,digitamamon,蛋蛋獸,Digitamamon,完全體,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_sick.png,digitamamon,蛋蛋獸,Digitamamon,完全體,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_hurt.png,digitamamon,蛋蛋獸,Digitamamon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/digitamamon_lose.png,digitamamon,蛋蛋獸,Digitamamon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_idle0.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/aegisdramon_idle1.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_eat0.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_eat1.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_happy.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_angry.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_refuse.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_sleep0.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_sleep1.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_train0.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_train1.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_attack.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_sick.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_hurt.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/aegisdramon_lose.png,aegisdramon,聖盾龍獸,Aegisdramon,究極體,lose,輸／倒下,16x16,建議
+1997 Ver.4,4,dm1997/titamon_idle0.png,titamon,泰坦獸,Titamon,究極體,idle0,待機 1,16x16,必要
+1997 Ver.4,4,dm1997/titamon_idle1.png,titamon,泰坦獸,Titamon,究極體,idle1,待機 2,16x16,建議
+1997 Ver.4,4,dm1997/titamon_eat0.png,titamon,泰坦獸,Titamon,究極體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.4,4,dm1997/titamon_eat1.png,titamon,泰坦獸,Titamon,究極體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.4,4,dm1997/titamon_happy.png,titamon,泰坦獸,Titamon,究極體,happy,開心,16x16,建議
+1997 Ver.4,4,dm1997/titamon_angry.png,titamon,泰坦獸,Titamon,究極體,angry,生氣,16x16,建議
+1997 Ver.4,4,dm1997/titamon_refuse.png,titamon,泰坦獸,Titamon,究極體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.4,4,dm1997/titamon_sleep0.png,titamon,泰坦獸,Titamon,究極體,sleep0,睡覺 1,16x16,建議
+1997 Ver.4,4,dm1997/titamon_sleep1.png,titamon,泰坦獸,Titamon,究極體,sleep1,睡覺 2,16x16,建議
+1997 Ver.4,4,dm1997/titamon_train0.png,titamon,泰坦獸,Titamon,究極體,train0,訓練 1,16x16,建議
+1997 Ver.4,4,dm1997/titamon_train1.png,titamon,泰坦獸,Titamon,究極體,train1,訓練 2,16x16,建議
+1997 Ver.4,4,dm1997/titamon_attack.png,titamon,泰坦獸,Titamon,究極體,attack,攻擊,16x16,建議
+1997 Ver.4,4,dm1997/titamon_sick.png,titamon,泰坦獸,Titamon,究極體,sick,生病,16x16,建議
+1997 Ver.4,4,dm1997/titamon_hurt.png,titamon,泰坦獸,Titamon,究極體,hurt,受傷／被打,16x16,建議
+1997 Ver.4,4,dm1997/titamon_lose.png,titamon,泰坦獸,Titamon,究極體,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/egg_v5_idle0.png,egg_v5,版本五數碼蛋,Ver.5 Digitama,數碼蛋,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/egg_v5_idle1.png,egg_v5,版本五數碼蛋,Ver.5 Digitama,數碼蛋,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/egg_v5_hatch.png,egg_v5,版本五數碼蛋,Ver.5 Digitama,數碼蛋,hatch,孵化（裂開）,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_idle0.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/zurumon_idle1.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_eat0.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_eat1.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_happy.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_angry.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_refuse.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_sleep0.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_sleep1.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_train0.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_train1.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_attack.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_sick.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_hurt.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/zurumon_lose.png,zurumon,狡猾獸,Zurumon,幼年期Ⅰ,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_idle0.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/pagumon_idle1.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_eat0.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_eat1.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_happy.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_angry.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_refuse.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_sleep0.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_sleep1.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_train0.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_train1.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_attack.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_sick.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_hurt.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/pagumon_lose.png,pagumon,柏古獸,Pagumon,幼年期Ⅱ,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_idle0.png,gazimon,加支獸,Gazimon,成長期,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/gazimon_idle1.png,gazimon,加支獸,Gazimon,成長期,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_eat0.png,gazimon,加支獸,Gazimon,成長期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_eat1.png,gazimon,加支獸,Gazimon,成長期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_happy.png,gazimon,加支獸,Gazimon,成長期,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_angry.png,gazimon,加支獸,Gazimon,成長期,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_refuse.png,gazimon,加支獸,Gazimon,成長期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_sleep0.png,gazimon,加支獸,Gazimon,成長期,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_sleep1.png,gazimon,加支獸,Gazimon,成長期,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_train0.png,gazimon,加支獸,Gazimon,成長期,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_train1.png,gazimon,加支獸,Gazimon,成長期,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_attack.png,gazimon,加支獸,Gazimon,成長期,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_sick.png,gazimon,加支獸,Gazimon,成長期,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_hurt.png,gazimon,加支獸,Gazimon,成長期,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/gazimon_lose.png,gazimon,加支獸,Gazimon,成長期,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_idle0.png,gizamon,基剎獸,Gizamon,成長期,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/gizamon_idle1.png,gizamon,基剎獸,Gizamon,成長期,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_eat0.png,gizamon,基剎獸,Gizamon,成長期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_eat1.png,gizamon,基剎獸,Gizamon,成長期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_happy.png,gizamon,基剎獸,Gizamon,成長期,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_angry.png,gizamon,基剎獸,Gizamon,成長期,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_refuse.png,gizamon,基剎獸,Gizamon,成長期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_sleep0.png,gizamon,基剎獸,Gizamon,成長期,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_sleep1.png,gizamon,基剎獸,Gizamon,成長期,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_train0.png,gizamon,基剎獸,Gizamon,成長期,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_train1.png,gizamon,基剎獸,Gizamon,成長期,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_attack.png,gizamon,基剎獸,Gizamon,成長期,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_sick.png,gizamon,基剎獸,Gizamon,成長期,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_hurt.png,gizamon,基剎獸,Gizamon,成長期,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/gizamon_lose.png,gizamon,基剎獸,Gizamon,成長期,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_idle0.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/darktyranomon_idle1.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_eat0.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_eat1.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_happy.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_angry.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_refuse.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_sleep0.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_sleep1.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_train0.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_train1.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_attack.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_sick.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_hurt.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/darktyranomon_lose.png,darktyranomon,黑暗巨龍獸,DarkTyranomon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_idle0.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/cyclomon_idle1.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_eat0.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_eat1.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_happy.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_angry.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_refuse.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_sleep0.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_sleep1.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_train0.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_train1.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_attack.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_sick.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_hurt.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/cyclomon_lose.png,cyclomon,獨眼龍獸,Cyclomon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_idle0.png,devidramon,邪龍獸,Devidramon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/devidramon_idle1.png,devidramon,邪龍獸,Devidramon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_eat0.png,devidramon,邪龍獸,Devidramon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_eat1.png,devidramon,邪龍獸,Devidramon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_happy.png,devidramon,邪龍獸,Devidramon,成熟期,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_angry.png,devidramon,邪龍獸,Devidramon,成熟期,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_refuse.png,devidramon,邪龍獸,Devidramon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_sleep0.png,devidramon,邪龍獸,Devidramon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_sleep1.png,devidramon,邪龍獸,Devidramon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_train0.png,devidramon,邪龍獸,Devidramon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_train1.png,devidramon,邪龍獸,Devidramon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_attack.png,devidramon,邪龍獸,Devidramon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_sick.png,devidramon,邪龍獸,Devidramon,成熟期,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_hurt.png,devidramon,邪龍獸,Devidramon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/devidramon_lose.png,devidramon,邪龍獸,Devidramon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_idle0.png,tuskmon,大角獸,Tuskmon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/tuskmon_idle1.png,tuskmon,大角獸,Tuskmon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_eat0.png,tuskmon,大角獸,Tuskmon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_eat1.png,tuskmon,大角獸,Tuskmon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_happy.png,tuskmon,大角獸,Tuskmon,成熟期,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_angry.png,tuskmon,大角獸,Tuskmon,成熟期,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_refuse.png,tuskmon,大角獸,Tuskmon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_sleep0.png,tuskmon,大角獸,Tuskmon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_sleep1.png,tuskmon,大角獸,Tuskmon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_train0.png,tuskmon,大角獸,Tuskmon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_train1.png,tuskmon,大角獸,Tuskmon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_attack.png,tuskmon,大角獸,Tuskmon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_sick.png,tuskmon,大角獸,Tuskmon,成熟期,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_hurt.png,tuskmon,大角獸,Tuskmon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/tuskmon_lose.png,tuskmon,大角獸,Tuskmon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/flymon_idle0.png,flymon,黃蜂獸,Flymon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/flymon_idle1.png,flymon,黃蜂獸,Flymon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/flymon_eat0.png,flymon,黃蜂獸,Flymon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/flymon_eat1.png,flymon,黃蜂獸,Flymon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/flymon_happy.png,flymon,黃蜂獸,Flymon,成熟期,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/flymon_angry.png,flymon,黃蜂獸,Flymon,成熟期,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/flymon_refuse.png,flymon,黃蜂獸,Flymon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/flymon_sleep0.png,flymon,黃蜂獸,Flymon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/flymon_sleep1.png,flymon,黃蜂獸,Flymon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/flymon_train0.png,flymon,黃蜂獸,Flymon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/flymon_train1.png,flymon,黃蜂獸,Flymon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/flymon_attack.png,flymon,黃蜂獸,Flymon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/flymon_sick.png,flymon,黃蜂獸,Flymon,成熟期,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/flymon_hurt.png,flymon,黃蜂獸,Flymon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/flymon_lose.png,flymon,黃蜂獸,Flymon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_idle0.png,deltamon,三頭龍獸,Deltamon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/deltamon_idle1.png,deltamon,三頭龍獸,Deltamon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_eat0.png,deltamon,三頭龍獸,Deltamon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_eat1.png,deltamon,三頭龍獸,Deltamon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_happy.png,deltamon,三頭龍獸,Deltamon,成熟期,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_angry.png,deltamon,三頭龍獸,Deltamon,成熟期,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_refuse.png,deltamon,三頭龍獸,Deltamon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_sleep0.png,deltamon,三頭龍獸,Deltamon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_sleep1.png,deltamon,三頭龍獸,Deltamon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_train0.png,deltamon,三頭龍獸,Deltamon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_train1.png,deltamon,三頭龍獸,Deltamon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_attack.png,deltamon,三頭龍獸,Deltamon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_sick.png,deltamon,三頭龍獸,Deltamon,成熟期,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_hurt.png,deltamon,三頭龍獸,Deltamon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/deltamon_lose.png,deltamon,三頭龍獸,Deltamon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/raremon_idle0.png,raremon,爛泥獸,Raremon,成熟期,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/raremon_idle1.png,raremon,爛泥獸,Raremon,成熟期,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/raremon_eat0.png,raremon,爛泥獸,Raremon,成熟期,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/raremon_eat1.png,raremon,爛泥獸,Raremon,成熟期,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/raremon_happy.png,raremon,爛泥獸,Raremon,成熟期,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/raremon_angry.png,raremon,爛泥獸,Raremon,成熟期,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/raremon_refuse.png,raremon,爛泥獸,Raremon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/raremon_sleep0.png,raremon,爛泥獸,Raremon,成熟期,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/raremon_sleep1.png,raremon,爛泥獸,Raremon,成熟期,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/raremon_train0.png,raremon,爛泥獸,Raremon,成熟期,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/raremon_train1.png,raremon,爛泥獸,Raremon,成熟期,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/raremon_attack.png,raremon,爛泥獸,Raremon,成熟期,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/raremon_sick.png,raremon,爛泥獸,Raremon,成熟期,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/raremon_hurt.png,raremon,爛泥獸,Raremon,成熟期,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/raremon_lose.png,raremon,爛泥獸,Raremon,成熟期,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_idle0.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/metaltyranomon_idle1.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_eat0.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_eat1.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_happy.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_angry.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_refuse.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_sleep0.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_sleep1.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_train0.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_train1.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_attack.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_sick.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_hurt.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/metaltyranomon_lose.png,metaltyranomon,鋼鐵巨龍獸,MetalTyranomon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_idle0.png,nanomon,分子獸,Nanomon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/nanomon_idle1.png,nanomon,分子獸,Nanomon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_eat0.png,nanomon,分子獸,Nanomon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_eat1.png,nanomon,分子獸,Nanomon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_happy.png,nanomon,分子獸,Nanomon,完全體,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_angry.png,nanomon,分子獸,Nanomon,完全體,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_refuse.png,nanomon,分子獸,Nanomon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_sleep0.png,nanomon,分子獸,Nanomon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_sleep1.png,nanomon,分子獸,Nanomon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_train0.png,nanomon,分子獸,Nanomon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_train1.png,nanomon,分子獸,Nanomon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_attack.png,nanomon,分子獸,Nanomon,完全體,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_sick.png,nanomon,分子獸,Nanomon,完全體,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_hurt.png,nanomon,分子獸,Nanomon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/nanomon_lose.png,nanomon,分子獸,Nanomon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_idle0.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/extyranomon_idle1.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_eat0.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_eat1.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_happy.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_angry.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_refuse.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_sleep0.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_sleep1.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_train0.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_train1.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_attack.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_sick.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_hurt.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/extyranomon_lose.png,extyranomon,巨龍獸EX,ExTyranomon,完全體,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_idle0.png,mugendramon,機械邪龍獸,Mugendramon,究極體,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/mugendramon_idle1.png,mugendramon,機械邪龍獸,Mugendramon,究極體,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_eat0.png,mugendramon,機械邪龍獸,Mugendramon,究極體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_eat1.png,mugendramon,機械邪龍獸,Mugendramon,究極體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_happy.png,mugendramon,機械邪龍獸,Mugendramon,究極體,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_angry.png,mugendramon,機械邪龍獸,Mugendramon,究極體,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_refuse.png,mugendramon,機械邪龍獸,Mugendramon,究極體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_sleep0.png,mugendramon,機械邪龍獸,Mugendramon,究極體,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_sleep1.png,mugendramon,機械邪龍獸,Mugendramon,究極體,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_train0.png,mugendramon,機械邪龍獸,Mugendramon,究極體,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_train1.png,mugendramon,機械邪龍獸,Mugendramon,究極體,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_attack.png,mugendramon,機械邪龍獸,Mugendramon,究極體,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_sick.png,mugendramon,機械邪龍獸,Mugendramon,究極體,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_hurt.png,mugendramon,機械邪龍獸,Mugendramon,究極體,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/mugendramon_lose.png,mugendramon,機械邪龍獸,Mugendramon,究極體,lose,輸／倒下,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_idle0.png,pinochimon,木偶獸,Pinochimon,究極體,idle0,待機 1,16x16,必要
+1997 Ver.5,5,dm1997/pinochimon_idle1.png,pinochimon,木偶獸,Pinochimon,究極體,idle1,待機 2,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_eat0.png,pinochimon,木偶獸,Pinochimon,究極體,eat0,吃 1（閉口）,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_eat1.png,pinochimon,木偶獸,Pinochimon,究極體,eat1,吃 2（張口）,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_happy.png,pinochimon,木偶獸,Pinochimon,究極體,happy,開心,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_angry.png,pinochimon,木偶獸,Pinochimon,究極體,angry,生氣,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_refuse.png,pinochimon,木偶獸,Pinochimon,究極體,refuse,拒絕（搖頭）,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_sleep0.png,pinochimon,木偶獸,Pinochimon,究極體,sleep0,睡覺 1,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_sleep1.png,pinochimon,木偶獸,Pinochimon,究極體,sleep1,睡覺 2,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_train0.png,pinochimon,木偶獸,Pinochimon,究極體,train0,訓練 1,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_train1.png,pinochimon,木偶獸,Pinochimon,究極體,train1,訓練 2,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_attack.png,pinochimon,木偶獸,Pinochimon,究極體,attack,攻擊,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_sick.png,pinochimon,木偶獸,Pinochimon,究極體,sick,生病,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_hurt.png,pinochimon,木偶獸,Pinochimon,究極體,hurt,受傷／被打,16x16,建議
+1997 Ver.5,5,dm1997/pinochimon_lose.png,pinochimon,木偶獸,Pinochimon,究極體,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/egg_pen_1_0_idle0.png,egg_pen_1_0,超代 1.0 數碼蛋,Pendulum 1.0 Digitama,數碼蛋,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/egg_pen_1_0_idle1.png,egg_pen_1_0,超代 1.0 數碼蛋,Pendulum 1.0 Digitama,數碼蛋,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/babumon_idle0.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/babumon_idle1.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/babumon_eat0.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/babumon_eat1.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/babumon_happy.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/babumon_angry.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/babumon_refuse.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/babumon_sleep0.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/babumon_sleep1.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/babumon_attack.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/babumon_sick.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/babumon_lose.png,babumon,巴布獸,Babumon / Bubbmon,幼年期Ⅰ,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/motimon_idle0.png,motimon,種子獸,Motimon,幼年期Ⅱ,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/motimon_idle1.png,motimon,種子獸,Motimon,幼年期Ⅱ,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/motimon_eat0.png,motimon,種子獸,Motimon,幼年期Ⅱ,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/motimon_eat1.png,motimon,種子獸,Motimon,幼年期Ⅱ,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/motimon_happy.png,motimon,種子獸,Motimon,幼年期Ⅱ,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/motimon_angry.png,motimon,種子獸,Motimon,幼年期Ⅱ,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/motimon_refuse.png,motimon,種子獸,Motimon,幼年期Ⅱ,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/motimon_sleep0.png,motimon,種子獸,Motimon,幼年期Ⅱ,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/motimon_sleep1.png,motimon,種子獸,Motimon,幼年期Ⅱ,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/motimon_attack.png,motimon,種子獸,Motimon,幼年期Ⅱ,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/motimon_sick.png,motimon,種子獸,Motimon,幼年期Ⅱ,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/motimon_lose.png,motimon,種子獸,Motimon,幼年期Ⅱ,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/tentomon_idle0.png,tentomon,甲蟲獸,Tentomon,成長期,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/tentomon_idle1.png,tentomon,甲蟲獸,Tentomon,成長期,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/tentomon_eat0.png,tentomon,甲蟲獸,Tentomon,成長期,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/tentomon_eat1.png,tentomon,甲蟲獸,Tentomon,成長期,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/tentomon_happy.png,tentomon,甲蟲獸,Tentomon,成長期,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/tentomon_angry.png,tentomon,甲蟲獸,Tentomon,成長期,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/tentomon_refuse.png,tentomon,甲蟲獸,Tentomon,成長期,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/tentomon_sleep0.png,tentomon,甲蟲獸,Tentomon,成長期,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/tentomon_sleep1.png,tentomon,甲蟲獸,Tentomon,成長期,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/tentomon_attack.png,tentomon,甲蟲獸,Tentomon,成長期,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/tentomon_sick.png,tentomon,甲蟲獸,Tentomon,成長期,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/tentomon_lose.png,tentomon,甲蟲獸,Tentomon,成長期,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/gotsumon_idle0.png,gotsumon,岩石獸,Gotsumon,成長期,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/gotsumon_idle1.png,gotsumon,岩石獸,Gotsumon,成長期,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/gotsumon_eat0.png,gotsumon,岩石獸,Gotsumon,成長期,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/gotsumon_eat1.png,gotsumon,岩石獸,Gotsumon,成長期,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/gotsumon_happy.png,gotsumon,岩石獸,Gotsumon,成長期,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/gotsumon_angry.png,gotsumon,岩石獸,Gotsumon,成長期,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/gotsumon_refuse.png,gotsumon,岩石獸,Gotsumon,成長期,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/gotsumon_sleep0.png,gotsumon,岩石獸,Gotsumon,成長期,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/gotsumon_sleep1.png,gotsumon,岩石獸,Gotsumon,成長期,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/gotsumon_attack.png,gotsumon,岩石獸,Gotsumon,成長期,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/gotsumon_sick.png,gotsumon,岩石獸,Gotsumon,成長期,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/gotsumon_lose.png,gotsumon,岩石獸,Gotsumon,成長期,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/otamamon_idle0.png,otamamon,蝌蚪獸,Otamamon,成長期,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/otamamon_idle1.png,otamamon,蝌蚪獸,Otamamon,成長期,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/otamamon_eat0.png,otamamon,蝌蚪獸,Otamamon,成長期,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/otamamon_eat1.png,otamamon,蝌蚪獸,Otamamon,成長期,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/otamamon_happy.png,otamamon,蝌蚪獸,Otamamon,成長期,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/otamamon_angry.png,otamamon,蝌蚪獸,Otamamon,成長期,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/otamamon_refuse.png,otamamon,蝌蚪獸,Otamamon,成長期,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/otamamon_sleep0.png,otamamon,蝌蚪獸,Otamamon,成長期,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/otamamon_sleep1.png,otamamon,蝌蚪獸,Otamamon,成長期,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/otamamon_attack.png,otamamon,蝌蚪獸,Otamamon,成長期,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/otamamon_sick.png,otamamon,蝌蚪獸,Otamamon,成長期,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/otamamon_lose.png,otamamon,蝌蚪獸,Otamamon,成長期,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/kabuterimon_idle0.png,kabuterimon,比多獸,Kabuterimon,成熟期,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/kabuterimon_idle1.png,kabuterimon,比多獸,Kabuterimon,成熟期,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/kabuterimon_eat0.png,kabuterimon,比多獸,Kabuterimon,成熟期,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/kabuterimon_eat1.png,kabuterimon,比多獸,Kabuterimon,成熟期,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/kabuterimon_happy.png,kabuterimon,比多獸,Kabuterimon,成熟期,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/kabuterimon_angry.png,kabuterimon,比多獸,Kabuterimon,成熟期,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/kabuterimon_refuse.png,kabuterimon,比多獸,Kabuterimon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/kabuterimon_sleep0.png,kabuterimon,比多獸,Kabuterimon,成熟期,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/kabuterimon_sleep1.png,kabuterimon,比多獸,Kabuterimon,成熟期,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/kabuterimon_attack.png,kabuterimon,比多獸,Kabuterimon,成熟期,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/kabuterimon_sick.png,kabuterimon,比多獸,Kabuterimon,成熟期,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/kabuterimon_lose.png,kabuterimon,比多獸,Kabuterimon,成熟期,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/tortomon_idle0.png,tortomon,頓甲獸,Tortomon,成熟期,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/tortomon_idle1.png,tortomon,頓甲獸,Tortomon,成熟期,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/tortomon_eat0.png,tortomon,頓甲獸,Tortomon,成熟期,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/tortomon_eat1.png,tortomon,頓甲獸,Tortomon,成熟期,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/tortomon_happy.png,tortomon,頓甲獸,Tortomon,成熟期,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/tortomon_angry.png,tortomon,頓甲獸,Tortomon,成熟期,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/tortomon_refuse.png,tortomon,頓甲獸,Tortomon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/tortomon_sleep0.png,tortomon,頓甲獸,Tortomon,成熟期,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/tortomon_sleep1.png,tortomon,頓甲獸,Tortomon,成熟期,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/tortomon_attack.png,tortomon,頓甲獸,Tortomon,成熟期,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/tortomon_sick.png,tortomon,頓甲獸,Tortomon,成熟期,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/tortomon_lose.png,tortomon,頓甲獸,Tortomon,成熟期,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/kuwagamon_idle0.png,kuwagamon,古加獸,Kuwagamon,成熟期,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/kuwagamon_idle1.png,kuwagamon,古加獸,Kuwagamon,成熟期,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/kuwagamon_eat0.png,kuwagamon,古加獸,Kuwagamon,成熟期,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/kuwagamon_eat1.png,kuwagamon,古加獸,Kuwagamon,成熟期,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/kuwagamon_happy.png,kuwagamon,古加獸,Kuwagamon,成熟期,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/kuwagamon_angry.png,kuwagamon,古加獸,Kuwagamon,成熟期,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/kuwagamon_refuse.png,kuwagamon,古加獸,Kuwagamon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/kuwagamon_sleep0.png,kuwagamon,古加獸,Kuwagamon,成熟期,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/kuwagamon_sleep1.png,kuwagamon,古加獸,Kuwagamon,成熟期,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/kuwagamon_attack.png,kuwagamon,古加獸,Kuwagamon,成熟期,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/kuwagamon_sick.png,kuwagamon,古加獸,Kuwagamon,成熟期,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/kuwagamon_lose.png,kuwagamon,古加獸,Kuwagamon,成熟期,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/gekomon_idle0.png,gekomon,加哥怪獸,Gekomon,成熟期,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/gekomon_idle1.png,gekomon,加哥怪獸,Gekomon,成熟期,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/gekomon_eat0.png,gekomon,加哥怪獸,Gekomon,成熟期,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/gekomon_eat1.png,gekomon,加哥怪獸,Gekomon,成熟期,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/gekomon_happy.png,gekomon,加哥怪獸,Gekomon,成熟期,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/gekomon_angry.png,gekomon,加哥怪獸,Gekomon,成熟期,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/gekomon_refuse.png,gekomon,加哥怪獸,Gekomon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/gekomon_sleep0.png,gekomon,加哥怪獸,Gekomon,成熟期,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/gekomon_sleep1.png,gekomon,加哥怪獸,Gekomon,成熟期,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/gekomon_attack.png,gekomon,加哥怪獸,Gekomon,成熟期,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/gekomon_sick.png,gekomon,加哥怪獸,Gekomon,成熟期,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/gekomon_lose.png,gekomon,加哥怪獸,Gekomon,成熟期,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/monochromon_idle0.png,monochromon,單角龍獸,Monochromon,成熟期,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/monochromon_idle1.png,monochromon,單角龍獸,Monochromon,成熟期,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/monochromon_eat0.png,monochromon,單角龍獸,Monochromon,成熟期,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/monochromon_eat1.png,monochromon,單角龍獸,Monochromon,成熟期,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/monochromon_happy.png,monochromon,單角龍獸,Monochromon,成熟期,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/monochromon_angry.png,monochromon,單角龍獸,Monochromon,成熟期,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/monochromon_refuse.png,monochromon,單角龍獸,Monochromon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/monochromon_sleep0.png,monochromon,單角龍獸,Monochromon,成熟期,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/monochromon_sleep1.png,monochromon,單角龍獸,Monochromon,成熟期,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/monochromon_attack.png,monochromon,單角龍獸,Monochromon,成熟期,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/monochromon_sick.png,monochromon,單角龍獸,Monochromon,成熟期,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/monochromon_lose.png,monochromon,單角龍獸,Monochromon,成熟期,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/starmon_idle0.png,starmon,星獸,Starmon,成熟期,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/starmon_idle1.png,starmon,星獸,Starmon,成熟期,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/starmon_eat0.png,starmon,星獸,Starmon,成熟期,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/starmon_eat1.png,starmon,星獸,Starmon,成熟期,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/starmon_happy.png,starmon,星獸,Starmon,成熟期,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/starmon_angry.png,starmon,星獸,Starmon,成熟期,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/starmon_refuse.png,starmon,星獸,Starmon,成熟期,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/starmon_sleep0.png,starmon,星獸,Starmon,成熟期,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/starmon_sleep1.png,starmon,星獸,Starmon,成熟期,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/starmon_attack.png,starmon,星獸,Starmon,成熟期,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/starmon_sick.png,starmon,星獸,Starmon,成熟期,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/starmon_lose.png,starmon,星獸,Starmon,成熟期,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_idle0.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_idle1.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_eat0.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_eat1.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_happy.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_angry.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_refuse.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_sleep0.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_sleep1.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_attack.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_sick.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/atlurkabuterimon_lose.png,atlurkabuterimon,超比多獸,AtlurKabuterimon,完全體,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/triceramon_idle0.png,triceramon,三角龍獸,Triceramon,完全體,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/triceramon_idle1.png,triceramon,三角龍獸,Triceramon,完全體,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/triceramon_eat0.png,triceramon,三角龍獸,Triceramon,完全體,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/triceramon_eat1.png,triceramon,三角龍獸,Triceramon,完全體,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/triceramon_happy.png,triceramon,三角龍獸,Triceramon,完全體,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/triceramon_angry.png,triceramon,三角龍獸,Triceramon,完全體,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/triceramon_refuse.png,triceramon,三角龍獸,Triceramon,完全體,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/triceramon_sleep0.png,triceramon,三角龍獸,Triceramon,完全體,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/triceramon_sleep1.png,triceramon,三角龍獸,Triceramon,完全體,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/triceramon_attack.png,triceramon,三角龍獸,Triceramon,完全體,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/triceramon_sick.png,triceramon,三角龍獸,Triceramon,完全體,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/triceramon_lose.png,triceramon,三角龍獸,Triceramon,完全體,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/okuwamon_idle0.png,okuwamon,大古加獸,Okuwamon,完全體,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/okuwamon_idle1.png,okuwamon,大古加獸,Okuwamon,完全體,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/okuwamon_eat0.png,okuwamon,大古加獸,Okuwamon,完全體,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/okuwamon_eat1.png,okuwamon,大古加獸,Okuwamon,完全體,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/okuwamon_happy.png,okuwamon,大古加獸,Okuwamon,完全體,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/okuwamon_angry.png,okuwamon,大古加獸,Okuwamon,完全體,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/okuwamon_refuse.png,okuwamon,大古加獸,Okuwamon,完全體,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/okuwamon_sleep0.png,okuwamon,大古加獸,Okuwamon,完全體,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/okuwamon_sleep1.png,okuwamon,大古加獸,Okuwamon,完全體,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/okuwamon_attack.png,okuwamon,大古加獸,Okuwamon,完全體,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/okuwamon_sick.png,okuwamon,大古加獸,Okuwamon,完全體,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/okuwamon_lose.png,okuwamon,大古加獸,Okuwamon,完全體,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/jagamon_idle0.png,jagamon,炸薯獸,Jagamon,完全體,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/jagamon_idle1.png,jagamon,炸薯獸,Jagamon,完全體,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/jagamon_eat0.png,jagamon,炸薯獸,Jagamon,完全體,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/jagamon_eat1.png,jagamon,炸薯獸,Jagamon,完全體,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/jagamon_happy.png,jagamon,炸薯獸,Jagamon,完全體,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/jagamon_angry.png,jagamon,炸薯獸,Jagamon,完全體,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/jagamon_refuse.png,jagamon,炸薯獸,Jagamon,完全體,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/jagamon_sleep0.png,jagamon,炸薯獸,Jagamon,完全體,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/jagamon_sleep1.png,jagamon,炸薯獸,Jagamon,完全體,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/jagamon_attack.png,jagamon,炸薯獸,Jagamon,完全體,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/jagamon_sick.png,jagamon,炸薯獸,Jagamon,完全體,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/jagamon_lose.png,jagamon,炸薯獸,Jagamon,完全體,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/piccolomon_idle0.png,piccolomon,比丘獸,Piccolomon,完全體,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/piccolomon_idle1.png,piccolomon,比丘獸,Piccolomon,完全體,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/piccolomon_eat0.png,piccolomon,比丘獸,Piccolomon,完全體,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/piccolomon_eat1.png,piccolomon,比丘獸,Piccolomon,完全體,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/piccolomon_happy.png,piccolomon,比丘獸,Piccolomon,完全體,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/piccolomon_angry.png,piccolomon,比丘獸,Piccolomon,完全體,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/piccolomon_refuse.png,piccolomon,比丘獸,Piccolomon,完全體,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/piccolomon_sleep0.png,piccolomon,比丘獸,Piccolomon,完全體,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/piccolomon_sleep1.png,piccolomon,比丘獸,Piccolomon,完全體,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/piccolomon_attack.png,piccolomon,比丘獸,Piccolomon,完全體,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/piccolomon_sick.png,piccolomon,比丘獸,Piccolomon,完全體,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/piccolomon_lose.png,piccolomon,比丘獸,Piccolomon,完全體,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_idle0.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_idle1.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_eat0.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_eat1.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_happy.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_angry.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_refuse.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_sleep0.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_sleep1.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_attack.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_sick.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/tonosamagekomon_lose.png,tonosamagekomon,王者加哥怪獸,TonosamaGekomon,完全體,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_idle0.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_idle1.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_eat0.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_eat1.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_happy.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_angry.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_refuse.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_sleep0.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_sleep1.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_attack.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_sick.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/heracleskabuterimon_lose.png,heracleskabuterimon,大力神甲蟲獸,HeraclesKabuterimon,完全體,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/saberleomon_idle0.png,saberleomon,刃獅獸,SaberLeomon,完全體,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/saberleomon_idle1.png,saberleomon,刃獅獸,SaberLeomon,完全體,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/saberleomon_eat0.png,saberleomon,刃獅獸,SaberLeomon,完全體,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/saberleomon_eat1.png,saberleomon,刃獅獸,SaberLeomon,完全體,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/saberleomon_happy.png,saberleomon,刃獅獸,SaberLeomon,完全體,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/saberleomon_angry.png,saberleomon,刃獅獸,SaberLeomon,完全體,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/saberleomon_refuse.png,saberleomon,刃獅獸,SaberLeomon,完全體,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/saberleomon_sleep0.png,saberleomon,刃獅獸,SaberLeomon,完全體,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/saberleomon_sleep1.png,saberleomon,刃獅獸,SaberLeomon,完全體,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/saberleomon_attack.png,saberleomon,刃獅獸,SaberLeomon,完全體,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/saberleomon_sick.png,saberleomon,刃獅獸,SaberLeomon,完全體,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/saberleomon_lose.png,saberleomon,刃獅獸,SaberLeomon,完全體,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/metaletemon_idle0.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,idle0,待機 1,16x16,必要
+Pendulum 1.0,1.0,pendulum/metaletemon_idle1.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,idle1,待機 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/metaletemon_eat0.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,eat0,吃 1（閉口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/metaletemon_eat1.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,eat1,吃 2（張口）,16x16,建議
+Pendulum 1.0,1.0,pendulum/metaletemon_happy.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,happy,開心,16x16,建議
+Pendulum 1.0,1.0,pendulum/metaletemon_angry.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,angry,生氣,16x16,建議
+Pendulum 1.0,1.0,pendulum/metaletemon_refuse.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,refuse,拒絕（搖頭）,16x16,建議
+Pendulum 1.0,1.0,pendulum/metaletemon_sleep0.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,sleep0,睡覺 1,16x16,建議
+Pendulum 1.0,1.0,pendulum/metaletemon_sleep1.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,sleep1,睡覺 2,16x16,建議
+Pendulum 1.0,1.0,pendulum/metaletemon_attack.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,attack,攻擊,16x16,建議
+Pendulum 1.0,1.0,pendulum/metaletemon_sick.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,sick,生病,16x16,建議
+Pendulum 1.0,1.0,pendulum/metaletemon_lose.png,metaletemon,金屬艾力獸,MetalEtemon,完全體,lose,輸／倒下,16x16,建議
+Pendulum 1.0,1.0,pendulum/pen_computer_idle0.png,pen_computer,對戰電腦（連線畫面）,Computer,,idle0,待機 1,16x16,必要

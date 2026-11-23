@@ -61,6 +61,40 @@
     chamber: null
   };
 
+  // v35: accepted round-4 master shell (1329x921) for Pendulum 1.0 and 1.5
+  // (/workspace/pen-shells-v35/README.md). Same px positions as rounds 2/3;
+  // percentages of the new canvas. The shell's printed icon panel is masked
+  // and the app draws the icons itself (iconArt) so selection shows on them.
+  var ROUND4_ICON_LEFTS = [17.908, 25.959, 34.011, 42.062];
+  function round4Row(top) {
+    return ROUND4_ICON_LEFTS.map(function (l) { return { left: l, top: top, width: 6.922, height: 5.646 }; });
+  }
+  var LAYOUT_10 = {
+    aspectW: 1329,
+    aspectH: 921,
+    lcd: { left: 17.908, top: 36.265, width: 31.076, height: 29.425 },
+    buttons: {
+      a: { cx: 82.553, cy: 28.282, w: 11.227, h: 16.2 },
+      b: { cx: 82.553, cy: 51.189, w: 11.227, h: 16.2 },
+      c: { cx: 82.553, cy: 74.096, w: 11.227, h: 16.2 },
+      reset: { cx: 75.024, cy: 62.603, w: 5.957, h: 8.596 }
+    },
+    icons_top: round4Row(30.51),
+    icons_bot: round4Row(65.907),
+    names_top: LAYOUT.names_top,
+    names_bot: LAYOUT.names_bot,
+    chamber: null,
+    // v34's own icon art (icons/bezel/*.png); CONNECT uses battle.png.
+    iconArt: {
+      src: { STATUS: 'status', FEED: 'feed', TRAIN: 'train', CONNECT: 'battle', FLUSH: 'flush', LIGHT: 'light', MEDIC: 'medic', CALL: 'call' },
+      bgTop: '#badccc',
+      bgBot: '#80a577'
+    }
+  };
+  // Versions on the round-4 shell. 2.0+ keep LAYOUT until their shells are accepted.
+  var ROUND4_VERSIONS = { '1.0': true, '1.5': true };
+  function layoutFor(key) { return ROUND4_VERSIONS[key] ? LAYOUT_10 : LAYOUT; }
+
   // Attribute triangle — NHOKO original-Pendulum page (Vac strong vs Virus).
   var TRIANGLE = {
     source: 'NHOKO-pendulum.html',
@@ -317,7 +351,7 @@
       shell: def.shell,
       orient: 'landscape',
       version: def.key,
-      layout: LAYOUT,
+      layout: layoutFor(def.key),
       iconsTop: LAYOUT.names_top,
       iconsBot: LAYOUT.names_bot,
       selectable: ['STATUS', 'FEED', 'TRAIN', 'CONNECT', 'FLUSH', 'LIGHT', 'MEDIC'],
@@ -491,7 +525,7 @@
     shell: 'pen-1-0',
     orient: 'landscape',
     version: '1.0',
-    layout: LAYOUT,
+    layout: LAYOUT_10,
     iconsTop: LAYOUT.names_top,
     iconsBot: LAYOUT.names_bot,
     selectable: ['STATUS', 'FEED', 'TRAIN', 'CONNECT', 'FLUSH', 'LIGHT', 'MEDIC'],
@@ -513,6 +547,8 @@
   var api = {
     LAYOUT: LAYOUT,
     LAYOUT_PEN: LAYOUT,
+    LAYOUT_10: LAYOUT_10,
+    layoutFor: layoutFor,
     RULES: RULES,
     TRIANGLE: TRIANGLE,
     JOGRESS_ATTR: JOGRESS_ATTR,

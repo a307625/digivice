@@ -224,6 +224,7 @@
     }
     L.names_top.forEach(function (n, i) { placeIcon(n, L.icons_top[i]); });
     L.names_bot.forEach(function (n, i) { placeIcon(n, L.icons_bot[i]); });
+    renderIconArt(L);
     function placePad(id, b) {
       var el = $(id);
       if (!el || !b) return;
@@ -236,6 +237,51 @@
     placePad('btn-b', L.buttons.b);
     placePad('btn-c', L.buttons.c);
     placePad('btn-reset', L.buttons.reset);
+  }
+
+  // v35: shells whose printed icon panel is masked (layout.iconArt) get the
+  // icons drawn by the app: v34's own icon art over a panel-coloured mask.
+  // Idle = faint, selected (.on) = full ink, CALL blinks at 2 Hz.
+  function renderIconArt(L) {
+    var art = L && L.iconArt;
+    var top = {};
+    (L && L.names_top || []).forEach(function (n) { top[n] = true; });
+    document.querySelectorAll('.face-icon').forEach(function (el) {
+      var id = el.getAttribute('data-icon');
+      var old = el.querySelector('.icon-art');
+      var file = art && art.src && art.src[id];
+      if (!file) {
+        if (old) old.parentNode.removeChild(old);
+        el.classList.remove('has-art');
+        return;
+      }
+      var row = top[id] ? 'row-top' : 'row-bot';
+      if (!old || old.getAttribute('data-file') !== file || !old.classList.contains(row)) {
+        if (old) old.parentNode.removeChild(old);
+        old = document.createElement('div');
+        old.className = 'icon-art ' + row;
+        old.setAttribute('data-file', file);
+        var im = document.createElement('img');
+        im.src = './icons/bezel/' + file + '.png';
+        im.alt = '';
+        im.draggable = false;
+        // v34's flush/medic/call PNGs carry small detached smudges under the
+        // glyph (rows 54-61 of 64); clip them off (source files untouched).
+        var clipBottom = { flush: 9.4, medic: 16, call: 17.2 }[file];
+        if (clipBottom) im.style.clipPath = 'inset(0 0 ' + clipBottom + '% 0)';
+        // mask (panel colour) + glyph box exactly on the slot
+        var mask = document.createElement('div');
+        mask.className = 'icon-mask';
+        var glyph = document.createElement('div');
+        glyph.className = 'icon-glyph';
+        glyph.appendChild(im);
+        old.appendChild(mask);
+        old.appendChild(glyph);
+        el.appendChild(old);
+      }
+      old.firstChild.style.background = top[id] ? art.bgTop : art.bgBot;
+      el.classList.add('has-art');
+    });
   }
 
   function sizeLcd() {
@@ -417,7 +463,7 @@
 
   function spriteCanvas(id, frameName, scale, flip) {
     scale = scale || 1;
-    var key = id + ':' + (frameName || 'idle0') + ':' + scale + ':' + (flip ? 1 : 0);
+    var key = ((currentDevice() && currentDevice().family) || '') + ':' + id + ':' + (frameName || 'idle0') + ':' + scale + ':' + (flip ? 1 : 0);
     if (cache[key]) return cache[key];
     var atlas = window.SpriteAtlas;
     if (!atlas || !atlas.SPRITES[id]) return null;
@@ -448,6 +494,15 @@
         (!sp.frames.sleep1 || framesEqual(sp.frames.sleep1, sp.frames.sleep0))) {
       fr = 'sleep0';
       shiftSleep = true;
+    }
+    // v35: a user PNG (assets/user-sprites/<family>/<id>_<frame>.png) for the
+    // requested frame, else for the resolved frame, replaces the built-in one
+    // in the same box at the same dot size.
+    var US = window.UserSprites;
+    if (US) {
+      var famU = (currentDevice() && currentDevice().family) || 'dm1997';
+      var userC = US.canvasFor(famU, id, frameName || 'idle0', sp.w * scale, sp.h * scale, flip);
+      if (userC) { cache[key] = userC; return userC; }
     }
     var img = atlas.renderToImageData(sp, fr, 1);
     var w = sp.w, h = sp.h;
@@ -2744,6 +2799,11 @@
       if (Date.now() - lastFrameAt > 1500) frameStep();
     }, 1000);
 
+    // v35: user sprite overrides (assets/user-sprites/manifest.json).
+    if (window.UserSprites && window.UserSprites.load) {
+      window.UserSprites.onChange(function () { cache = {}; });
+      try { window.UserSprites.load(); } catch (e) {}
+    }
     if ('serviceWorker' in navigator && !shotMode) {
       navigator.serviceWorker.register('./sw.js').catch(function () {});
       try {
