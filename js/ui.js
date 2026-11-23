@@ -899,8 +899,27 @@
     lcdBg();
     if (!state) return;
     if (is1997PlayDark()) return; // blank dark LCD: no mon, poop, or Z
-    if (state.dead && view !== 'dying') {
+    if (state.dead && view !== 'dying' && state.display !== 'mate' && state.display !== 'both' && state.display !== 'egg') {
       drawGrave();
+      return;
+    }
+    if (currentDevice().family === 'dm20' && state.display === 'both' && state.mate && state.mate.mon) {
+      blitMon(state.mon, fx(0), fy(0), MON, monFrame(), true);
+      blitMon(state.mate.mon, fx(16), fy(0), MON, state.mate.sleeping ? 'sleep0' : 'idle0', false);
+      drawPoop();
+      return;
+    }
+    if (currentDevice().family === 'dm20' && state.display === 'egg') {
+      var eggId = (state.mate && state.mate.mon) || 'egg_v1';
+      blitMon(eggId, fx(8), fy(0), MON, 'idle0', false);
+      drawPoop();
+      return;
+    }
+    if (currentDevice().family === 'dm20' && state.display === 'mate' && state.mate && state.mate.mon) {
+      if (state.mate.dead) { drawGrave(); return; }
+      var mateFr = state.mate.sleeping ? 'sleep0' : 'idle0';
+      blitMon(state.mate.mon, fx(8), fy(0), MON, mateFr, false);
+      drawPoop();
       return;
     }
     var fr = monFrame();
@@ -1578,7 +1597,9 @@
   function doFeed() {
     if (!state) return;
     var kind = foodSel === 1 ? 'protein' : 'meat';
-    var r = kind === 'protein' ? window.Engine.feedProtein(state) : window.Engine.feedMeat(state);
+    var r = window.Engine.feedShown
+      ? window.Engine.feedShown(state, kind)
+      : (kind === 'protein' ? window.Engine.feedProtein(state) : window.Engine.feedMeat(state));
     persist();
     view = 'play';
     if (!r.ok || r.refused) {
@@ -1619,8 +1640,23 @@
     var d = currentDevice();
     var mode = 'meter';
     if (d.family === 'dm20') {
-      // Bandai: one Digimon on screen is the wall. Two on screen is tag.
-      // This save has one, so training is the wall.
+      // Bandai: one on screen breaks the wall. Two on screen is the high/low drill.
+      if (state.display === 'both' && state.mate && state.mate.mon &&
+          window.Engine.canTrain({ mon: state.mate.mon, dead: state.mate.dead })) {
+        startDm20Tag(state.mate.mon, state.mon);
+        return;
+      }
+      if (state.display === 'mate' && state.mate && state.mate.mon) {
+        if (!window.Engine.canTrain({ mon: state.mate.mon, dead: state.mate.dead })) {
+          playPose('refuse', 2000);
+          view = 'play';
+          return;
+        }
+        window.Engine.swapMate(state);
+        startDm20Wall();
+        train.swapped = true;
+        return;
+      }
       startDm20Wall();
       return;
     }
@@ -1657,6 +1693,7 @@
   function finishDm20Wall() {
     if (train.done) return;
     var r = window.Engine.finishDm20Training(state, train.presses);
+    if (train.swapped && window.Engine.swapMate) window.Engine.swapMate(state);
     train.done = true;
     train.phase = 'result';
     train.doneAt = Date.now();
@@ -1672,6 +1709,10 @@
   function finishDm20Tag() {
     if (train.done) return;
     var r = window.Engine.finishDm20TagTraining(state, train.hits || 0);
+    if (state.display === 'both' && state.mate && state.mate.mon && window.Engine.swapMate(state)) {
+      window.Engine.finishDm20TagTraining(state, train.hits || 0, true);
+      window.Engine.swapMate(state);
+    }
     train.done = true;
     train.success = !!(r && r.success);
     persist();
@@ -1948,6 +1989,20 @@
     else if (id === 'CONNECT') { connectSel = 0; view = 'connect'; }
   }
 
+  function maybeSecondEggCombo() {
+    if (!state || !window.Engine.giveSecondEgg) return false;
+    if (!(keyA && keyB)) return false;
+    var picking = state.display === 'egg' || (state.display === 'mate' && state.mate && state.mate.dead) ||
+      (state.dead && state.mate && state.mate.mon && !state.mate.dead);
+    if (!picking) return false;
+    if (view !== 'play' && view !== 'grave') return false;
+    hideAllOverlays();
+    fillEggGrid(true);
+    showOverlay('overlay-egg', true);
+    chordAt = Date.now();
+    return true;
+  }
+
   function maybeNewEggCombo() {
     if (view !== 'grave' && !(state && state.dead)) return false;
     if ((keyA && keyC) || (keyA && keyB)) {
@@ -2106,6 +2161,7 @@
     if (view === 'charge') { charge.on = false; view = 'play'; return; }
     if (view === 'train') {
       if (window.Engine && window.Engine.cancelTraining) window.Engine.cancelTraining(state);
+      if (train.swapped && window.Engine.swapMate) window.Engine.swapMate(state);
       persist();
       view = 'play';
       return;
@@ -2113,6 +2169,15 @@
     if (isMenuView()) {
       goHome();
       return;
+    }
+    if ((view === 'play' || view === 'grave') && sel < 0 && window.Engine.cycleDm20Display) {
+      var shown = window.Engine.cycleDm20Display(state);
+      if (shown) {
+        if (shown === 'focus' && state.dead) view = 'grave';
+        else view = 'play';
+        persist();
+        return;
+      }
     }
     if (view === 'play') sel = -1;
   }
@@ -2704,7 +2769,7 @@
     });
   }
 
-  function fillEggGrid() {
+  function fillEggGrid(forMate) {
     var row = $('egg-row');
     if (!row || !items()) return;
     row.innerHTML = '';
@@ -2749,6 +2814,15 @@
     row.querySelectorAll('[data-egg]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var v = btn.getAttribute('data-egg');
+        if (forMate) {
+          var placed = window.Engine.giveSecondEgg(state, v);
+          hideAllOverlays();
+          view = 'play';
+          sel = -1;
+          persist();
+          if (!placed || !placed.ok) toast('這格還沒空');
+          return;
+        }
         confirmOverwrite('將覆蓋目前的育成進度，確定嗎？', function () {
           if (/^[1-5]$/.test(v)) newEgg(parseInt(v, 10), null, false);
           else newEgg(1, v, false);
@@ -3129,7 +3203,7 @@
       // Mute, clock SET, and the grave's new-egg chord only count while
       // both keys are still down. A tap on A, then a tap on B or C, is
       // select then confirm/cancel — not the sound toggle.
-      var r = maybeNewEggCombo() || maybeClockSetCombo() || maybeMuteCombo();
+      var r = maybeSecondEggCombo() || maybeNewEggCombo() || maybeClockSetCombo() || maybeMuteCombo();
       if (!r && isPen20() && window.Pen20UI && window.Pen20UI.maybeChord(penHost(), keyA, keyC)) {
         r = true;
       }

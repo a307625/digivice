@@ -540,6 +540,7 @@
     if (isDm20(state) && (state.dpMax || 0) > 0) state.dp = state.dpMax;
     rollEvoDueAt(state);
     albumAdd(state, toId);
+    offerSecondEgg(state);
     pushEvent(state, 'evolve', (data.MONSTERS[from] || {}).nameZh + ' → ' + (m ? m.nameZh : toId) + '（' + (reason || '') + '）');
     return true;
   }
@@ -806,7 +807,117 @@
     return res;
   }
 
+  var PET_KEYS = [
+    'mon', 'hunger', 'strength', 'weight', 'dp', 'dpMax', 'sleeping', 'injured', 'dead', 'deadReason',
+    'calls', 'cmForm', 'train', 'overfeed', 'sleepDist', 'injuries', 'battles', 'wins', 'losses',
+    'lifeBattles', 'lifeWins', 'lifeLosses', 'winScore', 'perfectQualified', 'perfectRolledThisStage',
+    'megaChecked', 'overdose', 'proteinRemainder', 'proteinPowerUp', 'boostCareDown', 'satietyFilled',
+    'sleptContinuously', 'lifespanElapsed', 'oldAgeMistakes', 'evoDueAt', 'stageEnteredGame', 'awakeInStage',
+    'lastHungerTick', 'lastStrTick', 'lastPoopAt', 'callHungerAt', 'callStrengthAt', 'callLightsAt',
+    'callAt', 'callResolved', 'lightsCallResolved', 'emptyCallSince', 'emptySince', 'hungerFreezeUntil',
+    'overfeedLockUntil', 'healProgress', 'injuredAt', 'sleepCalledTonight', 'awakeUntil', 'hungerEmptySince',
+    'napUntil', '_proteinBank'
+  ];
+  function takePet(state) {
+    var p = {};
+    for (var i = 0; i < PET_KEYS.length; i++) p[PET_KEYS[i]] = state[PET_KEYS[i]];
+    return p;
+  }
+  function putPet(state, p) {
+    if (!p) return;
+    for (var i = 0; i < PET_KEYS.length; i++) state[PET_KEYS[i]] = p[PET_KEYS[i]];
+  }
+  function swapMate(state) {
+    if (!state || !state.mate) return false;
+    var cur = takePet(state);
+    putPet(state, state.mate);
+    state.mate = cur;
+    return true;
+  }
+  function stageRank(stage) {
+    return { rookie: 3, champion: 4, ultimate: 5, mega: 6, super: 7 }[stage] || 0;
+  }
+  // Humulos DM20: the first Digimon to reach Stage III (成長期) is given a second egg.
+  function offerSecondEgg(state) {
+    if (!isDm20(state) || state.twoUnlocked) return false;
+    var m = mon(state);
+    if (!m || stageRank(m.stage) < 3) return false;
+    state.twoUnlocked = true;
+    state.pendingEgg = { picked: false };
+    if (!state.display) state.display = 'focus';
+    return true;
+  }
+  function cycleDm20Display(state) {
+    if (!isDm20(state) || !state.twoUnlocked) return null;
+    var opts = ['focus'];
+    var mateAlive = state.mate && state.mate.mon && !state.mate.dead;
+    var mateMon = mateAlive ? data.MONSTERS[state.mate.mon] : null;
+    if (!mateAlive) opts.push('egg');
+    else {
+      opts.push('mate');
+      if (mateMon && mateMon.stage !== 'egg') opts.push('both');
+    }
+    var i = opts.indexOf(state.display);
+    state.display = opts[(i + 1) % opts.length];
+    return state.display;
+  }
+  function giveSecondEgg(state, eggKey) {
+    if (!isDm20(state) || !state.twoUnlocked) return { ok: false, reason: 'locked' };
+    var mateAlive = state.mate && state.mate.mon && !state.mate.dead;
+    var focusDead = !!state.dead;
+    if (mateAlive && !focusDead) return { ok: false, reason: 'full' };
+    var key = String(eggKey || '');
+    var special = /^[1-5]$/.test(key) ? null : key;
+    var version = special ? 1 : parseInt(key, 10);
+    if (!special && !(version >= 1 && version <= 5)) return { ok: false, reason: 'egg' };
+    var tmp = defaultState(version, special);
+    tmp.clockInitialized = !!state.clockInitialized;
+    tmp.gameTime = state.gameTime || 0;
+    tmp.simAt = state.gameTime || 0;
+    tmp.stageEnteredGame = state.gameTime || 0;
+    tmp.lastHungerTick = state.gameTime || 0;
+    tmp.lastStrTick = state.gameTime || 0;
+    tmp.lastPoopAt = state.gameTime || 0;
+    tmp.hungerEmptySince = null;
+    rollEvoDueAt(tmp);
+    var pet = takePet(tmp);
+    if (focusDead && mateAlive) {
+      putPet(state, pet);
+      state.display = 'focus';
+      return { ok: true, mon: pet.mon, slot: 'focus' };
+    }
+    state.mate = pet;
+    state.pendingEgg = { picked: true };
+    state.display = 'mate';
+    return { ok: true, mon: pet.mon, slot: 'mate' };
+  }
+  function feedShown(state, kind) {
+    var fn = kind === 'protein' ? feedProtein : feedMeat;
+    if (state && state.display === 'both' && state.mate && state.mate.mon) {
+      var a = fn(state);
+      swapMate(state);
+      var b = fn(state);
+      swapMate(state);
+      return a.ok ? a : b;
+    }
+    if (state && state.display === 'mate' && state.mate && state.mate.mon) {
+      swapMate(state);
+      var r = fn(state);
+      swapMate(state);
+      return r;
+    }
+    return fn(state);
+  }
+
   function simStep(state, step) {
+    // The hidden Digimon keeps growing, losing hearts, and pooping.
+    if (isDm20(state) && state.mate && state.mate.mon && !state._matePass) {
+      state._matePass = true;
+      swapMate(state);
+      simStep(state, step);
+      swapMate(state);
+      state._matePass = false;
+    }
     var r = { evolved: false, died: false };
     var m = mon(state);
     if (!m) return r;
@@ -1174,12 +1285,13 @@
     var i = ((round || 0) % n + n) % n;
     return DM20_TAG_PATTERNS[i];
   }
-  function finishDm20TagTraining(state, hits) {
+  function finishDm20TagTraining(state, hits, opts) {
     if (!state || state.dead) return { ok: false };
+    var keepRound = !!opts;
     var m = mon(state);
     if (!m || !STAGE_TRAIN_BATTLE[m.stage]) return { ok: false, reason: 'too-young' };
     var pattern = dm20TagPattern(state.dm20TagRound || 0);
-    state.dm20TagRound = ((state.dm20TagRound || 0) + 1) % DM20_TAG_PATTERNS.length;
+    if (!keepRound) state.dm20TagRound = ((state.dm20TagRound || 0) + 1) % DM20_TAG_PATTERNS.length;
     var nHits = hits || 0;
     var success = nHits >= 3;
     var minW = m.weight || 5;
@@ -1489,6 +1601,7 @@
     if (state.clockInitialized == null) state.clockInitialized = true;
     if (!state.clockSet) state.clockSet = { on: false, h24: 0, min: 0 };
     applySpeciesCare(state, { migrate: true });
+    offerSecondEgg(state);
     if (state.evoDueAt == null) {
       var m = mon(state);
       var mins = timeInStage(state) / 60;
@@ -1578,7 +1691,12 @@
     migrateState: migrateState,
     applySpeciesCare: applySpeciesCare,
     nextCpuInitiator: nextCpuInitiator,
-    evolveTo: evolveTo
+    evolveTo: evolveTo,
+    offerSecondEgg: offerSecondEgg,
+    cycleDm20Display: cycleDm20Display,
+    giveSecondEgg: giveSecondEgg,
+    feedShown: feedShown,
+    swapMate: swapMate
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.Engine;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -138,5 +138,32 @@ console.log('5) DM20 care timers for the Dracomon line');
   eq(s.sleepStart, 0, 'Breakdramon bedtime 0:00 AM (Humulos guide)');
 }
 
+console.log('6) Second egg when the first Digimon reaches Stage III');
+{
+  const s = draco();
+  s.clockInitialized = true;
+  E.migrateState(s);
+  ok(s.twoUnlocked && s.pendingEgg && !s.pendingEgg.picked, 'a Child already on the save is offered the second egg');
+  eq(E.cycleDm20Display(s), 'egg', 'C shows the unchosen egg');
+  eq(E.cycleDm20Display(s), 'focus', 'C returns to the first Digimon');
+  const g = E.giveSecondEgg(s, '1');
+  ok(g.ok && s.mate && s.mate.mon === 'egg_v1', 'A+B puts a Ver.1 egg in the open slot');
+  eq(s.display, 'mate', 'the new egg is alone on the screen');
+  s.lastReal = Date.now() - 70000;
+  E.tick(s, Date.now());
+  eq(s.mon, 'dracomon', 'the first Digimon stays while the egg hatches');
+  eq(s.mate.mon, 'botamon', 'the second egg hatches after one minute');
+  eq(E.cycleDm20Display(s), 'both', 'C shows both once the second has hatched');
+  eq(E.cycleDm20Display(s), 'focus', 'C returns to the first Digimon');
+  eq(E.cycleDm20Display(s), 'mate', 'C shows the second Digimon');
+}
+{
+  const s = E.defaultState(1);
+  s.mon = 'agumon';
+  s.clockInitialized = true;
+  E.evolveTo(s, 'greymon');
+  ok(!s.twoUnlocked, 'a 1997 evolution does not give a second egg');
+}
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed ? 1 : 0);
