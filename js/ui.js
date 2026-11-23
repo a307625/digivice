@@ -2367,6 +2367,35 @@
     if (v) { v.srcObject = null; v.classList.add('hidden'); }
   }
 
+  function showOffer() {
+    try {
+      var code = window.Battle.makeOffer(state);
+      $('pvp-out').value = code;
+      drawQr('pvp-qr', code);
+      toast('已產生邀請碼，請對方掃描或貼上');
+    } catch (e) { toast(e.message); }
+  }
+  function acceptOffer() {
+    var code = $('pvp-in').value;
+    try {
+      var r = window.Battle.acceptOffer(code, state);
+      window.Engine.recordBattle(state, r.result);
+      persist();
+      $('pvp-out').value = r.code;
+      drawQr('pvp-qr', r.code);
+      toast(r.result === 'win' ? '你贏了！把結果碼傳回對方' : '你輸了。把結果碼傳回對方');
+    } catch (e) { toast(e.message); }
+  }
+  function applyPvpResult() {
+    var code = $('pvp-in').value;
+    try {
+      var r = window.Battle.applyResult(code, state);
+      window.Engine.recordBattle(state, r.result);
+      persist();
+      toast(r.result === 'win' ? '對方確認：你贏了' : '對方確認：你輸了');
+    } catch (e) { toast(e.message); }
+  }
+
   var lobbyTimer = null;
   var lobbyApplied = {};
   var lobbyBusy = false;
@@ -3180,6 +3209,9 @@
     $('do-import').addEventListener('click', function () { doImportText($('import-code').value); });
     $('start-scan').addEventListener('click', startScan);
     $('stop-scan').addEventListener('click', stopScan);
+    if ($('pvp-offer')) $('pvp-offer').addEventListener('click', showOffer);
+    if ($('pvp-accept')) $('pvp-accept').addEventListener('click', acceptOffer);
+    if ($('pvp-result')) $('pvp-result').addEventListener('click', applyPvpResult);
     if ($('lobby-url')) {
       $('lobby-url').addEventListener('change', saveLobbyUrl);
       $('lobby-url').addEventListener('blur', saveLobbyUrl);
