@@ -71,6 +71,8 @@ console.log('1) Official 2 Hz clock and food-shrink phases (1997 source, shared)
   ok(/version === 5\) mode = 'meter_slow'/.test(src), 'Ver.5 training is the slower full gauge');
   ok(/train\.pos >= 0\.82/.test(src), 'Ver.2 and Ver.5 succeed only when the gauge is full');
   ok(/train\.mash >= 16/.test(src), 'Ver.3 succeeds when the mash bar is full');
+  ok(/if \(btn !== 'B'\) return;\s*train\.mash/.test(src), 'Ver.3 mash counts only B');
+  ok(/finishTrainRound\(\(train\.num \|\| 0\) === 100\)/.test(src), 'Ver.4 succeeds only at 100');
 
   // Three bites: full, full-lowered, half, half, empty.
   const meat = [0, 1, 2, 3, 4].map((t) => eatFood('meat', t));

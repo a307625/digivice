@@ -1628,7 +1628,8 @@
       return;
     }
     if (mode === 'number') {
-      finishTrainRound((train.num || 0) >= 96 && (train.num || 0) <= 100);
+      // Wikimon Ver.4: stop the count on 100. 96–99 is a miss.
+      finishTrainRound((train.num || 0) === 100);
       return;
     }
     if (mode === 'highlow') return;
@@ -1656,6 +1657,8 @@
       return;
     }
     if (mode === 'mash') {
+      // Wikimon Ver.3: only B fills the bar. A does nothing.
+      if (btn !== 'B') return;
       train.mash = (train.mash || 0) + 1;
       train.pos = Math.min(1, train.mash / 16);
       if (train.mash >= 16) finishTrainRound(true);
@@ -2120,7 +2123,7 @@
         if (train.pos >= 1) { train.pos = 1; train.dir = -1; }
         if (train.pos <= 0) { train.pos = 0; train.dir = 1; }
       } else if (mode === 'number') {
-        // One count every 50 ms, so 0–100 takes about 5 s and 96–100 stays up ~0.25 s.
+        // One count every 50 ms, so 0–100 takes about 5 s. Success is exactly 100.
         train.acc = (train.acc || 0) + dt;
         while (train.acc >= 50) {
           train.acc -= 50;
