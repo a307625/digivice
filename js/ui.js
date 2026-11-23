@@ -1096,8 +1096,9 @@
     var bx = fx(17), bw = 14 * DOT, bh = 3 * DOT;
     ctx.fillStyle = 'rgba(30, 36, 28, 0.55)';
     ctx.fillRect(bx, by, bw, bh);
+    // Ver.2 / Ver.5 succeed when the gauge is full, so the mark sits on the right end.
     var zone = Math.floor(bw * 0.18);
-    var zx = bx + Math.floor((bw - zone) / 2);
+    var zx = bx + bw - zone;
     ctx.fillStyle = '#5a8a38';
     ctx.fillRect(zx, by, zone, bh);
     ctx.fillStyle = '#c8b040';
@@ -1120,8 +1121,12 @@
     // number, and HI/LO stay readable instead of disappearing under the sprite.
     blitMon(state.mon, fx(0), fy(0), MON, fr, true);
     if (mode === 'highlow') {
-      // The word is the button to press: HI = A, LO = B. Hits sit under it.
-      I.drawText(ctx, train.target === 1 ? 'HI' : 'LO', fx(20), fy(1), ITEM);
+      // Ver.1: five attacks on your shadow. A is high, B is low, 3 hits win.
+      // The guard is the mark, not a word that prints the answer.
+      var high = train.target === 1;
+      blitMon(state.mon, fx(16), fy(0), MON, high ? 'attack' : 'idle0', false);
+      ctx.fillStyle = INK;
+      ctx.fillRect(fx(14), fy(high ? 1 : 13), 2 * DOT, DOT);
       I.drawNumber(ctx, train.hits || 0, fx(26), fy(9), ITEM, 0);
     } else if (mode === 'mash') {
       var bx = fx(17), by = fy(2), bw = 14 * DOT, bh = 3 * DOT;
@@ -1618,7 +1623,8 @@
     if (train.done) return;
     var mode = train.mode || 'meter';
     if (mode === 'mash') {
-      finishTrainRound(train.mash >= (currentDevice().family === 'dm20' ? 13 : 10));
+      // Ver.3: the bar has to be full before the time runs out.
+      finishTrainRound(train.mash >= 16);
       return;
     }
     if (mode === 'number') {
@@ -1626,8 +1632,8 @@
       return;
     }
     if (mode === 'highlow') return;
-    var mid = 0.5;
-    finishTrainRound(Math.abs(train.pos - mid) < 0.12);
+    // Ver.2 and the slower Ver.5: press while the gauge is full (right-end mark).
+    finishTrainRound(train.pos >= 0.82);
   }
 
   function trainInput(btn) {
@@ -1652,6 +1658,7 @@
     if (mode === 'mash') {
       train.mash = (train.mash || 0) + 1;
       train.pos = Math.min(1, train.mash / 16);
+      if (train.mash >= 16) finishTrainRound(true);
       return;
     }
     resolveTrain();
@@ -2360,33 +2367,177 @@
     if (v) { v.srcObject = null; v.classList.add('hidden'); }
   }
 
-  function showOffer() {
-    try {
-      var code = window.Battle.makeOffer(state);
-      $('pvp-out').value = code;
-      drawQr('pvp-qr', code);
-      toast('已產生邀請碼，請對方掃描或貼上');
-    } catch (e) { toast(e.message); }
+  var lobbyTimer = null;
+  var lobbyApplied = {};
+  var lobbyBusy = false;
+
+  function lobbyCode() {
+    var key = 'digivice.inviteCode';
+    var cur = '';
+    try { cur = localStorage.getItem(key) || ''; } catch (e) {}
+    if (!/^[A-HJ-NP-Z2-9]{6}$/.test(cur)) {
+      var abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      cur = '';
+      for (var i = 0; i < 6; i++) cur += abc.charAt(Math.floor(Math.random() * abc.length));
+      try { localStorage.setItem(key, cur); } catch (e2) {}
+    }
+    return cur;
   }
-  function acceptOffer() {
-    var code = $('pvp-in').value;
-    try {
-      var r = window.Battle.acceptOffer(code, state);
-      window.Engine.recordBattle(state, r.result);
-      persist();
-      $('pvp-out').value = r.code;
-      drawQr('pvp-qr', r.code);
-      toast(r.result === 'win' ? '你贏了！把結果碼傳回對方' : '你輸了。把結果碼傳回對方');
-    } catch (e) { toast(e.message); }
+  function lobbyUrlValue() {
+    var el = $('lobby-url');
+    var fromInput = el ? String(el.value || '').trim() : '';
+    if (fromInput) return fromInput;
+    try { return String(localStorage.getItem('digivice.lobbyUrl') || '').trim(); } catch (e) { return ''; }
   }
-  function applyPvpResult() {
-    var code = $('pvp-in').value;
-    try {
-      var r = window.Battle.applyResult(code, state);
-      window.Engine.recordBattle(state, r.result);
-      persist();
-      toast(r.result === 'win' ? '對方確認：你贏了' : '對方確認：你輸了');
-    } catch (e) { toast(e.message); }
+  function lobbyUrlOk(url) {
+    return /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec\/?$/.test(url);
+  }
+  function saveLobbyUrl() {
+    var url = lobbyUrlValue();
+    try { localStorage.setItem('digivice.lobbyUrl', url); } catch (e) {}
+    if ($('overlay-battle') && $('overlay-battle').classList.contains('show')) lobbyTick();
+  }
+  function lobbySnap() {
+    var m = mon() || {};
+    var enh = (window.Engine && window.Engine.enhancement) ? window.Engine.enhancement(state) : 0;
+    return {
+      code: lobbyCode(),
+      mon: (state && state.mon) || '',
+      name: m.nameZh || m.nameEn || (state && state.mon) || '',
+      slot: m.slot || '',
+      stage: m.stage || '',
+      enhancement: String(enh || 0)
+    };
+  }
+  function lobbyCall(url, params) {
+    return new Promise(function (resolve, reject) {
+      var cb = 'dmLobby_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
+      var s = document.createElement('script');
+      var timer = setTimeout(function () { cleanup(); reject(new Error('對戰表沒有回應')); }, 20000);
+      window[cb] = function (data) { cleanup(); resolve(data); };
+      function cleanup() {
+        clearTimeout(timer);
+        try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+        if (s.parentNode) s.parentNode.removeChild(s);
+      }
+      s.onerror = function () { cleanup(); reject(new Error('連不到對戰表')); };
+      var q = ['callback=' + cb];
+      Object.keys(params).forEach(function (k) {
+        q.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k] == null ? '' : params[k]));
+      });
+      s.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + q.join('&');
+      document.head.appendChild(s);
+    });
+  }
+  function lobbyEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function renderLobby(others) {
+    var box = $('lobby-list');
+    if (!box) return;
+    if (!others || !others.length) {
+      box.innerHTML = '<p class="steps-muted">目前沒有其他在線的人</p>';
+      return;
+    }
+    box.innerHTML = others.map(function (p) {
+      return '<div class="lobby-row"><div><b>' + lobbyEsc(p.code) + '</b><span>' +
+        lobbyEsc(p.name || p.mon || '') + '</span></div>' +
+        '<button type="button" class="btn" data-lobby-foe="' + lobbyEsc(p.code) + '">對戰</button></div>';
+    }).join('');
+  }
+  function applyLobbyBattle(b) {
+    if (!b || !b.id || lobbyApplied[b.id] || !state) return;
+    var you = lobbyCode();
+    var result = b.initiator === you ? b.initiatorResult : (b.initiatorResult === 'win' ? 'loss' : 'win');
+    if (result !== 'win' && result !== 'loss') return;
+    var rec = window.Engine.recordBattle(state, result);
+    persist();
+    lobbyApplied[b.id] = true;
+    var url = lobbyUrlValue();
+    if (lobbyUrlOk(url)) lobbyCall(url, { action: 'ack', code: you, id: b.id }).catch(function () {});
+    var foeName = b.initiator === you ? (b.defenderName || b.defender) : (b.initiatorName || b.initiator);
+    if (rec && rec.ok === false) toast('勝負已定，但這隻沒記入戰績');
+    else toast((result === 'win' ? '你贏了' : '你輸了') + (foeName ? '（' + foeName + '）' : ''));
+    if (rec && rec.ok !== false) playPose(result === 'win' ? 'happy' : 'angry', 2000);
+  }
+  function lobbyTick() {
+    var status = $('lobby-status');
+    var mine = $('lobby-mycode');
+    if (mine) mine.textContent = lobbyCode();
+    if (!state || state.dead) {
+      if (status) status.textContent = '還沒有在育成的數碼寶貝';
+      renderLobby([]);
+      return;
+    }
+    if (!window.Engine.canBattle(state)) {
+      if (status) status.textContent = '這隻現在不能對戰（幼年期、沒有 DP，或受傷）';
+      renderLobby([]);
+      if (lobbyUrlOk(lobbyUrlValue())) lobbyCall(lobbyUrlValue(), { action: 'leave', code: lobbyCode() }).catch(function () {});
+      return;
+    }
+    var url = lobbyUrlValue();
+    if (!lobbyUrlOk(url)) {
+      if (status) status.textContent = '貼上 Apps Script 的 /exec 網址後就會登記';
+      renderLobby([]);
+      return;
+    }
+    var snap = lobbySnap();
+    lobbyCall(url, {
+      action: 'sync',
+      code: snap.code,
+      mon: snap.mon,
+      name: snap.name,
+      slot: snap.slot,
+      stage: snap.stage,
+      enhancement: snap.enhancement
+    }).then(function (data) {
+      if (!$('overlay-battle') || !$('overlay-battle').classList.contains('show')) return;
+      if (!data || data.ok === false) {
+        if (status) status.textContent = (data && data.error) || '登記失敗';
+        return;
+      }
+      if (status) status.textContent = '已登記。點邀請碼就和對方打。';
+      renderLobby(data.others || []);
+      (data.inbox || []).forEach(applyLobbyBattle);
+    }).catch(function (e) {
+      if (status && $('overlay-battle') && $('overlay-battle').classList.contains('show')) {
+        status.textContent = e.message || '連不到對戰表';
+      }
+    });
+  }
+  function startLobby() {
+    var urlInput = $('lobby-url');
+    if (urlInput && !urlInput.value) {
+      try { urlInput.value = localStorage.getItem('digivice.lobbyUrl') || ''; } catch (e) {}
+    }
+    var mine = $('lobby-mycode');
+    if (mine) mine.textContent = lobbyCode();
+    lobbyTick();
+    if (lobbyTimer) return;
+    lobbyTimer = setInterval(lobbyTick, 8000);
+  }
+  function stopLobby() {
+    if (lobbyTimer) { clearInterval(lobbyTimer); lobbyTimer = null; }
+    var url = lobbyUrlValue();
+    if (!lobbyUrlOk(url)) return;
+    lobbyCall(url, { action: 'leave', code: lobbyCode() }).catch(function () {});
+  }
+  function onLobbyClick(e) {
+    var btn = e.target.closest ? e.target.closest('[data-lobby-foe]') : null;
+    if (!btn || lobbyBusy) return;
+    var url = lobbyUrlValue();
+    if (!lobbyUrlOk(url)) { toast('先貼上對戰服務網址'); return; }
+    lobbyBusy = true;
+    lobbyCall(url, { action: 'fight', code: lobbyCode(), foe: btn.getAttribute('data-lobby-foe') }).then(function (data) {
+      lobbyBusy = false;
+      if (!data || data.ok === false) { toast((data && data.error) || '對戰失敗'); return; }
+      applyLobbyBattle(data.battle);
+    }).catch(function (err) {
+      lobbyBusy = false;
+      toast(err.message || '對戰失敗');
+    });
   }
 
   function fillEggGrid() {
@@ -3029,9 +3180,11 @@
     $('do-import').addEventListener('click', function () { doImportText($('import-code').value); });
     $('start-scan').addEventListener('click', startScan);
     $('stop-scan').addEventListener('click', stopScan);
-    $('pvp-offer').addEventListener('click', showOffer);
-    $('pvp-accept').addEventListener('click', acceptOffer);
-    $('pvp-result').addEventListener('click', applyPvpResult);
+    if ($('lobby-url')) {
+      $('lobby-url').addEventListener('change', saveLobbyUrl);
+      $('lobby-url').addEventListener('blur', saveLobbyUrl);
+    }
+    if ($('lobby-list')) $('lobby-list').addEventListener('click', onLobbyClick);
 
     document.querySelectorAll('.js-sync-steps').forEach(function (btn) {
       btn.addEventListener('click', function () { runShortcut(); });

@@ -1,4 +1,4 @@
-/* Offline cache for 數碼怪獸對打機 — v46 (sleep Z, angry, injury, call)
+/* Offline cache for 數碼怪獸對打機 — v47 (training differs by version)
  * - Precaches every file index.html loads plus ALL device shells (WebP,
  *   ~2.4 MB), so any device works on an offline first launch.
  * - Precache requests bypass the HTTP cache (cache: 'reload'), so a new

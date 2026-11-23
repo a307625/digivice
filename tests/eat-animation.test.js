@@ -65,6 +65,12 @@ console.log('1) Official 2 Hz clock and food-shrink phases (1997 source, shared)
   ok(/poseFx\.name === 'angry'[\s\S]{0,80}'angry' : 'idle0'/.test(src), 'angry alternates with the walk frame');
   ok(/fam === 'dm1997'/.test(src) && /one Z over the head/.test(src), '1997 sleep draws a Z over the head');
   ok(/\(animTick\(\) % 2\) \? 'hurt' : 'sick'/.test(src), 'injury alternates hurt and sick, not the standing walk');
+  ok(/version === 1\) mode = 'highlow'/.test(src), 'Ver.1 training is the high/low shadow');
+  ok(/version === 3\) mode = 'mash'/.test(src), 'Ver.3 training is the mash meter');
+  ok(/version === 4\) mode = 'number'/.test(src), 'Ver.4 training stops the rising number');
+  ok(/version === 5\) mode = 'meter_slow'/.test(src), 'Ver.5 training is the slower full gauge');
+  ok(/train\.pos >= 0\.82/.test(src), 'Ver.2 and Ver.5 succeed only when the gauge is full');
+  ok(/train\.mash >= 16/.test(src), 'Ver.3 succeeds when the mash bar is full');
 
   // Three bites: full, full-lowered, half, half, empty.
   const meat = [0, 1, 2, 3, 4].map((t) => eatFood('meat', t));
