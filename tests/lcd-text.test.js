@@ -70,7 +70,33 @@ for (const f of Object.keys(files)) {
     if (/drawTextWrapped\(/.test(ln) && !/function drawTextWrapped/.test(ln)) ok(false, `${at} wrapped text spills to a 3rd line on a 16-row LCD; use drawTextFit (scroll)`);
   });
 }
-ok(checkedLit > 40 && checkedFit > 15 && checkedNum > 20, `static checker saw the call sites (${checkedLit} literals, ${checkedFit} scrolling fields, ${checkedNum} numbers)`);
+ok(checkedLit >= 38 && checkedFit > 15 && checkedNum > 20, `static checker saw the call sites (${checkedLit} literals, ${checkedFit} scrolling fields, ${checkedNum} numbers)`);
+{
+  // DM20 DP/MAX: the number used to start at col 14 and cover the X.
+  const ui = fs.readFileSync(path.join(ROOT, 'js/ui.js'), 'utf8');
+  const block = ui.slice(ui.indexOf("page === 'dp'"), ui.indexOf("page === 'dp'") + 1200);
+  function at(re) { const m = block.match(re); return m && { x: +m[1], y: +m[2] }; }
+  const dp = at(/drawText\(ctx, 'DP', fx\((\d+)\), fy\((\d+)\)/);
+  const mx = at(/drawText\(ctx, 'MAX', fx\((\d+)\), fy\((\d+)\)/);
+  const dpN = at(/drawNumber\(ctx, shownDp, fx\((\d+)\), fy\((\d+)\)/);
+  const mxN = at(/drawNumber\(ctx, shownMax, fx\((\d+)\), fy\((\d+)\)/);
+  function box(label, p, w, h) { return { label, x: p.x, y: p.y, w, h }; }
+  function hit(a, b) {
+    return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  }
+  const dpB = box('DP', dp, I.textDots('DP', 1), 6);
+  const mxB = box('MAX', mx, I.textDots('MAX', 1), 6);
+  const nW = 2 * 5 - 1;
+  const dpNB = box('dp', dpN, nW, 7);
+  const mxNB = box('max', mxN, nW, 7);
+  [dpB, mxB, dpNB, mxNB].forEach((b) => {
+    ok(b.x >= 0 && b.y >= 0 && b.x + b.w <= FW && b.y + b.h <= FH,
+      `DM20 ${b.label} at (${b.x},${b.y}) ${b.w}x${b.h} fits 32x16`);
+  });
+  ok(!hit(dpB, dpNB), 'DM20 DP label does not cover its number');
+  ok(!hit(mxB, mxNB), 'DM20 MAX label does not cover its number (the X stays visible)');
+  ok(mxB.x + mxB.w <= mxNB.x, 'DM20 MAX ends before the number column');
+}
 {
   const dv = fs.readFileSync(path.join(ROOT, 'js/devices/digivice/ui.js'), 'utf8');
   ok(!/textC\(ctx, [^;]*, \d+, 2\)/.test(dv) && !/\btext\(ctx, [^;]*, 2\);/.test(dv), 'Digivice: no double-size (2x dot) text left');

@@ -985,11 +985,18 @@
         var dpHearts = Math.max(0, Math.min(4, s.dp || 0));
         I.drawHearts(ctx, fx(0), fy(4), dpHearts, 4, ITEM);
       } else {
-        I.drawText(ctx, 'DP', fx(1), fy(3), ITEM);
-        I.drawNumber(ctx, s.dp || 0, fx(12), fy(3), ITEM, 0);
-        if (s.dpMax) {
+        // DM20: label on the left, two digits on the right.
+        // MAX is 16 dots (cols 1–16). A number starting at col 14 covered
+        // the X, so the glass read "MA". Digits are 7 rows, letters 6;
+        // the number starts one row higher so the bottoms line up.
+        // Values sit in cols 22–30 (a 2-digit field).
+        var shownDp = Math.max(0, Math.min(99, s.dp || 0));
+        var shownMax = Math.max(0, Math.min(99, s.dpMax || 0));
+        I.drawText(ctx, 'DP', fx(1), fy(2), ITEM);
+        I.drawNumber(ctx, shownDp, fx(22), fy(1), ITEM, 2);
+        if (shownMax) {
           I.drawText(ctx, 'MAX', fx(1), fy(10), ITEM);
-          I.drawNumber(ctx, s.dpMax, fx(14), fy(9), ITEM, 0);
+          I.drawNumber(ctx, shownMax, fx(22), fy(9), ITEM, 2);
         }
       }
     } else {
