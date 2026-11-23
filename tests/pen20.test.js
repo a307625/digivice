@@ -476,7 +476,7 @@ console.log('14) Lights-off modes and 1997/PenOG unchanged from this file\'s eng
   s.pets[0].sleeping = true;
   eq(LO.playfieldMode(s, 'play', 'pen20'), 'paper-sleep', 'sleep → paper-sleep');
   eq(LO.playfieldMode(s, 'clock', 'pen20'), 'paper', 'clock paper');
-  eq(LO.playfieldMode({ lights: false, sleeping: false }, 'play', 'dm1997'), 'blank-dark', '1997 still blank-dark');
+  eq(LO.playfieldMode({ lights: false, sleeping: false }, 'play', 'dm1997'), 'paper', '1997 lamp off stays on paper');
 }
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

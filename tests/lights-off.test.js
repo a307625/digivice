@@ -60,7 +60,7 @@ function mode(state, view, family) {
   return LO.playfieldMode(state, view, family);
 }
 
-console.log('1) 1997: lamp off → blank-dark on the playfield, any stage, awake or asleep');
+console.log('1) 1997: lamp off stays on paper; the lamp does not change the pose');
 {
   const stages = [
     { mon: 'egg_v1', extra: { mon: null } },
@@ -74,10 +74,10 @@ console.log('1) 1997: lamp off → blank-dark on the playfield, any stage, awake
     if (extra) Object.assign(s, extra);
     return s;
   }
-  eq(mode(s1997('botamon'), 'play', 'dm1997'), 'blank-dark', '1997 Baby I (Botamon) awake, lamp off, is blank-dark');
-  eq(mode(s1997('koromon'), 'play', 'dm1997'), 'blank-dark', '1997 Baby II (Koromon) awake, lamp off, is blank-dark');
-  eq(mode(s1997('agumon'), 'play', 'dm1997'), 'blank-dark', '1997 Child awake, lamp off, is blank-dark');
-  eq(mode(s1997('agumon', { sleeping: true }), 'play', 'dm1997'), 'blank-dark', '1997 Child asleep, lamp off, is blank-dark');
+  eq(mode(s1997('botamon'), 'play', 'dm1997'), 'paper', '1997 Baby I awake, lamp off, stays on paper');
+  eq(mode(s1997('koromon'), 'play', 'dm1997'), 'paper', '1997 Baby II awake, lamp off, stays on paper');
+  eq(mode(s1997('agumon'), 'play', 'dm1997'), 'paper', '1997 Child awake, lamp off, stays on paper');
+  eq(mode(s1997('agumon', { sleeping: true }), 'play', 'dm1997'), 'paper', '1997 Child asleep, lamp off, stays on paper');
   eq(mode(s1997('botamon', { lights: true }), 'play', 'dm1997'), 'paper', '1997 lamp on is paper');
   eq(mode(s1997('agumon'), 'clock', 'dm1997'), 'paper', '1997 clock still paints on paper');
   eq(mode(s1997('agumon'), 'food', 'dm1997'), 'paper', '1997 food menu on paper');
@@ -88,7 +88,7 @@ console.log('1) 1997: lamp off → blank-dark on the playfield, any stage, awake
   Engine.toggleLights(b);
   eq(b.lights, false, '1997 Baby I toggle turns the lamp off');
   eq(b.sleeping, false, '1997 lights do not force a Baby I to sleep');
-  eq(mode(b, 'play', 'dm1997'), 'blank-dark', 'after the toggle, playfield is blank-dark');
+  eq(mode(b, 'play', 'dm1997'), 'paper', 'after the toggle, playfield stays on paper');
   Engine.toggleLights(b);
   eq(b.lights, true, '1997 Baby I can turn the lamp back on');
 }
@@ -202,7 +202,7 @@ console.log('3) Pendulum: black when awake and off (incl. Baby I); black-z when 
   PenEng.setLights(ch, false);
   eq(PenEng.lightsOffScreen(ch), 'black-z', 'tired + off is black-z');
   eq(mode(ch, 'play', 'pendulum'), 'black-z', 'playfield black-z');
-  eq(ch.sleeping, true, 'turning off while tired puts a Pendulum pet to bed');
+  eq(ch.sleeping, false, 'lamp off does not put a tired pet to bed');
 
   const sl = pen('tentomon', { sleeping: true, tired: true, lights: false });
   eq(mode(sl, 'play', 'pendulum'), 'black-z', 'asleep + off is black-z');
@@ -223,11 +223,11 @@ console.log('4) After a menu / clock SET / reload, the mode still follows the la
   // While SET is open the view is clock — paper. After confirm, play is dark.
   eq(mode(s, 'clock', 'dm1997'), 'paper', 'during SET the clock is on paper');
   s.clockSet.on = false;
-  eq(mode(s, 'play', 'dm1997'), 'blank-dark', 'after SET confirm, play is dark if the lamp is still off');
+  eq(mode(s, 'play', 'dm1997'), 'paper', 'after SET confirm, play stays on paper if the lamp is off');
   // Simulate a reload: the same serialized lights:false must still darken.
   const reloaded = JSON.parse(JSON.stringify(s));
   eq(reloaded.lights, false, 'lights:false survives JSON round-trip (save/reload)');
-  eq(mode(reloaded, 'play', 'dm1997'), 'blank-dark', 'reloaded 1997 save with lights off is still blank-dark');
+  eq(mode(reloaded, 'play', 'dm1997'), 'paper', 'reloaded 1997 save with lights off stays on paper');
 
   const d = Engine.defaultState('special', 'dra_blue');
   d.mon = 'babydmon';
@@ -260,7 +260,7 @@ console.log('5) Pendulum Ver.20th: Off is freeze (fridge on paper) or sleep on p
   eq(LO.isDarkPlayfield('paper-fridge'), false, 'fridge is not a dark playfield');
   eq(LO.isDarkPlayfield('paper-sleep'), false, 'pen20 sleep is not a dark playfield');
   // Must never regress other families
-  eq(mode({ mon: 'botamon', lights: false, sleeping: false }, 'play', 'dm1997'), 'blank-dark', '1997 still blank-dark');
+  eq(mode({ mon: 'botamon', lights: false, sleeping: false }, 'play', 'dm1997'), 'paper', '1997 lamp off stays on paper');
   eq(mode({ mon: 'babumon', lights: false, sleeping: false, family: 'pendulum' }, 'play', 'pendulum'), 'black', 'PenOG still black');
 }
 

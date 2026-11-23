@@ -548,20 +548,15 @@
 
   function setLights(state, on) {
     state.lights = !!on;
-    if (on) {
-      // Pendulum: lights ON does NOT force a wake (plan: do not copy DM20).
-    } else if (state.tired || isSleepHours(state)) {
-      state.sleeping = true;
-      state.tired = true;
-      if (state.sleptSince == null) state.sleptSince = state.gameTime;
-      // Turning off at bedtime cancels the bedtime call (NHOKO).
-      if (state.callKind === 'bedtime') {
-        resolveCall(state, false);
-        state.callAt = null;
-        state.callResolved = false;
-        state.callKind = null;
-        state.sleepCalledTonight = true;
-      }
+    // Lamp only. Bedtime in tickCalls is what lies them down.
+    // Lights ON does not wake (do not copy DM20).
+    // Turning the lamp off at bedtime cancels the "lights left on" call.
+    if (!on && state.callKind === 'bedtime') {
+      resolveCall(state, false);
+      state.callAt = null;
+      state.callResolved = false;
+      state.callKind = null;
+      state.sleepCalledTonight = true;
     }
     return { ok: true, lights: state.lights };
   }
@@ -746,14 +741,17 @@
         }
       }
     }
-    // Bedtime call: 30 min (Humulos). Skipped if lights already off (NHOKO).
-    if (isSleepHours(state) && !state.sleeping) {
+    // Bedtime is the clock. The lamp does not start sleep.
+    // Lights left on: 30 min call (Humulos). Already off: no call (NHOKO).
+    if (isSleepHours(state)) {
       state.tired = true;
+      if (!state.sleeping) {
+        state.sleeping = true;
+        if (state.sleptSince == null) state.sleptSince = state.gameTime;
+      }
       if (state.lights && !state.sleepCalledTonight) {
         if (state.callKind !== 'bedtime') startCall(state, 'bedtime');
       } else if (!state.lights) {
-        state.sleeping = true;
-        if (state.sleptSince == null) state.sleptSince = state.gameTime;
         state.sleepCalledTonight = true;
       }
     }

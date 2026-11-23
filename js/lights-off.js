@@ -2,9 +2,10 @@
  * Per-family playfield when the lamp is off. Menus and the clock always
  * paint on paper (official 1997 / DM20 / Pendulum).
  *
- *   1997  — blank dark LCD whenever the lamp is off, any stage including
- *           egg and Baby I/II, awake or asleep. No monster, poop, or Z.
- *           (clock-rules.md; "the screen goes dark like the old ones".)
+ *   1997  — the lamp is not a sleep button. Off keeps the playfield
+ *           (backdrop, monster, poop) on paper in whatever pose the clock
+ *           already chose. The UI dims the glass; it does not blank it
+ *           and it does not lie the pet down. Sleep is bedtime only.
  *   DM20  — does NOT go dark. Sleep cell + Z when the pet is sleeping
  *           (nap or bedtime). Official: "The screen doesn't go dark like
  *           the old ones" (WithTheWill / clock-rules.md). Babydmon is
@@ -79,8 +80,8 @@
       if (state.sleeping || state.tired) return 'black-z';
       return 'black';
     }
-    // 1997 (and unknown brick): blank dark at every stage, awake or asleep.
-    return 'blank-dark';
+    // 1997: lamp off stays on paper. Sleep pose is state.sleeping, not the lamp.
+    return 'paper';
   }
 
   function isDarkPlayfield(mode) {

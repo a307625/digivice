@@ -393,7 +393,7 @@ console.log('13) Lights-off is paper; no 1997 blank-dark');
   eq(LO.playfieldMode(s, 'play', 'digivice'), 'paper', 'play is paper');
   s.lights = false;
   eq(LO.playfieldMode(s, 'play', 'digivice'), 'paper', 'even with lights=false, paper');
-  eq(LO.playfieldMode({ lights: false }, 'play', 'dm1997'), 'blank-dark', '1997 still blank-dark');
+  eq(LO.playfieldMode({ lights: false }, 'play', 'dm1997'), 'paper', '1997 lamp off stays on paper');
 }
 
 console.log('14) Picker labels, no spoilers');
