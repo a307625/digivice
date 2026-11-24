@@ -413,6 +413,84 @@ console.log('5) Perfect evolution rolls and Child→Adult carry');
   ok(s.mon === 'greymon' && s.lifespanElapsed, 'both rolls fail: stays Champion, old-age begins');
 }
 
+console.log('5b) DM20 Perfect uses this form\'s latest 15, not the 1997 die');
+{
+  function dm20Adult(results) {
+    return form('coredramon_blue', {
+      awakeInStage: 36 * 3600,
+      gameTime: 40 * 3600,
+      stageEnteredGame: 0,
+      clockOffset: 10 * 3600,
+      battles: 40,
+      wins: 40,
+      perfectQualified: true,
+      winScore: 15,
+      stageResults: results,
+      lifespanElapsed: false
+    });
+  }
+  function row(wins, losses) {
+    return Array(wins).fill('W').concat(Array(losses).fill('L'));
+  }
+  {
+    const s = dm20Adult(row(12, 3));
+    const ev = Engine.tryEvolve(s, () => 0.99);
+    ok(ev && s.mon === 'wingdramon', '12 of the latest 15 is certain (got ' + s.mon + ')');
+  }
+  {
+    const s = dm20Adult(row(5, 10));
+    const ev = Engine.tryEvolve(s, () => 0);
+    ok(!ev && s.mon === 'coredramon_blue', '5 of 15 is under 39% and stays');
+  }
+  {
+    const s = dm20Adult(row(6, 9));
+    ok(Engine.tryEvolve(s, () => 0) && s.mon === 'wingdramon', '6 of 15 is the 1/4 band and can pass');
+  }
+  {
+    const s = dm20Adult(row(6, 9));
+    ok(!Engine.tryEvolve(s, () => 0.5) && s.mon === 'coredramon_blue', '6 of 15 can also miss');
+  }
+  {
+    const s = dm20Adult(row(11, 4));
+    ok(Engine.tryEvolve(s, () => 0) && s.mon === 'wingdramon', '11 of 15 is the 1/2 band');
+  }
+  {
+    const s = dm20Adult(row(11, 4));
+    ok(!Engine.tryEvolve(s, () => 0.6) && s.mon === 'coredramon_blue', '11 of 15 can miss');
+  }
+  {
+    const s = dm20Adult([]);
+    s.battles = 30;
+    s.wins = 30;
+    ok(!Engine.tryEvolve(s, () => 0) && s.mon === 'coredramon_blue', 'wins from earlier forms do not qualify');
+  }
+  {
+    const s = dm20Adult(Array(10).fill('L').concat(row(12, 3)));
+    ok(Engine.tryEvolve(s, () => 0.99) && s.mon === 'wingdramon', 'battles before the latest 15 drop out');
+  }
+  {
+    const s = form('wingdramon', {
+      calls: 3,
+      awakeInStage: 48 * 3600,
+      gameTime: 48 * 3600,
+      stageResults: Array(100).fill('W'),
+      clockOffset: 10 * 3600
+    });
+    ok(Engine.tryEvolve(s, () => 0) && s.mon === 'wargreymon', '100 battles in this Perfect form and 3 mistakes → WarGreymon');
+  }
+  {
+    const s = form('wingdramon', {
+      calls: 3,
+      battles: 200,
+      awakeInStage: 48 * 3600,
+      gameTime: 48 * 3600,
+      stageResults: [],
+      clockOffset: 10 * 3600
+    });
+    ok(!Engine.tryEvolve(s, () => 0) && s.mon === 'wingdramon', 'lifetime battles do not fill this form\'s 100');
+  }
+}
+
 console.log('6) Sleep hours, lifespan windows, DP refill, no hunger gift, 5-CM old-age');
 {
   const dues = [];

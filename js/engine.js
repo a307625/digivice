@@ -125,6 +125,7 @@
       lifeWins: 0,
       lifeLosses: 0,
       poop: 0,
+      stageResults: [],
       lights: true,
       sleeping: false,
       injured: false,
@@ -412,6 +413,33 @@
     return die < t;
   }
 
+  function markCount(results, mark) {
+    var n = 0;
+    var a = results || [];
+    for (var i = 0; i < a.length; i++) if (a[i] === mark) n++;
+    return n;
+  }
+
+  /**
+   * DM20 Adult → Perfect. NHOKO cites the Bandai Ver.20th post; Humulos
+   * states the same endpoints (chance from 6/15, certain at 12/15).
+   * Only this stage's battles count, and only the latest 15.
+   *   0–5 wins  (under 39%) → 0
+   *   6–10 wins (40–69%)    → 1/4
+   *   11 wins   (70–79%)    → 1/2
+   *   12–15 wins (80%+)     → certain
+   * 1997 keeps rollPerfect. This table is not that die.
+   */
+  function dm20PerfectChance(results) {
+    var a = results || [];
+    if (a.length < 15) return 0;
+    var wins = markCount(a.slice(a.length - 15), 'W');
+    if (wins >= 12) return 1;
+    if (wins >= 11) return 0.5;
+    if (wins >= 6) return 0.25;
+    return 0;
+  }
+
   /**
    * Battle injury: (s+1)/16 where s = base + overdose, s in 0..15.
    * Firmware hole at s === 15: the comparison never hits; no injury.
@@ -517,6 +545,7 @@
     state.oldAgeMistakes = 0;
     state.perfectRolledThisStage = false;
     state.megaChecked = false;
+    state.stageResults = [];
     state.satietyFilled = state.hunger || 0;
     state.sleptContinuously = 0;
     state.awakeInStage = 0;
@@ -611,7 +640,13 @@
     var statMins = (isDm20(state) || m.stage === 'egg') ? Math.max(mins, m.lifespanMin || 0) : mins;
     var stats = buildStats(state, statMins);
 
-    if (hasPerfectRoll(m)) {
+    if (isDm20(state) && hasPerfectRoll(m)) {
+      // 20th brick: one roll at this stage's window, from the latest 15
+      // battles fought in this form. Child battles and the 1997 win-score
+      // die do not qualify it.
+      var chance = dm20PerfectChance(state.stageResults);
+      stats.perfectEligible = chance >= 1 || (chance > 0 && rng() < chance);
+    } else if (hasPerfectRoll(m)) {
       if (!state.perfectRolledThisStage) {
         state.perfectRolledThisStage = true;
         if ((state.battles || 0) >= 15) {
@@ -627,7 +662,7 @@
 
     var r = evo.resolveEvolution(data, state.mon, stats);
 
-    if (m.stage === 'rookie' && (state.battles || 0) >= 15 && !state.perfectQualified) {
+    if (!isDm20(state) && m.stage === 'rookie' && (state.battles || 0) >= 15 && !state.perfectQualified) {
       // III→IV qualifying roll, carried into Adult. Runs whether or not
       // this Child became a "good" Adult (e.g. Numemon still carries the bit).
       if (rollPerfect(state.winScore || 0, rng)) state.perfectQualified = true;
@@ -646,15 +681,21 @@
   }
 
   function buildStats(state, mins) {
+    // DM20 battle gates (Perfect win rate, Wingdramon's 100) use this
+    // form's own fights. Lifetime totals stay on the status screen.
+    var stageBattles = isDm20(state);
+    var results = state.stageResults || [];
+    var battles = stageBattles ? results.length : state.battles;
+    var wins = stageBattles ? markCount(results, 'W') : state.wins;
     return {
       calls: state.calls,
       train: state.train,
       overfeed: state.overfeed,
       sleepDist: state.sleepDist,
       weight: state.weight,
-      battles: state.battles,
-      wins: state.wins,
-      winRate: winRate(state.battles, state.wins),
+      battles: battles,
+      wins: wins,
+      winRate: winRate(battles, wins),
       timeInStage: mins,
       eggKind: state.eggKind || null,
       lifeSteps: (state.steps && state.steps.lifetime) || 0,
@@ -1296,6 +1337,10 @@
     state.dp = Math.max(0, state.dp - 1);
     state.weight = Math.max(m.weight || 5, state.weight - (Number(m.version) === 1 ? 2 : 4));
     state.battles = (state.battles || 0) + 1;
+    if (isDm20(state)) {
+      if (!state.stageResults) state.stageResults = [];
+      state.stageResults.push(result === 'win' ? 'W' : 'L');
+    }
     state.lifeBattles = (state.lifeBattles || 0) + 1;
     if (result === 'win') {
       state.wins = (state.wins || 0) + 1;
@@ -1471,6 +1516,7 @@
     if (state.lightsCallResolved == null) state.lightsCallResolved = false;
     if (state.healProgress == null) state.healProgress = 0;
     if (state.awakeInStage == null) state.awakeInStage = 0;
+    if (!state.stageResults) state.stageResults = [];
     if (state.awakeUntil == null) state.awakeUntil = 0;
     if (state.hungerFreezeUntil == null) state.hungerFreezeUntil = 0;
     if (state.dm20TagRound == null) state.dm20TagRound = 0;
