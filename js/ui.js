@@ -2760,9 +2760,9 @@
         var src = window.SpriteAtlas.renderToImageData(sp, 'idle0', 1);
         var cx = c.getContext('2d');
         cx.imageSmoothingEnabled = false;
-        // Original Pendulum eggs are LCD ink on pale paper. The card is
+        // Pendulum and 20th eggs are LCD ink on pale paper. The card is
         // dark, so paint the same paper behind them or the shell vanishes.
-        if (/^pen_(?!20)/.test(String(egg.dataEgg))) {
+        if (/^pen_/.test(String(egg.dataEgg))) {
           cx.fillStyle = '#c4d6c4';
           cx.fillRect(0, 0, 32, 32);
         }
