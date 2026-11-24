@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Eating (and related pose) animation: official 2 Hz clock, meat 5-phase
- * food shrink (three bites), protein 4-phase, mouth open/closed frames,
+ * Eating (and related pose) animation: official 2 Hz clock, meat shrinks
+ * full → half → bone across three open-mouth bites, protein does the same
+ * count on the pill, mouth open/closed frames,
  * and the per-family wiring that actually plays them.
  */
 'use strict';
@@ -53,7 +54,7 @@ console.log('1) Official 2 Hz clock and food-shrink phases (1997 source, shared)
 {
   const src = read('js/ui.js');
   ok(/ANIM_MS\s*=\s*500/.test(src), 'ANIM_MS is 500 (official 2 Hz)');
-  ok(/maxT = eatAnim\.kind === 'protein' \? 4 : 5/.test(src), 'meat 5 frames, protein 4 frames');
+  ok(/var maxT = 6/.test(src), 'meat and protein both run six frames, three open-mouth bites');
   ok(/function eatFoodSprite/.test(src), 'shared eatFoodSprite helper exists');
   ok(/empty_meat/.test(src) && /half_meat/.test(src), 'meat shrinks full → half → empty');
   ok(/half_pill/.test(src), 'protein shrinks to half_pill');
@@ -82,15 +83,18 @@ console.log('1) Official 2 Hz clock and food-shrink phases (1997 source, shared)
   eq(meat[1].yDots, 8, 'bite 1b: food lowered');
   eq(meat[2].food, 'half_meat', 'bite 2: half');
   eq(meat[3].food, 'half_meat', 'bite 2 held a second tick');
-  eq(meat[4].food, 'empty_meat', 'bite 3: empty plate');
+  eq(meat[4].food, 'empty_meat', 'bite 3 setup: empty plate, mouth closed');
   eq(meat[4].xDots, 24, 'food sits at x=24, opposite the mon at x=8');
+  eq(eatFood('meat', 5).food, 'empty_meat', 'bite 3: mouth opens on the bone');
 
   const prot = [0, 1, 2, 3].map((t) => eatFood('protein', t));
   eq(prot[0].food, 'pill', 'protein 0: full pill');
   eq(prot[0].yDots, 0, 'protein 0: at the top');
   eq(prot[1].food, 'pill', 'protein 1: full, lowered');
   eq(prot[2].food, 'pill', 'protein 2: still full');
-  eq(prot[3].food, 'half_pill', 'protein 3: half-pill');
+  eq(prot[3].food, 'half_pill', 'protein 3: half-pill, second bite');
+  eq(eatFood('protein', 4).food, 'half_pill', 'protein 4: half-pill held');
+  eq(eatFood('protein', 5).food, 'half_pill', 'protein 5: third bite on the half-pill');
 }
 
 console.log('2) 1997 / DM20 sprites: eat cells and the identical-eat0/eat1 remap');

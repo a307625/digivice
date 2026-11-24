@@ -573,9 +573,10 @@
     return true;
   }
 
-  // Official 1997 eat: 5 meat frames at 2 Hz — full, full lowered, half,
-  // half, empty — which is three bites. Protein is 4 frames (pill, pill
-  // lowered, pill, half-pill). Shared with Pendulum and Pen20 via penHost.
+  // Official 1997 eat, 2 Hz. The mouth opens on the odd frames, so a
+  // bite is one of those opens. Meat: full, half, then the bone — three
+  // opens. Protein: two opens on the whole pill's half, then one more on
+  // the half-pill. Six frames covers both. Shared via penHost.
   function eatFoodSprite(anim) {
     anim = anim || eatAnim;
     if (!anim || !anim.on || anim.refused) return null;
@@ -2160,7 +2161,7 @@
       walkUpdate();
       if (eatAnim.on) {
         eatAnim.t++;
-        var maxT = eatAnim.kind === 'protein' ? 4 : 5;
+        var maxT = 6;
         if (eatAnim.t >= maxT) {
           eatAnim.on = false;
           // Return to the food menu with the cursor still on the item
