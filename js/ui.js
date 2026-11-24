@@ -290,10 +290,6 @@
         im.src = './icons/bezel/' + file + '.png';
         im.alt = '';
         im.draggable = false;
-        // v34's flush/medic/call PNGs carry small detached smudges under the
-        // glyph (rows 54-61 of 64); clip them off (source files untouched).
-        var clipBottom = { flush: 9.4, medic: 16, call: 17.2 }[file];
-        if (clipBottom) im.style.clipPath = 'inset(0 0 ' + clipBottom + '% 0)';
         // mask (panel colour) + glyph box exactly on the slot
         var mask = document.createElement('div');
         mask.className = 'icon-mask';

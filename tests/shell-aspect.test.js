@@ -77,11 +77,19 @@ for (const f of shells.filter((s) => /^pen-(\d-\d|zero)\.webp$/.test(s))) {
     ok(L.iconArt && L.iconArt.bgTop === '#badccc' && L.iconArt.bgBot === '#80a577', 'icon masks #badccc / #80a577');
     const names = L.names_top.concat(L.names_bot);
     ok(names.every((n) => L.iconArt.src[n] && fs.existsSync(path.join(ROOT, 'icons/bezel', L.iconArt.src[n] + '.png'))), 'every slot has v34 icon art in icons/bezel');
-    ok(D.layoutFor('1.0') === L && D.layoutFor('1.5') === L, '1.0 and 1.5 use the round-4 layout');
+    ok(D.layoutFor('1.5') === L, '1.5 keeps the round-4 layout');
+    const N = D.LAYOUT_NS;
+    ok(D.layoutFor('1.0') === N, '1.0 uses the redrawn Nature Spirits shell');
+    if (N) {
+      ok(N.aspectW === 1260 && N.aspectH === 860, '1.0 shell is 1260x860');
+      ok(near(N.lcd.left, 15.556) && near(N.lcd.top, 34.884) && near(N.lcd.width, 34.762) && near(N.lcd.height, 23.256), '1.0 LCD sits in the drawn glass');
+      ok(near(N.buttons.a.cx, 81.746) && near(N.buttons.b.cy, 50) && near(N.buttons.c.cy, 68.837), '1.0 buttons sit on the three drawn buttons');
+      ok(N.iconArt && N.iconArt.bgTop === '#c4d6c4' && N.iconArt.bgBot === '#7a9e70', '1.0 icon masks match the painted bands');
+    }
     ['2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0', '5.5', 'zero'].forEach((k) => ok(D.layoutFor(k) === D.LAYOUT, k + ' keeps the v34 layout'));
     const R = global.Devices;
     if (R && R.profileById) {
-      ok(R.profileById('pen-1-0') && R.profileById('pen-1-0').layout === L, 'registered pen-1-0 profile uses round-4 layout');
+      ok(R.profileById('pen-1-0') && R.profileById('pen-1-0').layout === D.LAYOUT_NS, 'registered pen-1-0 profile uses the redrawn shell');
       ok(R.profileById('pen-1-5') && R.profileById('pen-1-5').layout === L, 'registered pen-1-5 profile uses round-4 layout');
       ok(R.profileById('pen-2-0') && R.profileById('pen-2-0').layout === D.LAYOUT, 'registered pen-2-0 profile keeps v34 layout');
     }

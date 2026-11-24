@@ -92,9 +92,40 @@
       bgBot: '#80a577'
     }
   };
-  // Versions on the round-4 shell. 2.0+ keep LAYOUT until their shells are accepted.
-  var ROUND4_VERSIONS = { '1.0': true, '1.5': true };
-  function layoutFor(key) { return ROUND4_VERSIONS[key] ? LAYOUT_10 : LAYOUT; }
+  // 1.0 silver/blue Nature Spirits, drawn from the 1998 package front
+  // (1260x860). Screen module on the left, three buttons in the right well,
+  // a pinhole reset. The icon bands are the colours painted on that shell.
+  var LAYOUT_NS = {
+    aspectW: 1260,
+    aspectH: 860,
+    lcd: { left: 15.556, top: 34.884, width: 34.762, height: 23.256 },
+    buttons: {
+      a: { cx: 81.746, cy: 31.163, w: 9.206, h: 13.488 },
+      b: { cx: 81.746, cy: 50, w: 9.206, h: 13.488 },
+      c: { cx: 81.746, cy: 68.837, w: 9.206, h: 13.488 },
+      reset: { cx: 72.857, cy: 59.302, w: 2.063, h: 3.023 }
+    },
+    icons_top: [11.905, 22.698, 33.492, 44.286].map(function (l) {
+      return { left: l, top: 24.884, width: 5.714, height: 8.372 };
+    }),
+    icons_bot: [11.905, 22.698, 33.492, 44.286].map(function (l) {
+      return { left: l, top: 61.395, width: 5.714, height: 8.372 };
+    }),
+    names_top: LAYOUT.names_top,
+    names_bot: LAYOUT.names_bot,
+    chamber: null,
+    iconArt: {
+      src: LAYOUT_10.iconArt.src,
+      bgTop: '#c4d6c4',
+      bgBot: '#7a9e70'
+    }
+  };
+  // 1.5 still sits on the round-4 shell. 2.0+ keep LAYOUT.
+  var ROUND4_VERSIONS = { '1.5': true };
+  function layoutFor(key) {
+    if (key === '1.0') return LAYOUT_NS;
+    return ROUND4_VERSIONS[key] ? LAYOUT_10 : LAYOUT;
+  }
 
   // Attribute triangle — NHOKO original-Pendulum page (Vac strong vs Virus).
   var TRIANGLE = {
@@ -655,7 +686,7 @@
     shell: 'pen-1-0',
     orient: 'landscape',
     version: '1.0',
-    layout: LAYOUT_10,
+    layout: LAYOUT_NS,
     iconsTop: LAYOUT.names_top,
     iconsBot: LAYOUT.names_bot,
     selectable: ['STATUS', 'FEED', 'TRAIN', 'CONNECT', 'FLUSH', 'LIGHT', 'MEDIC'],
@@ -678,6 +709,7 @@
     LAYOUT: LAYOUT,
     LAYOUT_PEN: LAYOUT,
     LAYOUT_10: LAYOUT_10,
+    LAYOUT_NS: LAYOUT_NS,
     layoutFor: layoutFor,
     RULES: RULES,
     TRIANGLE: TRIANGLE,
