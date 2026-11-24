@@ -1763,7 +1763,6 @@
   function doLights() {
     if (!state) return;
     if (currentDevice().family === 'dm20') {
-      lightSel = 0;
       view = 'lightMenu';
       return;
     }
@@ -1818,7 +1817,6 @@
     // A does not open a second list, and LINK stays in 其他功能.
     // DM20 keeps Single / Tag / Link.
     if (is1997Brick()) { cpuBattle(false); return; }
-    battleSel = 0;
     view = 'battleMenu';
   }
 
@@ -1901,12 +1899,7 @@
   function finishBattleFx() {
     view = 'play';
     battleFx.active = false;
-    battleSel = 0;
-    // Leave the fight on 儀表板. Do not stay on the battle icon, and
-    // do not reopen the list on a different row.
-    var list = selectable();
-    var home = list.indexOf('STATUS');
-    sel = home >= 0 ? home : 0;
+    // The icon and the battle-list row stay where the fight started.
     playPose(battleFx.result === 'win' ? 'happy' : 'angry', 2000);
   }
 
@@ -2199,7 +2192,6 @@
       if (r.evolved) {
         evoFx = { t: 0, from: prevMon, to: state.mon };
         view = 'evo';
-        sel = -1;
       }
       if (r.died) {
         dyingT = 0;

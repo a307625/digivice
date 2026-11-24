@@ -564,7 +564,6 @@
         // Battle: practice vs a Stage-appropriate colo opponent (single-device).
         host.setView('coloMenu');
         battle = { on: true, phase: 'pick-div', won: false, foe: '', startedAt: 0, injured: false };
-        subSel = 0;
       }
       return true;
     }
@@ -572,7 +571,6 @@
       if (battle.phase === 'pick-div' || !battle.phase || battle.phase === 'idle') {
         battle.division = subSel === 1 ? 'tag' : 'single';
         battle.phase = 'pick-act';
-        subSel = 1; // default Continue
         return true;
       }
       if (battle.phase === 'pick-act') {
@@ -601,9 +599,6 @@
       host.setView('play');
       battle.on = false;
       battle.phase = 'pick-div';
-      subSel = 0;
-      var home = SELECTABLE.indexOf('STATUS');
-      host.setSel(home >= 0 ? home : 0);
       return true;
     }
     if (v === 'album') {
@@ -646,7 +641,6 @@
     if (id === 'TRAIN') { startTrain(host); return true; }
     if (id === 'COLOSSEUM') {
       battle = { on: true, phase: 'pick-div', won: false, foe: '', startedAt: 0, injured: false };
-      subSel = 0;
       host.setView('coloMenu');
       return true;
     }
@@ -657,10 +651,10 @@
       if (host.persist) host.persist();
       return true;
     }
-    if (id === 'LIGHT') { subSel = 0; host.setView('lightMenu'); return true; }
-    if (id === 'MEDIC') { subSel = 0; host.setView('healMenu'); return true; }
-    if (id === 'ALBUM') { albumTab = 0; albumIdx = 0; host.setView('album'); return true; }
-    if (id === 'CONNECT') { subSel = 0; host.setView('connect'); return true; }
+    if (id === 'LIGHT') { host.setView('lightMenu'); return true; }
+    if (id === 'MEDIC') { host.setView('healMenu'); return true; }
+    if (id === 'ALBUM') { host.setView('album'); return true; }
+    if (id === 'CONNECT') { host.setView('connect'); return true; }
     return true;
   }
 

@@ -146,6 +146,42 @@ console.log('4) Digivice: A inside a screen does not move the menu row');
   eq(U.menuI, 2, 'vs A does not move the menu row');
 }
 
+console.log('5) Finishing a fight does not send the cursor to the first item');
+{
+  const src = fs.readFileSync(path.join(__dirname, '../js/ui.js'), 'utf8');
+  const fx = src.slice(src.indexOf('function finishBattleFx'), src.indexOf('function confirmSel'));
+  ok(!/battleSel\s*=/.test(fx), 'battle end does not reset the battle row');
+  ok(!/\bsel\s*=/.test(fx), 'battle end does not move the icon');
+  const open = src.slice(src.indexOf('function openBattleMenu'), src.indexOf('function fillJogress'));
+  ok(!/battleSel\s*=/.test(open), 'opening the battle list does not jump to the first row');
+  const pen = fs.readFileSync(path.join(__dirname, '../js/devices/pendulum/ui.js'), 'utf8');
+  const tick = pen.slice(pen.indexOf('function tickMinigame'), pen.indexOf('function onShake'));
+  const result = tick.split("battle.phase === 'result'")[1].split('}')[0];
+  ok(!/setSel\(/.test(result), 'pendulum battle end does not move the icon');
+  const UI = require('../js/devices/pen20/ui.js');
+  UI.setSubSel(1);
+  let sel = 3;
+  let sets = 0;
+  UI.pressB({
+    state: { screenOff: false },
+    view: 'colo',
+    getSel: function () { return sel; },
+    setSel: function (n) { sets++; sel = n; },
+    setView: function () {}
+  });
+  eq(sel, 3, 'pen20 colo end stays on the colosseum icon');
+  eq(sets, 0, 'pen20 colo end does not write the icon index');
+  eq(UI.getSubSel(), 1, 'pen20 colo end keeps the list row');
+  const Dv = require('../js/devices/digivice/ui.js');
+  Dv.resetUi();
+  const U = Dv.getUi();
+  U.menuI = 4;
+  U.screen = 'main';
+  Dv.pressA({ state: { party: [{}], active: 0 } });
+  eq(U.screen, 'menu', 'digivice A opens the menu');
+  eq(U.menuI, 4, 'digivice A reopens the menu on the same row');
+}
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failures.length) failures.forEach(function (f) { console.log('  · ' + f); });
 process.exit(failed ? 1 : 0);

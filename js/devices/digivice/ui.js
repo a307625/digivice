@@ -520,7 +520,6 @@
         var b = E.startBattle(state, { encounter: enc });
         if (b) {
           U.screen = 'battle';
-          U.battleI = 0;
           b.phase = 'options';
         }
       }
@@ -531,7 +530,6 @@
       if (state.help && state.help.catchReady) {
         if (E.catchHelp(state)) {
           U.screen = 'battle';
-          U.battleI = 0;
         }
       }
       if (host.persist) host.persist();
@@ -587,12 +585,12 @@
     }
     if (scr === 'menu') {
       var m = Da.MENUS[U.menuI];
-      if (m === 'STATUS') { U.screen = 'status'; U.statusI = 0; U.partyI = state.active || 0; }
+      if (m === 'STATUS') { U.screen = 'status'; U.partyI = state.active || 0; }
       else if (m === 'MAP') U.screen = 'map';
       else if (m === 'SLOT') U.screen = 'slot';
       else if (m === 'CARD') U.screen = 'card';
       else if (m === 'MEDICAL') U.screen = 'medical';
-      else if (m === 'VS') { U.screen = 'vs'; U.vsI = 0; }
+      else if (m === 'VS') U.screen = 'vs';
       return true;
     }
     if (scr === 'status') {
@@ -625,7 +623,6 @@
     // unpublished — FI says "Paging through the Menus". Left button is
     // the A-equivalent used to confirm / enter.)
     U.screen = 'menu';
-    U.menuI = 0;
     return true;
   }
 

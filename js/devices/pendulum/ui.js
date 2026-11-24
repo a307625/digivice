@@ -546,7 +546,6 @@
       } else if (train.phase === 'result' && t - train.startedAt >= 1500) {
         resetTrain();
         host.setView('play');
-        host.setSel(-1);
       }
     }
     if (host.view === 'battle' && battle.phase !== 'idle') {
@@ -585,9 +584,6 @@
       } else if (battle.phase === 'result' && t - battle.startedAt >= 1500) {
         resetBattle();
         host.setView('play');
-        var back = (host.profile && host.profile.selectable) || [];
-        var home = back.indexOf('STATUS');
-        host.setSel(home >= 0 ? home : 0);
       }
     }
   }
@@ -662,7 +658,6 @@
       EngE.setLights(s, subSel === 0);
       if (host.persist) host.persist();
       host.setView('play');
-      host.setSel(-1);
       return true;
     }
     if (v === 'healMenu') {
@@ -689,7 +684,6 @@
       s.soundMuted = subSel === 1;
       if (host.persist) host.persist();
       host.setView('play');
-      host.setSel(-1);
       return true;
     }
     if (v === 'train' || v === 'battle' || v === 'evo' || v === 'dying' || v === 'grave') return true;
@@ -706,18 +700,17 @@
         host.setView('food'); return true;
       }
       if (id === 'TRAIN') return startTrain(host) || true;
-      if (id === 'CONNECT') { subSel = 0; host.setView('connect'); return true; }
+      if (id === 'CONNECT') { host.setView('connect'); return true; }
       if (id === 'FLUSH') {
         var n = s.poop || 0;
         EngE.flush(s);
         if (host.persist) host.persist();
         if (n > 0 && host.startFlush) host.startFlush(n);
         host.setView('play');
-        host.setSel(-1);
         return true;
       }
       if (id === 'LIGHT') { subSel = s.lights ? 0 : 1; host.setView('lightMenu'); return true; }
-      if (id === 'MEDIC') { subSel = 0; host.setView('healMenu'); return true; }
+      if (id === 'MEDIC') { host.setView('healMenu'); return true; }
     }
     return false;
   }
