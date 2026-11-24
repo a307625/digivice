@@ -604,7 +604,7 @@
       if (poseFx.name === 'sleep') return (animTick() % 2) ? 'sleep1' : 'sleep0';
       if (poseFx.name === 'eat') return (animTick() % 2) ? 'eat1' : 'eat0';
       if (poseFx.name === 'happy') return 'happy';
-      // Classic brick: angry alternates with the walk frame. A frozen roar is not the fail pose.
+      // One angry cell, swapped with the standing cell at 2 Hz. A frozen roar is not the fail pose.
       if (poseFx.name === 'angry') return (animTick() % 2) ? 'angry' : 'idle0';
       if (poseFx.name === 'refuse') return 'refuse';
     } else if (poseFx.name && performance.now() >= poseFx.until) {
@@ -925,6 +925,8 @@
     } else if (poseFx.name) {
       mx = fx(Math.floor((FW - monW) / 2));
       flip = false;
+      // One happy cell. The brick hops that same picture up one dot at 2 Hz.
+      if (poseFx.name === 'happy' && (animTick() % 2) === 1) my = fy(0) - DOT;
     } else if (state.injured || calling) {
       // Sick, or the attention hop: stay put. A call lifts the sprite one dot.
       mx = fx(Math.floor((FW - monW) / 2));
@@ -1206,7 +1208,9 @@
     }
     // result: shot flies, then the wall state stays up
     var u = Math.min(1, (now - train.doneAt) / 500);
-    blitMon(state.mon, fx(0), fy(0), MON, u < 1 ? 'attack' : (train.tier >= 2 ? 'happy' : 'angry'), true);
+    var face = u < 1 ? 'attack' : (train.tier >= 2 ? 'happy' : ((animTick() % 2) ? 'angry' : 'idle0'));
+    var dy = (face === 'happy' && (animTick() % 2) === 1) ? -DOT : 0;
+    blitMon(state.mon, fx(0), fy(0) + dy, MON, face, true);
     if (u < 1 && train.tier > 0) blitItem('shot', fx(12) + (fx(20) - fx(12)) * u, fy(4), ITEM, false);
     drawWallTier(u < 1 ? 0 : train.tier);
   }
@@ -1216,12 +1220,15 @@
     // drawn on top. The one you fire is on the right; the other blocks.
     // A high block uses the guard's attack cell, a low block its idle cell.
     var high = (train.pattern || 'A').charAt(Math.min(4, train.shot || 0)) === 'A';
+    var hop = (animTick() % 2) === 1;
     var guardFr = train.done ? (train.success ? 'hurt' : 'happy') : (high ? 'attack' : 'idle0');
-    var shotFr = train.done ? (train.success ? 'happy' : 'angry') : 'attack';
+    var shotFr = train.done ? (train.success ? 'happy' : (hop ? 'angry' : 'idle0')) : 'attack';
     var guardId = train.guard || state.mon;
     var shotId = train.shooter || state.mon;
-    blitMon(guardId, fx(0), fy(0), MON, guardFr, false);
-    blitMon(shotId, fx(16), fy(0), MON, shotFr, true);
+    var guardDy = (guardFr === 'happy' && hop) ? -DOT : 0;
+    var shotDy = (shotFr === 'happy' && hop) ? -DOT : 0;
+    blitMon(guardId, fx(0), fy(0) + guardDy, MON, guardFr, false);
+    blitMon(shotId, fx(16), fy(0) + shotDy, MON, shotFr, true);
   }
 
   function drawMeterStops(x, idx) {
@@ -1275,9 +1282,12 @@
     var t = battleFx.t;
     var win = battleFx.result === 'win';
     var selfFr = 'idle0', foeFr = 'idle0';
+    var selfDy = 0, foeDy = 0;
     if (t >= 10) {
-      selfFr = win ? 'happy' : ((t % 2) ? 'angry' : 'idle0');
-      foeFr = win ? ((t % 2) ? 'angry' : 'idle0') : 'happy';
+      selfFr = win ? 'happy' : ((animTick() % 2) ? 'angry' : 'idle0');
+      foeFr = win ? ((animTick() % 2) ? 'angry' : 'idle0') : 'happy';
+      if (win && (animTick() % 2) === 1) selfDy = -DOT;
+      if (!win && (animTick() % 2) === 1) foeDy = -DOT;
     } else if (t >= 7) {
       selfFr = win ? 'attack' : 'hurt';
       foeFr = win ? 'hurt' : 'attack';
@@ -1286,8 +1296,8 @@
       selfFr = fromRight ? 'hurt' : 'attack';
       foeFr = fromRight ? 'attack' : 'hurt';
     }
-    blitMon(self, fx(0), fy(0), MON, selfFr, true);
-    blitMon(battleFx.foe, fx(16), fy(0), MON, foeFr, false);
+    blitMon(self, fx(0), fy(0) + selfDy, MON, selfFr, true);
+    blitMon(battleFx.foe, fx(16), fy(0) + foeDy, MON, foeFr, false);
     if (t >= 1 && t < 7) {
       var fromRight2 = (Math.floor((t - 1) / 2) % 2) === 1;
       drawShot(fromRight2, ((t - 1) % 2) * 0.55 + 0.2, 4);
@@ -1309,11 +1319,14 @@
       if (battleFx.result === 'win') { selfFr = 'attack'; foeFr = 'hurt'; }
       else { selfFr = 'hurt'; foeFr = 'attack'; }
     } else {
-      if (battleFx.result === 'win') { selfFr = 'happy'; foeFr = 'angry'; }
-      else { selfFr = 'angry'; foeFr = 'happy'; }
+      var hop = (animTick() % 2) === 1;
+      if (battleFx.result === 'win') { selfFr = 'happy'; foeFr = hop ? 'angry' : 'idle0'; }
+      else { selfFr = hop ? 'angry' : 'idle0'; foeFr = 'happy'; }
     }
-    blitMon(self, fx(0), fy(0), MON, selfFr, true);
-    blitMon(battleFx.foe, fx(16), fy(0), MON, foeFr, false);
+    var selfDy = (selfFr === 'happy' && (animTick() % 2) === 1) ? -DOT : 0;
+    var foeDy = (foeFr === 'happy' && (animTick() % 2) === 1) ? -DOT : 0;
+    blitMon(self, fx(0), fy(0) + selfDy, MON, selfFr, true);
+    blitMon(battleFx.foe, fx(16), fy(0) + foeDy, MON, foeFr, false);
     if (t >= 2 && t < 5) {
       var goingRight = battleFx.result === 'win';
       drawShot(!goingRight, (t - 2) / 3, 4);
@@ -2183,7 +2196,10 @@
         flushLastAt += FLUSH_MS;
         if (now - flushLastAt >= FLUSH_MS * 8) flushLastAt = now;
         flushAnim.off += 1;
-        if (flushAnim.off > 24) flushAnim.on = false;
+        if (flushAnim.off > 24) {
+          flushAnim.on = false;
+          if (state && !state.dead) playPose('happy', 2000);
+        }
       }
     }
     if (state && (view === 'play' || view === 'train' || view === 'charge' || view === 'clock' || view === 'status' || view === 'food' || view === 'battleMenu' || view === 'lightMenu' || view === 'album' || view === 'albumView' || view === 'albumRecord' || view === 'connect' || view === 'healMenu' || view === 'soundMenu')) {
