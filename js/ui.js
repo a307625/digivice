@@ -569,26 +569,28 @@
     return true;
   }
 
-  // 1997 Ver.1–5 and the 20th brick (Coredramon's device) share this
-  // LCD eat. Three bites at 2 Hz. The mouth is open on even frames, and
-  // the food changes on that same frame: meat full → half → bone,
-  // vitamin pill → half → gone. The odd frame is the closed mouth on
-  // the piece just bitten. Pendulum and Pen20 keep the older table.
+  // 1997 Ver.1–5 and the 20th brick share this LCD eat. Three bites at
+  // 2 Hz. Even frame: mouth open on the piece still there. Odd frame:
+  // mouth closes and that bite removes one piece.
+  // Meat (official meat / half_meat / empty_meat): whole, then half,
+  // then the bone, then the third close eats the bone.
+  // Vitamin: official art is only pill and half_pill. The first close
+  // leaves the half. The second close is still that half, because there
+  // is no smaller official pill. The third close eats the half.
+  // Pendulum and Pen20 keep the older table below.
   function eatFoodSprite(anim) {
     anim = anim || eatAnim;
     if (!anim || !anim.on || anim.refused) return null;
     var phase = anim.t;
     var kind = anim.kind;
     if (brickThreeBite()) {
-      var bite = Math.floor(phase / 2);
-      if (bite > 2) bite = 2;
       var piece = null;
       if (kind === 'protein') {
-        if (bite === 0) piece = 'pill';
-        else if (bite === 1) piece = 'half_pill';
-      } else {
-        piece = bite === 0 ? 'meat' : (bite === 1 ? 'half_meat' : 'empty_meat');
-      }
+        if (phase <= 0) piece = 'pill';
+        else if (phase <= 4) piece = 'half_pill';
+      } else if (phase <= 0) piece = 'meat';
+      else if (phase <= 2) piece = 'half_meat';
+      else if (phase <= 4) piece = 'empty_meat';
       if (!piece) return null;
       return { food: piece, xDots: 24, yDots: 8 };
     }

@@ -55,7 +55,11 @@ console.log('1) Official 2 Hz clock and food-shrink phases (1997 source, shared)
   const src = read('js/ui.js');
   ok(/ANIM_MS\s*=\s*500/.test(src), 'ANIM_MS is 500 (official 2 Hz)');
   ok(/var maxT = 6/.test(src), 'six frames: three open chomps and three closed holds');
-  ok(/Math\.floor\(phase \/ 2\)/.test(src), '1997 food changes once per bite, on the open frame');
+  ok(/phase <= 0\) piece = 'meat'/.test(src) && /phase <= 2\) piece = 'half_meat'/.test(src) &&
+    /phase <= 4\) piece = 'empty_meat'/.test(src),
+    '1997 meat loses one piece each time the mouth closes');
+  ok(/phase <= 0\) piece = 'pill'/.test(src) && /phase <= 4\) piece = 'half_pill'/.test(src),
+    '1997 vitamin stays half until the third close eats it');
   ok(/brickThreeBite\(\)\) return \(eatAnim\.t % 2 === 0\) \? 'eat1' : 'eat0'/.test(src), 'brick first frame is already an open-mouth bite');
   ok(/if \(brickThreeBite\(\)\) lastAnimAt/.test(src), 'brick holds bite 1 for a full half-second');
   ok(/fam === 'dm1997' \|\| fam === 'dm20'/.test(src), '20th brick (Coredramon) uses the same three bites');
@@ -100,25 +104,30 @@ console.log('1) Official 2 Hz clock and food-shrink phases (1997 source, shared)
   eq(eatFood('protein', 4).food, 'half_pill', 'protein 4: half-pill held');
   eq(eatFood('protein', 5).food, 'half_pill', 'protein 5: third bite on the half-pill');
 
-  // 1997 Ver.1–5: the piece changes on the open (even) frame.
+  // 1997 and the 20th: the piece is gone when the mouth closes.
   function brickFood(kind, phase) {
-    const bite = Math.min(2, Math.floor(phase / 2));
     if (kind === 'protein') {
-      if (bite === 0) return 'pill';
-      if (bite === 1) return 'half_pill';
+      if (phase <= 0) return 'pill';
+      if (phase <= 4) return 'half_pill';
       return null;
     }
-    return bite === 0 ? 'meat' : (bite === 1 ? 'half_meat' : 'empty_meat');
+    if (phase <= 0) return 'meat';
+    if (phase <= 2) return 'half_meat';
+    if (phase <= 4) return 'empty_meat';
+    return null;
   }
-  eq(brickFood('meat', 0), 'meat', '1997 bite 1: whole drumstick, mouth open');
-  eq(brickFood('meat', 1), 'meat', '1997 bite 1 held with the mouth closed');
-  eq(brickFood('meat', 2), 'half_meat', '1997 bite 2: half, mouth open');
-  eq(brickFood('meat', 3), 'half_meat', '1997 bite 2 held');
-  eq(brickFood('meat', 4), 'empty_meat', '1997 bite 3: bone, mouth open');
-  eq(brickFood('meat', 5), 'empty_meat', '1997 bite 3 held');
-  eq(brickFood('protein', 0), 'pill', '1997 vitamin bite 1: whole pill');
-  eq(brickFood('protein', 2), 'half_pill', '1997 vitamin bite 2: half pill');
-  eq(brickFood('protein', 4), null, '1997 vitamin bite 3: the pill is gone');
+  eq(brickFood('meat', 0), 'meat', '1997 bite 1 open: whole drumstick');
+  eq(brickFood('meat', 1), 'half_meat', '1997 bite 1 close: one piece gone');
+  eq(brickFood('meat', 2), 'half_meat', '1997 bite 2 open: half');
+  eq(brickFood('meat', 3), 'empty_meat', '1997 bite 2 close: bone');
+  eq(brickFood('meat', 4), 'empty_meat', '1997 bite 3 open: bone');
+  eq(brickFood('meat', 5), null, '1997 bite 3 close: bone eaten');
+  eq(brickFood('protein', 0), 'pill', '1997 vitamin bite 1 open: whole pill');
+  eq(brickFood('protein', 1), 'half_pill', '1997 vitamin bite 1 close: half');
+  eq(brickFood('protein', 2), 'half_pill', '1997 vitamin bite 2 open: half');
+  eq(brickFood('protein', 3), 'half_pill', '1997 vitamin bite 2 close: half, no smaller official icon');
+  eq(brickFood('protein', 4), 'half_pill', '1997 vitamin bite 3 open: half still there');
+  eq(brickFood('protein', 5), null, '1997 vitamin bite 3 close: half eaten');
 }
 
 console.log('2) 1997 / DM20 sprites: eat cells and the identical-eat0/eat1 remap');
