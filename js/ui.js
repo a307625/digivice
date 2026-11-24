@@ -569,18 +569,17 @@
     return true;
   }
 
-  // 1997 Ver.1–5 share one LCD eat. Three bites at 2 Hz. The mouth is
-  // open on even frames, and the food changes on that same frame:
-  // meat full → half → bone, vitamin pill → half → gone. The odd frame
-  // is the closed mouth on the piece just bitten, so a bite is not a
-  // shrink that happens while the mouth is shut.
-  // Pendulum and Pen20 keep the older phase table below.
+  // 1997 Ver.1–5 and the 20th brick (Coredramon's device) share this
+  // LCD eat. Three bites at 2 Hz. The mouth is open on even frames, and
+  // the food changes on that same frame: meat full → half → bone,
+  // vitamin pill → half → gone. The odd frame is the closed mouth on
+  // the piece just bitten. Pendulum and Pen20 keep the older table.
   function eatFoodSprite(anim) {
     anim = anim || eatAnim;
     if (!anim || !anim.on || anim.refused) return null;
     var phase = anim.t;
     var kind = anim.kind;
-    if (is1997Brick()) {
+    if (brickThreeBite()) {
       var bite = Math.floor(phase / 2);
       if (bite > 2) bite = 2;
       var piece = null;
@@ -623,8 +622,8 @@
       poseFx = { name: null, until: 0, extra: null };
     }
     if (eatAnim.on && !eatAnim.refused) {
-      // 1997: even frame is the chomp, so the first frame is already bite 1.
-      if (is1997Brick()) return (eatAnim.t % 2 === 0) ? 'eat1' : 'eat0';
+      // Brick: even frame is the chomp, so the first frame is already bite 1.
+      if (brickThreeBite()) return (eatAnim.t % 2 === 0) ? 'eat1' : 'eat0';
       return (eatAnim.t % 2) ? 'eat1' : 'eat0';
     }
     if (state.injured) {
@@ -1074,6 +1073,13 @@
   function is1997Brick() {
     var d = currentDevice();
     return !!(d && d.family === 'dm1997');
+  }
+
+  // Three-bite meal: original 1997 brick and the 20th brick.
+  function brickThreeBite() {
+    var d = currentDevice();
+    var fam = d && d.family;
+    return fam === 'dm1997' || fam === 'dm20';
   }
 
   function battleMenuItems() {
@@ -1624,7 +1630,7 @@
     eatAnim = { on: true, t: 0, kind: kind, refused: false, returnToFood: true };
     // Hold bite 1 for a full half-second. Otherwise the clock can
     // advance in the same beat the meal starts and the first chomp vanishes.
-    if (is1997Brick()) lastAnimAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    if (brickThreeBite()) lastAnimAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
   }
 
   function dm20Asleep() {

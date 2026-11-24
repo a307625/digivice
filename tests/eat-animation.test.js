@@ -56,8 +56,9 @@ console.log('1) Official 2 Hz clock and food-shrink phases (1997 source, shared)
   ok(/ANIM_MS\s*=\s*500/.test(src), 'ANIM_MS is 500 (official 2 Hz)');
   ok(/var maxT = 6/.test(src), 'six frames: three open chomps and three closed holds');
   ok(/Math\.floor\(phase \/ 2\)/.test(src), '1997 food changes once per bite, on the open frame');
-  ok(/is1997Brick\(\)\) return \(eatAnim\.t % 2 === 0\) \? 'eat1' : 'eat0'/.test(src), '1997 first frame is already an open-mouth bite');
-  ok(/if \(is1997Brick\(\)\) lastAnimAt/.test(src), '1997 holds bite 1 for a full half-second');
+  ok(/brickThreeBite\(\)\) return \(eatAnim\.t % 2 === 0\) \? 'eat1' : 'eat0'/.test(src), 'brick first frame is already an open-mouth bite');
+  ok(/if \(brickThreeBite\(\)\) lastAnimAt/.test(src), 'brick holds bite 1 for a full half-second');
+  ok(/fam === 'dm1997' \|\| fam === 'dm20'/.test(src), '20th brick (Coredramon) uses the same three bites');
   ok(/function eatFoodSprite/.test(src), 'shared eatFoodSprite helper exists');
   ok(/empty_meat/.test(src) && /half_meat/.test(src), 'meat shrinks full → half → empty');
   ok(/half_pill/.test(src), 'protein shrinks to half_pill');
