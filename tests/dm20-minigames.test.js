@@ -69,6 +69,40 @@ ok(/currentDevice\(\)\.family === 'dm20'\)[\s\S]{0,700}view = 'charge'/.test(ui)
 ok(/view === 'charge'\) \{ if \(charge\.on && charge\.phase === 'go'\) charge\.presses\+\+/.test(ui), 'A mashes the charge');
 ok(/view === 'charge'\) \{ charge\.on = false; view = 'play'; return; \}/.test(ui), 'C backs out (no battle, no DP spent)');
 
+console.log('3b) DM20 single fight uses HP, mash damage, and power');
+{
+  const always = function () { return 0; };
+  const pat = B.dm20SinglePattern;
+  eq(JSON.stringify(pat(0).shots), JSON.stringify([1]), '0 presses: 1pt weak');
+  eq(JSON.stringify(pat(3).shots), JSON.stringify([2]), '3 presses: 2pt strong');
+  eq(JSON.stringify(pat(5).shots), JSON.stringify([1, 2]), '5 presses: 3pt double weak');
+  eq(JSON.stringify(pat(8).shots), JSON.stringify([2, 2]), '8 presses: 4pt double strong');
+  eq(pat(10).firstMiss, true, '10 presses: critical, first shot may miss (Wikimon)');
+  eq(JSON.stringify(pat(11).shots), JSON.stringify([4, 2]), '11 presses: first hit is the 4pt shot');
+  const core = global.EvolutionData.MONSTERS.coredramon_blue;
+  eq(B.dm20BattlePower(core, { strength: 4, hunger: 4, weight: 30, foeAttr: 'virus' }), 80 + 16 + 32,
+    'Coredramon 80 + full Strength 16 + vaccine vs virus 32');
+  eq(B.dm20BattlePower(core, { strength: 4, hunger: 0, weight: 30, foeAttr: 'virus' }), 80 + 32,
+    'empty Hunger removes the Strength hearts; vaccine vs virus still adds 32');
+  eq(B.dm20BattlePower(core, { strength: 4, hunger: 4, weight: 99, foeAttr: 'data' }), 80,
+    '99g removes the Strength bonus');
+  const mash = B.resolveDm20('coredramon_blue', 'numemon', 1, {
+    presses: 11, strength: 4, hunger: 4, weight: 30, rng: always
+  }, { presses: 0, strength: 0, hunger: 4, weight: 30 });
+  eq(mash.result, 'win', 'full mash and full Strength knocks the foe down when every shot hits');
+  eq(mash.log[0].dmg, 5, 'max Strength adds 1 to the 4pt first hit');
+  eq(mash.hpMax, 10, 'single battle HP is 10');
+  const stuffed = B.resolveDm20('coredramon_blue', 'numemon', 1, {
+    presses: 11, strength: 4, hunger: 4, weight: 99, rng: always
+  }, { presses: 0, strength: 0, hunger: 4, weight: 30 });
+  eq(stuffed.log[0].dmg, 4, '99g does not add the Strength point');
+  const lazy = B.resolveDm20('coredramon_blue', 'numemon', 1, {
+    presses: 0, strength: 0, hunger: 4, weight: 30, rng: always
+  }, { presses: 11, strength: 4, hunger: 4, weight: 30 });
+  eq(lazy.result, 'loss', 'a 1pt shot loses to an 11-press foe when every shot hits');
+  ok(/drawDm20Battle/.test(ui) && /drawHpTicks/.test(ui), 'DM20 battle draws the HP ticks and each shot');
+}
+
 console.log('4) While asleep / unavailable');
 ok(/function dm20Asleep\(\)/.test(ui) && /startTrain\(\) \{\s*var m = mon\(\);\s*if \(dm20Asleep\(\)\)/.test(ui), 'DM20 asleep: TRAIN does nothing (wake with LIGHTS first)');
 ok(/if \(dm20Asleep\(\)\) return;\s*disturb\('food'\)/.test(ui) && /if \(dm20Asleep\(\)\) return;\s*disturb\('battle'\)/.test(ui), 'DM20 asleep: FEED / BATTLE do nothing');

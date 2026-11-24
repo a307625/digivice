@@ -1269,7 +1269,7 @@
       drawMeterStops(fx(17), charge.meterIdx || 0);
     } else if (charge.phase === 'go') {
       drawBang(fx(13), fy(1));
-      drawPowerBar(fx(17), charge.presses, charge.tag ? 12 : 13);
+      drawPowerBar(fx(17), charge.presses, charge.tag ? 12 : 11);
     }
     if (charge.foe) blitMon(charge.foe, fx(20), fy(0), MON, 'idle0', false);
   }
@@ -1330,9 +1330,63 @@
     }
   }
 
+  function drawHpTicks(x, y, hp, maxHp) {
+    var i;
+    for (i = 0; i < maxHp; i++) {
+      ctx.fillStyle = i < hp ? INK : 'rgba(30, 36, 28, 0.28)';
+      ctx.fillRect(x + i * DOT, y, DOT - 1, DOT - 1);
+    }
+  }
+
+  /* 20th brick: both sides share one HP gauge (single is 10 ticks).
+     Each log step is one shot. Even frames fly, odd frames land. */
+  function drawDm20Battle() {
+    var self = state && state.mon;
+    var log = battleFx.log || [];
+    var hpMax = battleFx.hpMax || 10;
+    var idx = Math.floor(battleFx.t / 2);
+    var landed = (battleFx.t % 2) === 1;
+    var done = Math.min(log.length, landed ? idx + 1 : idx);
+    var selfHp = hpMax, foeHp = hpMax;
+    if (done > 0) {
+      selfHp = log[done - 1].selfHp;
+      foeHp = log[done - 1].foeHp;
+    }
+    var cur = idx < log.length ? log[idx] : null;
+    var over = idx >= log.length;
+    var selfFr = 'idle0', foeFr = 'idle0';
+    var selfDy = 0, foeDy = 0;
+    if (over) {
+      var hop = (animTick() % 2) === 1;
+      if (battleFx.result === 'win') { selfFr = 'happy'; if (hop) selfDy = -DOT; foeFr = hop ? 'angry' : 'idle0'; }
+      else { foeFr = 'happy'; if (hop) foeDy = -DOT; selfFr = hop ? 'angry' : 'idle0'; }
+    } else if (cur) {
+      var selfAtk = cur.side === 'self';
+      if (selfAtk) { selfFr = 'attack'; foeFr = (landed && cur.hit) ? 'hurt' : 'idle0'; }
+      else { foeFr = 'attack'; selfFr = (landed && cur.hit) ? 'hurt' : 'idle0'; }
+    }
+    if (hpMax <= 10) {
+      drawHpTicks(fx(0), fy(0), selfHp, hpMax);
+      drawHpTicks(fx(32 - hpMax), fy(0), foeHp, hpMax);
+    }
+    blitMon(self, fx(0), fy(0) + selfDy, MON, selfFr, true);
+    blitMon(battleFx.foe, fx(16), fy(0) + foeDy, MON, foeFr, false);
+    if (cur && !over) {
+      var fromRight = cur.side !== 'self';
+      var u = landed ? 0.85 : 0.35;
+      drawShot(fromRight, u, 6);
+      if (cur.dmg >= 3) drawShot(fromRight, u * 0.65, 9);
+      if (landed && cur.hit) {
+        var I2 = items();
+        if (I2 && I2.drawNumber) I2.drawNumber(ctx, cur.dmg, fx(fromRight ? 6 : 18), fy(8), ITEM, 0);
+      }
+    }
+  }
+
   function drawBattleFx() {
     lcdBg();
     if (is1997Brick()) { drawBattle1997(); return; }
+    if (currentDevice().family === 'dm20' && battleFx.log) { drawDm20Battle(); return; }
     var self = state && state.mon;
     var t = battleFx.t;
     var selfFr = 'idle0', foeFr = 'idle0';
@@ -1891,10 +1945,24 @@
     // difference is the player's boost alone.
     selfSnap.initiator = true;
     if (window.Engine.nextCpuInitiator) window.Engine.nextCpuInitiator(state);
-    // Charge order and the Humulos per-shot bonus share the existing
-    // sixteenths channel. DM20 has no published HP bar, so +1 (single, max
-    // Strength) or +2 (tag, both max) is that many sixteenths, not a
-    // reconstructed damage table. A published tag row is the strongest order.
+    if (currentDevice().family === 'dm20' && window.Battle.resolveDm20) {
+      var fought = window.Battle.resolveDm20(state.mon, foe, Date.now() >>> 0, {
+        strength: state.strength || 0,
+        weight: state.weight || 0,
+        hunger: state.hunger || 0,
+        presses: charge.presses || 0,
+        tag: !!isTag,
+        shots: (isTag && charge.shots) ? charge.shots : null
+      }, { strength: 0, hunger: 4, weight: 30, presses: 8 });
+      hideAllOverlays();
+      battleFx = { t: 0, foe: foe, result: fought.result, active: true, log: fought.log, hpMax: fought.hpMax };
+      view = 'battle';
+      window.Engine.recordBattle(state, fought.result);
+      if (isTag && fought.result === 'win') window.Engine.addTagWin(state);
+      persist();
+      return;
+    }
+    // 1997: charge is not used. Boost is the firmware hearts formula.
     var boost = 0;
     if (!isTag && chargeTier != null && window.Battle.chargeBoost) boost += window.Battle.chargeBoost(chargeTier);
     if (isTag && charge.shots && window.Battle.chargeBoost) boost += window.Battle.chargeBoost(4);
@@ -2207,7 +2275,11 @@
       if (view === 'battle') {
         battleFx.t++;
         // 1997: stance + 3 exchanges + double hit + result (about 6 s).
+        // DM20: two frames per shot, then the win pose.
         var battleEnd = is1997Brick() ? 12 : 8;
+        if (!is1997Brick() && currentDevice().family === 'dm20' && battleFx.log) {
+          battleEnd = battleFx.log.length * 2 + 2;
+        }
         if (battleFx.t > battleEnd) finishBattleFx();
       }
       if (view === 'dying') {
