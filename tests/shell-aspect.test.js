@@ -44,8 +44,8 @@ for (const f of shells) {
   ok(!!sz, f + ': readable WebP header');
   if (!sz) continue;
   const fam = /^pen-20th/.test(f) ? 'pen20' : /^pen-/.test(f) ? 'pen' : /^digivice/.test(f) ? 'dv' : 'dm';
-  // v35: Pendulum versions on the round-4 shell use their own layout.
-  const verKey = (f.match(/^pen-(\d)-(\d)\.webp$/) || []).slice(1).join('.');
+  // Original Pendulum art shares one mold. pen-zero has no dotted version key.
+  const verKey = f === 'pen-zero.webp' ? 'zero' : (f.match(/^pen-(\d)-(\d)\.webp$/) || []).slice(1).join('.');
   const PL = global.PendulumData && verKey && global.PendulumData.layoutFor ? global.PendulumData.layoutFor(verKey) : null;
   const want = PL ? PL.aspectW / PL.aspectH : FAM[fam];
   const err = Math.abs((sz.w / sz.h) / want - 1);
@@ -77,21 +77,21 @@ for (const f of shells.filter((s) => /^pen-(\d-\d|zero)\.webp$/.test(s))) {
     ok(L.iconArt && L.iconArt.bgTop === '#badccc' && L.iconArt.bgBot === '#80a577', 'icon masks #badccc / #80a577');
     const names = L.names_top.concat(L.names_bot);
     ok(names.every((n) => L.iconArt.src[n] && fs.existsSync(path.join(ROOT, 'icons/bezel', L.iconArt.src[n] + '.png'))), 'every slot has v34 icon art in icons/bezel');
-    ok(D.layoutFor('1.5') === L, '1.5 keeps the round-4 layout');
     const N = D.LAYOUT_NS;
     ok(D.layoutFor('1.0') === N, '1.0 uses the redrawn Nature Spirits shell');
     if (N) {
-      ok(N.aspectW === 1260 && N.aspectH === 860, '1.0 shell is 1260x860');
-      ok(near(N.lcd.left, 15.556) && near(N.lcd.top, 34.884) && near(N.lcd.width, 34.762) && near(N.lcd.height, 23.256), '1.0 LCD sits in the drawn glass');
-      ok(near(N.buttons.a.cx, 81.746) && near(N.buttons.b.cy, 50) && near(N.buttons.c.cy, 68.837), '1.0 buttons sit on the three drawn buttons');
-      ok(N.iconArt && N.iconArt.bgTop === '#c4d6c4' && N.iconArt.bgBot === '#7a9e70', '1.0 icon masks match the painted bands');
+      ok(N.aspectW === 1260 && N.aspectH === 860, 'original Pendulum shell is 1260x860');
+      ok(near(N.lcd.left, 15.556) && near(N.lcd.top, 34.884) && near(N.lcd.width, 34.762) && near(N.lcd.height, 23.256), 'LCD sits in the drawn glass');
+      ok(near(N.buttons.a.cx, 81.746) && near(N.buttons.b.cy, 50) && near(N.buttons.c.cy, 68.837), 'buttons sit on the three drawn buttons');
+      ok(N.iconArt && N.iconArt.bgTop === '#c4d6c4' && N.iconArt.bgBot === '#7a9e70', 'icon masks match the painted green face');
     }
-    ['2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0', '5.5', 'zero'].forEach((k) => ok(D.layoutFor(k) === D.LAYOUT, k + ' keeps the v34 layout'));
+    ['1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0', '5.5', 'zero'].forEach((k) => ok(D.layoutFor(k) === N, k + ' uses the same original mold'));
     const R = global.Devices;
     if (R && R.profileById) {
-      ok(R.profileById('pen-1-0') && R.profileById('pen-1-0').layout === D.LAYOUT_NS, 'registered pen-1-0 profile uses the redrawn shell');
-      ok(R.profileById('pen-1-5') && R.profileById('pen-1-5').layout === L, 'registered pen-1-5 profile uses round-4 layout');
-      ok(R.profileById('pen-2-0') && R.profileById('pen-2-0').layout === D.LAYOUT, 'registered pen-2-0 profile keeps v34 layout');
+      ok(R.profileById('pen-1-0') && R.profileById('pen-1-0').layout === N, 'registered pen-1-0 profile uses the redrawn shell');
+      ok(R.profileById('pen-1-5') && R.profileById('pen-1-5').layout === N, 'registered pen-1-5 profile uses the same mold');
+      ok(R.profileById('pen-2-0') && R.profileById('pen-2-0').layout === N, 'registered pen-2-0 profile uses the same mold');
+      ok(R.profileById('pen-zero') && R.profileById('pen-zero').layout === N, 'registered pen-zero profile uses the same mold');
     }
   }
 }

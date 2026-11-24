@@ -120,11 +120,11 @@
       bgBot: '#7a9e70'
     }
   };
-  // 1.5 still sits on the round-4 shell. 2.0+ keep LAYOUT.
-  var ROUND4_VERSIONS = { '1.5': true };
+  // Every original Pendulum (1.0–5.5 and ZERO) is the same 1998 mold.
+  // Shell art differs by the official body and frame colour only, so the
+  // screen, buttons and icon slots are this one layout.
   function layoutFor(key) {
-    if (key === '1.0') return LAYOUT_NS;
-    return ROUND4_VERSIONS[key] ? LAYOUT_10 : LAYOUT;
+    return LAYOUT_NS;
   }
 
   // Attribute triangle — NHOKO original-Pendulum page (Vac strong vs Virus).
