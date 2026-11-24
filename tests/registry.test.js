@@ -89,7 +89,7 @@ console.log('3) Pendulum Ver.1.0 is its own device');
   eq(p.orient, 'landscape', 'pen landscape (not the old portrait comment)');
   eq(p.id, 'pen-1-0', 'pen id');
   eqArr(p.selectable, ['STATUS', 'FEED', 'TRAIN', 'CONNECT', 'FLUSH', 'LIGHT', 'MEDIC'], 'pen selectable (Connect, not Battle figures)');
-  eqArr(p.statusPages, ['age', 'hunger', 'strength', 'win', 'dp', 'type', 'bj'], 'pen status includes type and B-J-');
+  eqArr(p.statusPages, ['age', 'weight', 'hunger', 'strength', 'dp', 'win', 'type', 'bj'], 'pen status is Age, Weight, Hungry, Strength, DP, record, Type, BJ');
   eqArr(p.iconsTop, ['STATUS', 'FEED', 'TRAIN', 'CONNECT'], 'pen top icons');
   eq(p.lightsOff, 'black-z', 'pen lights-off is black+Z');
   eq(p.clockSet, 'pendulum', 'pen has its own SET');

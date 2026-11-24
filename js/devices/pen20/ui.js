@@ -18,6 +18,7 @@
   var subSel = 0;          // food / light / heal / connect / colo — keep-last for food
   var statusPage = 0;
   var albumTab = 0;        // 0 Digimon, 1 Copymon, 2 Record, 3 Pass
+  var albumOpen = false;   // false = the four-option list; true = inside the chosen one
   var albumIdx = 0;
   var passDigits = [0, 0, 0, 0, 0, 0];
   var passPos = 0;
@@ -176,12 +177,22 @@
     }
   }
 
-  function menuRow(host, selected, y, label) {
+  function menuRow(host, selected, y, label, maxDots) {
     if (root.VpetItems && root.VpetItems.blit) {
       try { root.VpetItems.blit(host.ctx, selected ? 'triangle' : 'empty_triangle', host.fx(1), y, host.ITEM || 4); } catch (e) {}
     }
-    // Cursor ink cols 1-4; label owns cols 6-31 (v33).
-    fitText(host, label, host.fx(6), y, 26, 0, !selected);
+    // Cursor ink cols 1-4; label owns cols 6-31 (v33). A row with an icon
+    // at cols 24-31 passes a shorter field so the word stays clear of it.
+    fitText(host, label, host.fx(6), y, maxDots || 26, 0, !selected);
+  }
+
+  function drawSickDots(host, x, y) {
+    var d = host.DOT;
+    host.ctx.fillStyle = host.INK;
+    var i, j;
+    for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) {
+      host.ctx.fillRect(x + i * 4 * d, y + j * 4 * d, 2 * d, 2 * d);
+    }
   }
 
   function drawStatus(host) {
@@ -195,9 +206,9 @@
       // One line, native dots; long names scroll sideways (v33).
       fitText(host, (m && m.name) ? m.name : (pet.mon || '?'), host.fx(0), host.fy(5), 32, 1);
     } else if (page === 'age') {
+      // Humulos 20th: age is how many days. The years mark belongs to the 1998 LCD.
       fitText(host, 'AGE', host.fx(2), host.fy(3), 30, 1);
       num(host, pet.ageDays || 0, host.fx(2), host.fy(9), host.ITEM);
-      text(host, 'Y', host.fx(16), host.fy(9), host.ITEM);
     } else if (page === 'weight') {
       fitText(host, 'WEIGHT', host.fx(2), host.fy(3), 30, 0);
       num(host, pet.weight || 0, host.fx(2), host.fy(9), host.ITEM);
@@ -240,8 +251,13 @@
 
   function drawFood(host) {
     lcdPaper(host);
-    menuRow(host, subSel === 0, host.fy(2), 'MEAT');
-    menuRow(host, subSel === 1, host.fy(10), 'PROT');
+    // Meat and Protein, with the same food marks as the original menu.
+    menuRow(host, subSel === 0, host.fy(2), 'MEAT', 16);
+    menuRow(host, subSel === 1, host.fy(10), 'PROT', 16);
+    if (root.VpetItems && root.VpetItems.blit) {
+      root.VpetItems.blit(host.ctx, 'meat', host.fx(24), host.fy(0), host.ITEM || 4);
+      root.VpetItems.blit(host.ctx, 'pill', host.fx(24), host.fy(8), host.ITEM || 4);
+    }
   }
   function drawLight(host) {
     lcdPaper(host);
@@ -250,8 +266,13 @@
   }
   function drawHeal(host) {
     lcdPaper(host);
-    menuRow(host, subSel === 0, host.fy(2), 'SICK');
-    menuRow(host, subSel === 1, host.fy(10), 'INJURY');
+    // Humulos: the two choices are the marks. Top = Dots (sick), bottom = Skull (injury).
+    if (root.VpetItems && root.VpetItems.blit) {
+      root.VpetItems.blit(host.ctx, subSel === 0 ? 'triangle' : 'empty_triangle', host.fx(1), host.fy(2), host.ITEM || 4);
+      root.VpetItems.blit(host.ctx, subSel === 1 ? 'triangle' : 'empty_triangle', host.fx(1), host.fy(10), host.ITEM || 4);
+      root.VpetItems.blit(host.ctx, 'skull', host.fx(10), host.fy(8), host.ITEM || 4);
+    }
+    drawSickDots(host, host.fx(10), host.fy(3));
   }
   function drawConnect(host) {
     lcdPaper(host);
@@ -304,6 +325,15 @@
     lcdPaper(host);
     var tabs = ['DIGIMON', 'COPYMON', 'RECORD', 'PASS'];
     var s = host.state;
+    // Humulos: four options you choose between, then the chosen page.
+    if (!albumOpen) {
+      var pg = Math.floor(albumTab / 2) * 2;
+      var r;
+      for (r = 0; r < 2 && pg + r < tabs.length; r++) {
+        menuRow(host, albumTab === pg + r, host.fy(r ? 10 : 2), tabs[pg + r]);
+      }
+      return;
+    }
     // v33 layout: two rows (1-7, 9-15) at the native dot size.
     if (albumTab === 2) {
       // Record: W and B rows; CHAMPION alternates with the W row.
@@ -476,6 +506,7 @@
     if (v === 'connect') { subSel = (subSel + 1) % 3; return true; }
     if (v === 'coloMenu') { subSel = subSel ? 0 : 1; return true; }
     if (v === 'album') {
+      if (!albumOpen) { albumTab = (albumTab + 1) % 4; return true; }
       if (albumTab === 3) {
         passDigits[passPos] = (passDigits[passPos] + 1) % 10;
         return true;
@@ -559,11 +590,22 @@
         host.setView('play');
         if (host.persist) host.persist();
       } else if (subSel === 2) {
-        albumTab = 1; albumIdx = 0; host.setView('album');
+        albumTab = 1; albumIdx = 0; albumOpen = true; host.setView('album');
       } else {
-        // Battle: practice vs a Stage-appropriate colo opponent (single-device).
-        host.setView('coloMenu');
-        battle = { on: true, phase: 'pick-div', won: false, foe: '', startedAt: 0, injured: false };
+        // Connect Battle is not the Colosseum (that menu is SINGLE / TAG).
+        // One device: settle a practice bout and show the result.
+        var resB = Eapi.coloBattle(s, 'single', Math.random);
+        if (!resB.ok) {
+          if (host.toast) host.toast(resB.error === 'no-dp' ? 'NO DP' : (resB.error || 'NO'));
+          return true;
+        }
+        battle.on = true;
+        battle.phase = 'result';
+        battle.won = !!resB.won;
+        battle.injured = !!resB.injured;
+        battle.foe = (resB.foe && (resB.foe.name || resB.foe.id)) || '';
+        host.setView('colo');
+        if (host.persist) host.persist();
       }
       return true;
     }
@@ -602,15 +644,17 @@
       return true;
     }
     if (v === 'album') {
+      if (!albumOpen) { albumOpen = true; albumIdx = 0; passPos = 0; return true; }
       if (albumTab === 3) {
         passPos = (passPos + 1) % 6;
         if (passPos === 0) {
-          // completed a pass entry cycle: try submit on wrapping? Submit via holding... use when user presses B on last digit after incrementing pos past 5 we already wrapped. Better: C cancels, a long... We'll submit when B on a "OK" — enter when passPos goes past 5, try password then reset pos.
+          var code = passDigits.map(function (d) { return String(d); }).join('');
+          var pr = Eapi.enterPassword(s, code);
+          if (host.toast) host.toast(pr.ok ? ('OK ' + (pr.mon || '')) : 'NO');
+          if (pr.ok && host.persist) host.persist();
         }
         return true;
       }
-      albumTab = (albumTab + 1) % 4;
-      albumIdx = 0;
       return true;
     }
     if (v === 'eggPick') {
@@ -653,7 +697,7 @@
     }
     if (id === 'LIGHT') { host.setView('lightMenu'); return true; }
     if (id === 'MEDIC') { host.setView('healMenu'); return true; }
-    if (id === 'ALBUM') { host.setView('album'); return true; }
+    if (id === 'ALBUM') { albumOpen = false; host.setView('album'); return true; }
     if (id === 'CONNECT') { host.setView('connect'); return true; }
     return true;
   }
@@ -673,14 +717,9 @@
       host.setView('play');
       return true;
     }
-    if (v === 'album' && albumTab === 3) {
-      // Submit password on C? Official C is cancel. Submit with a full 6 + B wrap.
-      var code = passDigits.map(function (d) { return String(d); }).join('');
-      // only try if user has set something — always try, passwords are reusable
-      var r = Eapi.enterPassword(s, code);
-      if (host.toast) host.toast(r.ok ? ('OK ' + (r.mon || '')) : 'NO');
-      if (r.ok && host.persist) host.persist();
-      host.setView('play');
+    if (v === 'album' && albumOpen) {
+      // C cancels back to the four options. It does not submit a password.
+      albumOpen = false;
       return true;
     }
     if (v !== 'play') {
@@ -796,7 +835,11 @@
     /* v33 test hook (LCD text audit): set private sub-screen state. */
     setAuditState: function (o) {
       o = o || {};
-      if ('albumTab' in o) albumTab = o.albumTab;
+      if ('albumOpen' in o) albumOpen = !!o.albumOpen;
+      if ('albumTab' in o) {
+        albumTab = o.albumTab;
+        if (!('albumOpen' in o)) albumOpen = true;
+      }
       if ('albumIdx' in o) albumIdx = o.albumIdx;
       if ('eggPickIdx' in o) eggPickIdx = o.eggPickIdx;
       if ('passPos' in o) passPos = o.passPos;

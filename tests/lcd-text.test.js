@@ -149,7 +149,7 @@ for (const v of ['1_0', '1_5', '2_0', '2_5', '3_0', '3_5', '4_0', '4_5', '5_0', 
   s.mon = (global.PendulumData.versionForEgg('pen_' + v) || {}).idleMon || 'tentomon';
   Object.assign(s, { ageDays: 99, weight: 99, wins: 999, losses: 999, battles: 999, hunger: 4, strength: 4, dpQ: 16, dpMaxQ: 16 });
   const UI = global.PendulumUI, F = 'pendulum';
-  for (let p = 0; p < 7; p++) { screens++; drawn += audit(F, `pen ${v} status ${p}`, () => { UI.setStatusPage(p); UI.draw(host(s, 'status')); }) || 0; }
+  for (let p = 0; p < 8; p++) { screens++; drawn += audit(F, `pen ${v} status ${p}`, () => { UI.setStatusPage(p); UI.draw(host(s, 'status')); }) || 0; }
   for (const view of ['clock', 'play', 'food', 'lightMenu', 'healMenu', 'connect', 'soundMenu', 'evo', 'grave']) for (let i = 0; i < 2; i++) {
     screens++; drawn += audit(F, `pen ${v} ${view} ${i}`, () => { UI.setSubSel(i); UI.draw(host(s, view)); }) || 0;
   }
@@ -160,7 +160,7 @@ for (const v of ['1_0', '1_5', '2_0', '2_5', '3_0', '3_5', '4_0', '4_5', '5_0', 
 // two glyph boxes overlapping, inside the 32x16 field, at the native dot.
 {
   const UI = global.PendulumUI;
-  const pages = ['age', 'hunger', 'strength', 'win', 'dp', 'type', 'bj'];
+  const pages = ['age', 'weight', 'hunger', 'strength', 'dp', 'win', 'type', 'bj'];
   let pairs = 0, clean = 0;
   for (const mx of [1, 4, 9, 10, 16, 40, 99]) for (let dq = 0; dq <= mx * 4; dq += (mx > 20 ? 7 : 2)) {
     const s = global.PendulumEngine.defaultState('pen_1_0');
@@ -179,16 +179,17 @@ for (const v of ['1_0', '1_5', '2_0', '2_5', '3_0', '3_5', '4_0', '4_5', '5_0', 
   }
   ok(pairs === clean && pairs > 50, `pen DP page: ${clean}/${pairs} DP/max pairs (0-99, halves) fit without overlap`);
 }
-// v35: Pendulum heal menu — INJURY stays clear of the skull icon (cols 24-31).
+// Heal choices are the official marks: dots on top, skull on the lower row.
 {
   const s = global.PendulumEngine.defaultState('pen_1_0');
   s.clockInitialized = true; s.clockSet = { on: false, h24: 10, min: 34 }; s.mon = 'tentomon';
   for (const i of [0, 1]) {
     recs = [];
     global.PendulumUI.setSubSel(i); global.PendulumUI.draw(host(s, 'healMenu'));
-    const inj = recs.filter((t) => /INJURY/.test(String(t.text)));
-    ok(inj.length > 0, `pen heal menu ${i}: INJURY label drawn`);
-    for (const t of inj) ok(t.scale === DOT && t.x + t.w <= 16 + 24 * DOT, `pen heal menu ${i}: INJURY ends at x=${t.x + t.w} (skull starts at ${16 + 24 * DOT}), dot ${t.scale}px`);
+    ok(!recs.some((t) => /SICK|INJURY/.test(String(t.text))), `pen heal menu ${i}: no SICK / INJURY words`);
+    const skulls = recs.filter((t) => t.text === 'skull');
+    ok(skulls.length === 1, `pen heal menu ${i}: skull mark drawn`);
+    for (const t of skulls) ok(t.y >= 16 + 8 * DOT && t.scale === DOT, `pen heal menu ${i}: skull on the lower row @${t.y}`);
   }
 }
 // Pen20 SK / SB

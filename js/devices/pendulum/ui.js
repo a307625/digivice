@@ -248,15 +248,19 @@
     var D = Data();
     var m = D && D.monster(s.mon);
     var pages = (host.profile && host.profile.statusPages) ||
-      ['age', 'hunger', 'strength', 'win', 'dp', 'type', 'bj'];
+      ['age', 'weight', 'hunger', 'strength', 'dp', 'win', 'type', 'bj'];
     var page = pages[statusPage % pages.length];
     var I = host.items();
+    // Humulos original: Age, Weight, Hungry, Strength, DP, Battle Record, Type, BJ.
+    // Age is its own page (the LCD says years). Weight is the next page, in G.
     if (page === 'age') {
-      text(host, 'AGE', host.fx(0), host.fy(0), host.ITEM);
-      num(host, s.ageDays || 0, host.fx(14), host.fy(0), host.ITEM, 2);
-      text(host, 'WT', host.fx(0), host.fy(8), host.ITEM);
-      num(host, s.weight || 0, host.fx(12), host.fy(8), host.ITEM, 2);
-      text(host, 'G', host.fx(24), host.fy(8), host.ITEM);
+      text(host, 'AGE', host.fx(1), host.fy(1), host.ITEM);
+      num(host, s.ageDays || 0, host.fx(8), host.fy(8), host.ITEM, 2);
+      text(host, 'Y', host.fx(20), host.fy(8), host.ITEM);
+    } else if (page === 'weight') {
+      text(host, 'WT', host.fx(1), host.fy(1), host.ITEM);
+      num(host, s.weight || 0, host.fx(8), host.fy(8), host.ITEM, 2);
+      text(host, 'G', host.fx(20), host.fy(8), host.ITEM);
     } else if (page === 'hunger') {
       text(host, 'HUNGRY', host.fx(1), host.fy(1), host.ITEM);
       hearts(host, Math.min(4, s.hunger || 0), host.fx(1), host.fy(8));
@@ -328,12 +332,23 @@
     menuRow(host, subSel === 1, host.fy(10), 'OFF');
   }
 
+  function drawSickDots(host, x, y) {
+    // The sick mark is four dots, the top heal choice (Humulos: Dots).
+    var d = host.DOT;
+    host.ctx.fillStyle = host.INK;
+    var i, j;
+    for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) {
+      host.ctx.fillRect(x + i * 4 * d, y + j * 4 * d, 2 * d, 2 * d);
+    }
+  }
+
   function drawHeal(host) {
     lcdPaper(host, false);
-    // Official: top = sick (dots), bottom = injury (skull)
-    menuRow(host, subSel === 0, host.fy(2), 'SICK');
-    menuRow(host, subSel === 1, host.fy(10), 'INJURY', 18); // v35: was under the skull
-    item(host, 'skull', host.fx(24), host.fy(8));
+    // Humulos: the two choices are the marks. Top = Dots (sick), bottom = Skull (injury).
+    item(host, subSel === 0 ? 'triangle' : 'empty_triangle', host.fx(0), host.fy(2));
+    drawSickDots(host, host.fx(10), host.fy(3));
+    item(host, subSel === 1 ? 'triangle' : 'empty_triangle', host.fx(0), host.fy(10));
+    item(host, 'skull', host.fx(10), host.fy(8));
   }
 
   function drawConnect(host) {
