@@ -569,15 +569,30 @@
     return true;
   }
 
-  // Official 1997 eat, 2 Hz. The mouth opens on the odd frames, so a
-  // bite is one of those opens. Meat: full, half, then the bone — three
-  // opens. Protein: two opens on the whole pill's half, then one more on
-  // the half-pill. Six frames covers both. Shared via penHost.
+  // 1997 Ver.1–5 share one LCD eat. Three bites at 2 Hz. The mouth is
+  // open on even frames, and the food changes on that same frame:
+  // meat full → half → bone, vitamin pill → half → gone. The odd frame
+  // is the closed mouth on the piece just bitten, so a bite is not a
+  // shrink that happens while the mouth is shut.
+  // Pendulum and Pen20 keep the older phase table below.
   function eatFoodSprite(anim) {
     anim = anim || eatAnim;
     if (!anim || !anim.on || anim.refused) return null;
     var phase = anim.t;
     var kind = anim.kind;
+    if (is1997Brick()) {
+      var bite = Math.floor(phase / 2);
+      if (bite > 2) bite = 2;
+      var piece = null;
+      if (kind === 'protein') {
+        if (bite === 0) piece = 'pill';
+        else if (bite === 1) piece = 'half_pill';
+      } else {
+        piece = bite === 0 ? 'meat' : (bite === 1 ? 'half_meat' : 'empty_meat');
+      }
+      if (!piece) return null;
+      return { food: piece, xDots: 24, yDots: 8 };
+    }
     var food = 'meat';
     if (kind === 'protein') {
       food = phase >= 3 ? 'half_pill' : 'pill';
@@ -608,6 +623,8 @@
       poseFx = { name: null, until: 0, extra: null };
     }
     if (eatAnim.on && !eatAnim.refused) {
+      // 1997: even frame is the chomp, so the first frame is already bite 1.
+      if (is1997Brick()) return (eatAnim.t % 2 === 0) ? 'eat1' : 'eat0';
       return (eatAnim.t % 2) ? 'eat1' : 'eat0';
     }
     if (state.injured) {
@@ -941,7 +958,7 @@
 
     if (eatAnim.on && !eatAnim.refused) {
       var food = eatFoodSprite(eatAnim);
-      if (food) blitItem(food.food, fx(food.xDots), fy(food.yDots), ITEM, false);
+      if (food && food.food) blitItem(food.food, fx(food.xDots), fy(food.yDots), ITEM, false);
     }
     drawPoop();
     drawSleepZ();
@@ -1605,6 +1622,9 @@
       return;
     }
     eatAnim = { on: true, t: 0, kind: kind, refused: false, returnToFood: true };
+    // Hold bite 1 for a full half-second. Otherwise the clock can
+    // advance in the same beat the meal starts and the first chomp vanishes.
+    if (is1997Brick()) lastAnimAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
   }
 
   function dm20Asleep() {
