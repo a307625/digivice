@@ -199,7 +199,8 @@ console.log('6) Pendulum ZERO Virus Busters, Omegamon Jogress');
   advance(s, 70);
   eq(s.mon, 'yukimibotamon', 'ZERO hatches to Yukimibotamon');
   ok(Data.VERSIONS.zero.hasMegahitScreen, 'ZERO has the MEGAHIT screen');
-  eq(Data.VERSIONS.zero.eggLabelTw, '超0 病毒剋星數碼蛋', 'ZERO egg label');
+  eq(Data.VERSIONS.zero.eggLabelTw, '超代 ZERO 病毒剋星數碼蛋', 'ZERO egg label');
+  eq(Data.VERSIONS['5.0'].eggLabelTw, '超代 5.0 金屬帝國數碼蛋', '5.0 egg label');
 }
 
 console.log('7) Cross-version same-position Jogress is blocked (NHOKO)');
@@ -220,6 +221,28 @@ console.log('8) Egg labels: sprite + name only, no roster spoilers');
   ok(pen.every((e) => e.label && e.id && e.dataEgg && e.label.indexOf('→') < 0), 'no arrows');
   ok(pen.every((e) => !/甲蟲|比多|大力神|炸薯|三角龍|Heracles|Atlur|奧米加|Omegamon|WarGrey|MetalGaru|Holydra|Venom|Mugendra/.test(e.label)),
     'no roster spoilers in Pendulum egg labels');
+  ok(pen.every((e) => e.label.indexOf('超代') === 0), 'every original Pendulum egg label starts with 超代');
+  require('../js/devices/pendulum/sprites.js');
+  require('../js/devices/pendulum/sprites-extra.js');
+  const built = global.PendulumSprites.SPRITES;
+  const extra = global.PendulumSpritesExtra.SPRITES;
+  function cell(id) {
+    const sp = built[id] || extra[id];
+    return sp ? sp.frames.idle0.join('') : '';
+  }
+  eq(built.pen_egg.src, 'official-humulos-pen-digitama', 'LCD egg is the official faction cell');
+  eq(cell('pen_egg'), cell('egg_pen_1_0'), '1.0 egg matches the LCD fallback');
+  eq(cell('egg_pen_1_0'), cell('egg_pen_1_5'), '1.5 shares the Nature Spirits egg');
+  eq(cell('egg_pen_2_0'), cell('egg_pen_2_5'), '2.5 shares the Deep Savers egg');
+  eq(cell('egg_pen_3_0'), cell('egg_pen_3_5'), '3.5 shares the Nightmare Soldiers egg');
+  eq(cell('egg_pen_4_0'), cell('egg_pen_4_5'), '4.5 shares the Wind Guardians egg');
+  eq(cell('egg_pen_5_0'), cell('egg_pen_5_5'), '5.5 shares the Metal Empire egg');
+  ok(cell('egg_pen_1_0') !== cell('egg_pen_2_0') && cell('egg_pen_2_0') !== cell('egg_pen_3_0')
+    && cell('egg_pen_3_0') !== cell('egg_pen_4_0') && cell('egg_pen_4_0') !== cell('egg_pen_5_0')
+    && cell('egg_pen_5_0') !== cell('egg_pen_zero'), 'each faction egg has its own shell marks');
+  eq((cell('egg_pen_1_0').match(/1/g) || []).length, 280, 'Nature Spirits ink matches the cropped 16x16 cell');
+  const pui = require('fs').readFileSync(require('path').join(__dirname, '../js/devices/pendulum/ui.js'), 'utf8');
+  ok(/if \(eggSp\) sp = eggSp/.test(pui), 'LCD draws the version egg, not only the shared oval');
 }
 
 console.log('9) NHOKO chart DP, including Ultimates');

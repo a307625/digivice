@@ -2758,6 +2758,12 @@
         var src = window.SpriteAtlas.renderToImageData(sp, 'idle0', 1);
         var cx = c.getContext('2d');
         cx.imageSmoothingEnabled = false;
+        // Original Pendulum eggs are LCD ink on pale paper. The card is
+        // dark, so paint the same paper behind them or the shell vanishes.
+        if (/^pen_(?!20)/.test(String(egg.dataEgg))) {
+          cx.fillStyle = '#c4d6c4';
+          cx.fillRect(0, 0, 32, 32);
+        }
         cx.drawImage(src, 0, 0, 32, 32);
       } else if (/^dv1999/.test(String(egg.dataEgg))) {
         // Start-unit icon for the 神聖計畫 picker cell: a small oval

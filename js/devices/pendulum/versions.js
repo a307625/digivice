@@ -395,7 +395,7 @@
   });
 
   // -------------------------------------------------------------------------
-  // Ver.5.0 / 5.5 Metal Empire  (超五)
+  // Ver.5.0 / 5.5 Metal Empire
   // 5.5 swaps: Tankmon→Thunderballmon (Da1-ish Da2? Tankmon is from mixed
   // Data paths — FI: Tankmon 5.0 / Thunderballmon 5.5, natural Perfect
   // Knightmon from Tankmon/Thunderballmon/Clockmon). Positions:
@@ -463,8 +463,8 @@
   ];
   D.registerVersion('5.0', {
     id: 'pen-5-0', eggKind: 'pen_5_0', shell: 'pen-5-0',
-    themeTw: '金屬帝國', labelTw: '超五 Ver.5.0 金屬帝國',
-    eggLabelTw: '超五 5.0 金屬帝國數碼蛋',
+    themeTw: '金屬帝國', labelTw: '超代 Ver.5.0 金屬帝國',
+    eggLabelTw: '超代 5.0 金屬帝國數碼蛋',
     hasMegahitScreen: true, baby1: 'choromon', baby2: 'kapurimon', idleMon: 'toyagumon',
     monsters: m5, childEvo: child5, adultEvo: adult5('tankmon'), perfectEvo: perfect5_0,
     ultimateEvo: ult5_0,
@@ -477,8 +477,8 @@
   });
   D.registerVersion('5.5', {
     id: 'pen-5-5', eggKind: 'pen_5_5', shell: 'pen-5-5',
-    themeTw: '金屬帝國', labelTw: '超五 Ver.5.5 金屬帝國',
-    eggLabelTw: '超五 5.5 金屬帝國數碼蛋',
+    themeTw: '金屬帝國', labelTw: '超代 Ver.5.5 金屬帝國',
+    eggLabelTw: '超代 5.5 金屬帝國數碼蛋',
     hasMegahitScreen: true, baby1: 'choromon', baby2: 'kapurimon', idleMon: 'toyagumon',
     monsters: m5, childEvo: child5, adultEvo: adult5('thunderballmon'), perfectEvo: perfect5_5,
     ultimateEvo: ult5_5,
@@ -491,7 +491,7 @@
   });
 
   // -------------------------------------------------------------------------
-  // Pendulum ZERO — Virus Busters (超0). No .5. Omegamon is the Virus
+  // Pendulum ZERO — Virus Busters. No .5. Omegamon is the Virus
   // Perfect Jogress AND the signature WarGreymon(ZERO)+MetalGarurumon(ZERO)
   // pair (File Island PenEvoZero).
   //
@@ -556,8 +556,8 @@
   ];
   D.registerVersion('zero', {
     id: 'pen-zero', eggKind: 'pen_zero', shell: 'pen-zero',
-    themeTw: '病毒剋星', labelTw: '超0 病毒剋星',
-    eggLabelTw: '超0 病毒剋星數碼蛋',
+    themeTw: '病毒剋星', labelTw: '超代 ZERO 病毒剋星',
+    eggLabelTw: '超代 ZERO 病毒剋星數碼蛋',
     hasMegahitScreen: true, baby1: 'yukimibotamon', baby2: 'nyaromon', idleMon: 'agumon',
     monsters: m0, childEvo: childZ, adultEvo: adultZ, perfectEvo: perfectZ,
     ultimateEvo: ultZ,

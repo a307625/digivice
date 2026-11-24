@@ -63,7 +63,10 @@
       var US = root.UserSprites;
       // The egg on screen is 'pen_egg'; a user file for this version's egg
       // (egg_<eggKind>, e.g. egg_pen_1_0) wins over a shared pen_egg file.
+      // The built-in faction cell (egg_<eggKind>) is used when no PNG is loaded.
       var eggUser = (id === 'pen_egg' && host.state && host.state.eggKind) ? 'egg_' + host.state.eggKind : null;
+      var eggSp = eggUser && ((root.PendulumSprites && root.PendulumSprites.SPRITES[eggUser]) || (root.PendulumSpritesExtra && root.PendulumSpritesExtra.SPRITES[eggUser]) || (A.SPRITES && A.SPRITES[eggUser]));
+      if (eggSp) sp = eggSp;
       var img = (US && eggUser && US.canvasFor('pendulum', eggUser, frame || 'idle0', sp.w * sc, sp.h * sc, false)) ||
         (US && US.canvasFor('pendulum', id, frame || 'idle0', sp.w * sc, sp.h * sc, false)) ||
         A.renderToImageData(sp, frame || 'idle0', sc);
