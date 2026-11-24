@@ -499,7 +499,8 @@
       return true;
     }
     if (v === 'train' || v === 'colo') return true;
-    // Play: cycle icons (9 selectables; Call is an indicator).
+    // Only the icon row moves. Any other screen keeps the icon index.
+    if (v !== 'play') return true;
     var sel = host.getSel();
     sel = sel < 0 ? 0 : (sel + 1) % SELECTABLE.length;
     host.setSel(sel);

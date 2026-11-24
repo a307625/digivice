@@ -1526,20 +1526,21 @@
   }
 
   function cycleSel() {
-    if (view === 'train') return;
-    if (view === 'clock') return;
+    if (view === 'train' || view === 'clock') return;
     if (view === 'evo' || view === 'battle' || view === 'dying' || view === 'grave') return;
-    if (view === 'food') { foodSel = (foodSel + 1) % 2; return; }
-    // 1997 A never walks a 1P/LINK list.
-    if (view === 'battleMenu' && is1997Brick()) view = 'play';
-    else if (view === 'battleMenu') { battleSel = (battleSel + 1) % battleMenuItems().length; return; }
-    if (view === 'lightMenu') { lightSel = (lightSel + 1) % 2; return; }
-    if (view === 'album') { albumSel = (albumSel + 1) % 4; return; }
-    if (view === 'albumView') { albumPose = (albumPose + 1) % 4; return; }
-    if (view === 'albumRecord') { view = 'album'; return; }
-    if (view === 'connect') { connectSel = (connectSel + 1) % 3; return; }
-    // Official: A always advances the icon, leaving a submenu
-    if (isMenuView()) view = 'play';
+    // The icon row moves only on the home screen. A second-level screen
+    // stays open, and the icon index behind it stays put. A choice list
+    // (meat / protein, on / off, the battle rows) moves only its own cursor.
+    if (view !== 'play') {
+      if (view === 'food') foodSel = (foodSel + 1) % 2;
+      else if (view === 'battleMenu' && !is1997Brick()) {
+        battleSel = (battleSel + 1) % battleMenuItems().length;
+      } else if (view === 'lightMenu') lightSel = (lightSel + 1) % 2;
+      else if (view === 'album') albumSel = (albumSel + 1) % 4;
+      else if (view === 'albumView') albumPose = (albumPose + 1) % 4;
+      else if (view === 'connect') connectSel = (connectSel + 1) % 3;
+      return;
+    }
     var list = selectable();
     sel = (sel + 1);
     if (sel < 0 || sel >= list.length) {
