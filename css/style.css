@@ -125,6 +125,12 @@ body {
   background: var(--lcd-paper);
   border-radius: 1.2% / 2.2%;
 }
+/* v36: 1997 integer-dot fit. The margins left by the whole-pixel scale are
+   painted with the scene's own edge colours (set from JS), never the plain
+   paper. Dark (lights off) still wins. */
+.lcd-window.has-bleed {
+  background: var(--lcd-bleed, var(--lcd-paper));
+}
 .lcd-window.is-dark {
   background: var(--lcd-night);
 }

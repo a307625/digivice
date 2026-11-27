@@ -645,26 +645,96 @@
   // sizer looked for a missing .lcd-well and a second sizeLcd cleared the
   // size, leaving a fractional CSS scale. Other devices keep the CSS
   // contain fit (one device at a time).
+  //
+  // v36 fix (border bug): an integer scale cannot fill the window exactly,
+  // so a few device px are left on each side. Those margins used to show the
+  // plain LCD paper as a grey-green frame. Now (a) the dot grid comes from
+  // the logical LCD size (FW x FH), not from a canvas buffer that may still
+  // hold another device's size, (b) the canvas is placed on whole device
+  // pixels, and (c) the window behind the margins is painted with the
+  // scene's own edge colours row by row (lcdBleed), so the backdrop simply
+  // continues to the window edge. No frame, dots stay square and equal.
   function lcdIntegerSize(availW, availH, dotsW, dotsH, dpr) {
     dpr = dpr || 1;
     var k = Math.floor(Math.min(availW * dpr / dotsW, availH * dpr / dotsH));
     if (!(k >= 1)) return null;
     return { k: k, w: dotsW * k / dpr, h: dotsH * k / dpr };
   }
+  // Integer-pixel placement inside the window: offsets in CSS px that land
+  // the canvas on whole device pixels (winLeft/winTop are the window's page
+  // position in CSS px).
+  function lcdPlace(winLeft, winTop, winW, winH, fit, dpr) {
+    dpr = dpr || 1;
+    var wantL = winLeft * dpr + (winW * dpr - fit.w * dpr) / 2;
+    var wantT = winTop * dpr + (winH * dpr - fit.h * dpr) / 2;
+    return {
+      left: (Math.round(wantL) - winLeft * dpr) / dpr,
+      top: (Math.round(wantT) - winTop * dpr) / dpr
+    };
+  }
+  var lcdFit = null;
   function sizeLcd() {
     var c = $('screen');
     if (!c) return;
+    var win = $('lcd-window');
     c.style.width = '';
     c.style.height = '';
+    c.style.position = '';
+    c.style.left = '';
+    c.style.top = '';
+    lcdFit = null;
+    if (win) { win.style.removeProperty('--lcd-bleed'); win.classList.remove('has-bleed'); }
+    lastBleedKey = '';
     if (!is1997Brick()) return;
-    var win = $('lcd-window');
     if (!win || !win.clientWidth || !win.clientHeight) return;
-    var dotsW = Math.round(c.width / DOT), dotsH = Math.round(c.height / DOT);
+    var dotsW = FW, dotsH = FH;
     var dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
-    var fit = lcdIntegerSize(win.clientWidth, win.clientHeight, dotsW, dotsH, dpr);
+    var r = win.getBoundingClientRect();
+    var ww = r.width || win.clientWidth, wh = r.height || win.clientHeight;
+    var fit = lcdIntegerSize(ww, wh, dotsW, dotsH, dpr);
     if (!fit) return;
+    var pos = lcdPlace(r.left, r.top, ww, wh, fit, dpr);
+    c.style.position = 'absolute';
+    c.style.left = pos.left + 'px';
+    c.style.top = pos.top + 'px';
     c.style.width = fit.w + 'px';
     c.style.height = fit.h + 'px';
+    lcdFit = { left: pos.left, top: pos.top, w: fit.w, h: fit.h, dot: fit.h / dotsH, winW: ww, winH: wh };
+    updateLcdBleed();
+  }
+
+  // Edge colour of each backdrop row (left = col 0, right = col 31). The
+  // canvas scanlines (1 canvas px of rgba(20,30,20,.05) every 2 canvas px)
+  // are continued on top, phase-locked to the canvas, so the margin has the
+  // same texture as the scene.
+  function bleedColour(hex) { return hex; }
+  function lcdBleedGradient(bg, col, fit) {
+    var stops = [], y, c, y0, y1;
+    for (y = 0; y < 16; y++) {
+      c = bleedColour(bg.pal[bg.rows[y].charCodeAt(col) - 48]);
+      y0 = y === 0 ? 0 : fit.top + y * fit.dot;
+      y1 = y === 15 ? fit.winH : fit.top + (y + 1) * fit.dot;
+      stops.push(c + ' ' + y0.toFixed(3) + 'px', c + ' ' + y1.toFixed(3) + 'px');
+    }
+    return 'linear-gradient(to bottom, ' + stops.join(', ') + ')';
+  }
+  var lastBleedKey = '';
+  function updateLcdBleed() {
+    var win = $('lcd-window');
+    if (!win || !lcdFit || !is1997Brick()) return;
+    var ver = backdropVersion();
+    var key = ver + ':' + lcdFit.top + ':' + lcdFit.dot + ':' + lcdFit.winH;
+    if (key === lastBleedKey) return;
+    lastBleedKey = key;
+    var bg = DM1997_BG[ver] || DM1997_BG[1];
+    var q = lcdFit.dot / DOT; // one canvas px in CSS px
+    var phase = ((lcdFit.top % (2 * q)) + 2 * q) % (2 * q);
+    var lines = 'repeating-linear-gradient(to bottom, rgba(20,30,20,0.05) 0px, rgba(20,30,20,0.05) ' + q.toFixed(3) +
+      'px, rgba(0,0,0,0) ' + q.toFixed(3) + 'px, rgba(0,0,0,0) ' + (2 * q).toFixed(3) + 'px) 0px ' + phase.toFixed(3) + 'px / 100% ' + (2 * q).toFixed(3) + 'px repeat, ';
+    var css = lines + lcdBleedGradient(bg, 0, lcdFit) + ' left top / 50% 100% no-repeat, ' +
+      lcdBleedGradient(bg, 31, lcdFit) + ' right top / 50% 100% no-repeat';
+    win.style.setProperty('--lcd-bleed', css);
+    win.classList.add('has-bleed');
   }
 
   // 1997 lamp-off: the play screen is fully dark (Bandai Ver.1 manual).
@@ -815,6 +885,7 @@
   }
   function draw1997Backdrop() {
     var ver = backdropVersion();
+    if (lcdFit) updateLcdBleed();
     var bg = DM1997_BG[ver] || DM1997_BG[1];
     var y, x, row;
     for (y = 0; y < 16; y++) {

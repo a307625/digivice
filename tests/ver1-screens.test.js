@@ -201,5 +201,31 @@ console.log('13) 1997: A after the last icon goes home with no icon (firmware §
   eq(d.a(), 0, 'DM20 unchanged: wraps to STATUS');
 }
 
+console.log('14) 1997 integer dots never leave a paper frame (border fix)');
+{
+  const place = fn('lcdPlace');
+  const size = fn('lcdIntegerSize');
+  for (const [l, t, w, h, dpr] of [[133.906, 149.44, 176.578, 87.406, 2], [168.28, 254.47, 304.08, 150.53, 2], [206.41, 149.44, 176.58, 87.41, 3]]) {
+    const f = size(w, h, 32, 16, dpr);
+    const p = place(l, t, w, h, f, dpr);
+    ok(Math.abs((l + p.left) * dpr - Math.round((l + p.left) * dpr)) < 1e-6 && Math.abs((t + p.top) * dpr - Math.round((t + p.top) * dpr)) < 1e-6, `canvas lands on whole device px (${w}x${h}@${dpr})`);
+    ok(p.left >= 0 && p.top >= 0 && p.left + f.w <= w + 0.5 / dpr && p.top + f.h <= h + 0.5 / dpr, 'canvas stays inside the window');
+  }
+  ok(/var dotsW = FW, dotsH = FH;/.test(ui), 'dot grid comes from the logical 32x16 LCD, not a stale canvas buffer');
+  ok(!/Math\.round\(c\.width \/ DOT\)/.test(ui), 'old stale-buffer dot count is gone (it gave 40x24 → non-square dots)');
+  ok(/win\.style\.setProperty\('--lcd-bleed', css\);\s*win\.classList\.add\('has-bleed'\);/.test(ui), 'margins get the scene bleed');
+  ok(/if \(lcdFit\) updateLcdBleed\(\);/.test(ui), 'bleed follows the backdrop version');
+  const css = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const iBleed = css.indexOf('.lcd-window.has-bleed {'), iDark = css.indexOf('.lcd-window.is-dark {');
+  ok(iBleed > 0 && /background: var\(--lcd-bleed, var\(--lcd-paper\)\)/.test(css), 'CSS paints the bleed behind the canvas');
+  ok(iDark > iBleed, 'lights-off dark still wins over the bleed');
+  const grad = fn('lcdBleedGradient', 'function bleedColour(h) { return h; }');
+  const bg = { pal: ['#111111', '#222222'], rows: Array.from({ length: 16 }, (_, y) => (y < 8 ? '0' : '1').repeat(32)) };
+  const g = grad(bg, 0, { top: 3.5, dot: 5, winH: 87.4 });
+  ok(/^linear-gradient\(to bottom, #111111 0\.000px/.test(g), 'top margin continues row 0');
+  ok(/#222222 87\.400px\)$/.test(g), 'bottom margin continues row 15 to the window edge');
+  ok(/#111111 43\.500px, #222222 43\.500px/.test(g), 'row edges line up with the canvas dots');
+}
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed ? 1 : 0);
