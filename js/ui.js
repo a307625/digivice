@@ -2031,6 +2031,47 @@
     eatAnim.on = false;
   }
 
+  // v90 button audit (1997 brick). On the real unit the icon cursor IS the
+  // mode (disassembly §9: modes 2-8 = the seven icons) and the screen is
+  // drawn per mode, so the icon cannot move while an action plays out, and
+  // Ver.1/Ver.2 have no animation skip (Humulos DMC manual: skipping is a
+  // Ver.3-5 feature; NHOKO: Ver.1 training C works only before the attack).
+  // While a feed (or refusal), a flush, or an action's reaction pose plays,
+  // A / B / C are ignored. The screen then rests where the action left it.
+  var feedReturnPending = false;
+  function v1ActionBusy() {
+    if (!is1997Brick() || view !== 'play' || !state) return false;
+    if (eatAnim.on || flushAnim.on || feedReturnPending) return true;
+    return !!(poseFx.name && performance.now() < poseFx.until);
+  }
+
+  // v90: Bandai Ver.1 manual (JP p1 「デジモンが生まれるまで時計・リセット以外の
+  // 操作はできません」; US manual: "During the hatching period, you will only
+  // be able to access the Timer and Reset Button functions"). On the egg,
+  // A and C do nothing and B shows the clock.
+  function v1EggLocked() {
+    return is1997Brick() && view === 'play' && !!state && !state.dead && isEggStage();
+  }
+
+  function v1IdleHome() {
+    if (!is1997Brick() || !state) return false;
+    if (view === 'status' || view === 'food' || view === 'lightMenu') {
+      view = 'play';
+      sel = -1;
+      return true;
+    }
+    if (view === 'train' && train && train.mode === 'highlow' && !train.done &&
+        (train.phase === 'standoff' || train.phase === 'intro')) {
+      // Same as C before the attack: the session still counts on Ver.1.
+      if (window.Engine && window.Engine.cancelTraining && !train.decided) window.Engine.cancelTraining(state);
+      persist();
+      view = 'play';
+      sel = -1;
+      return true;
+    }
+    return false;
+  }
+
   function isMenuView() {
     return view === 'clock' || view === 'status' || view === 'food' ||
       view === 'battleMenu' || view === 'lightMenu' || view === 'album' ||
@@ -2106,7 +2147,9 @@
     if (!r.ok || r.refused) {
       eatAnim.on = false;
       playPose('refuse', 1100);
+      feedReturnPending = true;
       setTimeout(function () {
+        feedReturnPending = false;
         if (view === 'play' || view === 'food') {
           view = 'food';
           var fi = selectable().indexOf('FEED');
@@ -2549,7 +2592,8 @@
 
   function maybeNewEggCombo() {
     if (view !== 'grave' && !(state && state.dead)) return false;
-    if ((keyA && keyC) || (keyA && keyB)) {
+    // 1997 ROM (0x0CEF): only A+C on the grave. DMC / DM20 use A+B.
+    if ((keyA && keyC) || (keyA && keyB && !is1997Brick())) {
       hideAllOverlays();
       fillEggGrid();
       showOverlay('overlay-egg', true);
@@ -2636,6 +2680,8 @@
     if (anyOverlay()) return;
     if (maybeNewEggCombo()) return;
     if (maybeClockSetCombo()) return;
+    if (v1ActionBusy()) return;
+    if (v1EggLocked()) { sel = -1; return; }
     if (isClockSetView()) {
       // Ghost click after pointerdown (iOS 15): already counted, do nothing.
       // A real click with no pointer (shouldn't happen on the pads) is +1
@@ -2663,6 +2709,8 @@
     beep();
     if (anyOverlay()) return;
     if (maybeNewEggCombo()) return;
+    if (v1ActionBusy()) return;
+    if (v1EggLocked()) { sel = -1; view = 'clock'; return; }
     if (isClockSetView()) {
       if (getClockHold().shouldIgnoreClick()) return;
       clockSetAdjust('m');
@@ -2686,10 +2734,16 @@
     if (anyOverlay()) { hideAllOverlays(); return; }
     if (maybeNewEggCombo()) return;
     if (maybeClockSetCombo()) return;
+    if (v1ActionBusy()) return;
+    if (v1EggLocked()) { sel = -1; return; }
     if (isClockSetView()) {
       engine().confirmClockSet(state);
       persist();
-      view = 'play';
+      // v90: Bandai Ver.1 manual (JP p1 ❸ 「Cボタンで決定します。次にBボタンで
+      // デジタマ表示画面に戻し」; US manual: "Press C to lock in and set the
+      // time. Press B to return to the Main Screen"). C locks the time in and
+      // leaves the running clock up; B (or C) then goes home. DM20 unchanged.
+      view = is1997Brick() ? 'clock' : 'play';
       sel = -1;
       return;
     }
@@ -2981,6 +3035,11 @@
     /* evo / battle / dying advance on the 2 Hz ANIM_MS clock above */
     // Official idle timeout: 60s returns menus 2–8 to home (disassembly 0x0866)
     if (!anyOverlay() && sel >= 0 && view === 'play' && Date.now() - lastKeyAt > 60000) sel = -1;
+    // v90 (Eric: follow the original): the same idle count also closes any
+    // open 1997 menu. Disassembly 0x0866 returns every mode 2-8 to home, the
+    // sub-screens included (status pages, food, lights, the training
+    // stand-off waiting for A/B), with no icon lit.
+    if (!anyOverlay() && Date.now() - lastKeyAt > 60000) v1IdleHome();
 
     draw();
   }
@@ -4197,6 +4256,13 @@
       liveMode: function () { shotMode = false; },
       trainState: function () { return JSON.parse(JSON.stringify(train || {})); },
       viewName: function () { return view; },
+      /* v90 test hook (button audit): the UI state behind the LCD. */
+      uiState: function () {
+        return { view: view, sel: sel, eat: !!eatAnim.on, flush: !!flushAnim.on,
+          pose: (poseFx.name && performance.now() < poseFx.until) ? poseFx.name : null,
+          foodSel: foodSel, lightSel: lightSel, statusPage: statusPage,
+          setMode: isClockSetView(), sound: soundOn };
+      },
       walkX: function () { return walk.x; }
     };
 

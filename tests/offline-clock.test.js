@@ -23,7 +23,7 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
 const block = sw.slice(sw.indexOf('var ASSETS = ['), sw.indexOf('];', sw.indexOf('var ASSETS = [')));
 const assets = new Set((block.match(/'([^']+)'/g) || []).map((s) => s.slice(1, -1)));
-eq((sw.match(/var CACHE = '([^']+)'/) || [])[1], 'digivice-v91', 'cache name bumped to digivice-v91');
+eq((sw.match(/var CACHE = '([^']+)'/) || [])[1], 'digivice-v92', 'cache name bumped to digivice-v92');
 const refs = [];
 html.replace(/(?:src|href)="(\.\/[^"#?]+)"/g, (m, u) => { refs.push(u); return m; });
 ok(refs.length > 40, 'index.html local refs parsed (' + refs.length + ')');
