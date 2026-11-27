@@ -191,11 +191,12 @@ console.log('Clock-SET operation tests');
   eq(s.sleeping, false, 'Baby I is not put to sleep by a clock jump');
 }
 
-// --- egg hatch: 1 min after first SET, not before ---
+// --- egg hatch: Ver.1 = 5 min after first SET (Eric's decision, Bandai
+//     manual 「約5分後」); Ver.2-5 and DM20 stay at 1 min for now ---
 {
   const s = Engine.defaultState(1);
   eq(s.clockInitialized, false, 'a new 1997 egg has not had its clock set');
-  eq(Engine.eggHatchMinutes(s), 1, '1997 hatch is 1 minute after SET');
+  eq(Engine.eggHatchMinutes(s), 5, '1997 Ver.1 hatch is 5 minutes after SET');
   s.speed = 1;
   advance(s, 12 * 60);
   ok(s.mon === 'egg_v1' || (Engine.mon(s) && Engine.mon(s).stage === 'egg'),
@@ -207,12 +208,14 @@ console.log('Clock-SET operation tests');
   Engine.beginClockSet(s);
   const c = Engine.confirmClockSet(s);
   ok(c.first && c.hatchStarted, 'first confirm starts the 1997 hatch timer');
-  eq(s.evoDueAt, 1, 'hatch due is 1 minute');
+  eq(s.evoDueAt, 5, 'Ver.1 hatch due is 5 minutes');
   eq(s.stageEnteredGame, s.gameTime, 'hatch timer starts at the moment of SET');
-  advance(s, 50);
-  ok(Engine.mon(s).stage === 'egg', 'still an egg at 50 seconds');
-  advance(s, 20);
-  ok(Engine.mon(s).stage !== 'egg', '1997 egg hatches 1 minute after the clock is set (mon=' + s.mon + ')');
+  advance(s, 70);
+  ok(Engine.mon(s).stage === 'egg', 'Ver.1 still an egg at 70 seconds');
+  advance(s, 4 * 60 - 30);
+  ok(Engine.mon(s).stage === 'egg', 'Ver.1 still an egg at 4 min 40 s');
+  advance(s, 60);
+  ok(Engine.mon(s).stage !== 'egg', '1997 Ver.1 egg hatches 5 minutes after the clock is set (mon=' + s.mon + ')');
 }
 {
   const s = Engine.defaultState(1);
@@ -220,8 +223,12 @@ console.log('Clock-SET operation tests');
   Engine.beginClockSet(s);
   Engine.confirmClockSet(s);
   s.evoDueAt = 10;
-  advance(s, 70);
-  ok(Engine.mon(s).stage !== 'egg', 'a save still carrying the old 10-minute due hatches at 1 minute (mon=' + s.mon + ')');
+  advance(s, 5 * 60 + 20);
+  ok(Engine.mon(s).stage !== 'egg', 'a save still carrying the old 10-minute due hatches at 5 minutes (mon=' + s.mon + ')');
+}
+{
+  const s = Engine.defaultState(2);
+  eq(Engine.eggHatchMinutes(s), 1, 'Ver.2 keeps the 1-minute hatch (one device at a time)');
 }
 {
   const s = Engine.defaultState(1, 'zuba');

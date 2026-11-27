@@ -425,13 +425,13 @@ console.log('12) Sprites: 62 official 26×34 1-bit, scale 4, known partners pres
   });
 }
 
-console.log('13) Lights-off is paper; no 1997 blank-dark');
+console.log('13) Digivice lights-off is paper (1997 goes dark per its own manual)');
 {
   const s = boot(v1(), 0);
   eq(LO.playfieldMode(s, 'play', 'digivice'), 'paper', 'play is paper');
   s.lights = false;
   eq(LO.playfieldMode(s, 'play', 'digivice'), 'paper', 'even with lights=false, paper');
-  eq(LO.playfieldMode({ lights: false }, 'play', 'dm1997'), 'paper', '1997 lamp off stays on paper');
+  eq(LO.playfieldMode({ lights: false }, 'play', 'dm1997'), 'blank-dark', '1997 lamp off is dark (Bandai Ver.1 manual)');
 }
 
 console.log('14) Picker labels, no spoilers');

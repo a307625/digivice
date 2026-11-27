@@ -2,10 +2,9 @@
  * Per-family playfield when the lamp is off. Menus and the clock always
  * paint on paper (official 1997 / DM20 / Pendulum).
  *
- *   1997  — the lamp is not a sleep button. Off keeps the playfield
- *           (backdrop, monster, poop) on paper in whatever pose the clock
- *           already chose. The UI dims the glass; it does not blank it
- *           and it does not lie the pet down. Sleep is bedtime only.
+ *   1997  — the lamp is not a sleep button (sleep is bedtime only), but
+ *           with the lamp off the play screen goes fully dark; only the
+ *           zZ shows while asleep (Bandai Ver.1 manual, 電気アイコン).
  *   DM20  — does NOT go dark. Sleep cell + Z when the pet is sleeping
  *           (nap or bedtime). Official: "The screen doesn't go dark like
  *           the old ones" (WithTheWill / clock-rules.md). Babydmon is
@@ -80,7 +79,11 @@
       if (state.sleeping || state.tired) return 'black-z';
       return 'black';
     }
-    // 1997: lamp off stays on paper. Sleep pose is state.sleeping, not the lamp.
+    // v36, Bandai Ver.1 manual (電気アイコン): with the lamp off the whole
+    // play screen is dark and only a small z + big Z show while the
+    // Digimon sleeps. Matches the registry profile lightsOff: 'blank'.
+    // Menus and the clock (above) still paint normally.
+    if (fam === 'dm1997') return (state.dead || view !== 'play') ? 'paper' : 'blank-dark';
     return 'paper';
   }
 

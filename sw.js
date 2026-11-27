@@ -9,7 +9,7 @@
  * - Only same-origin, non-redirected, 200 'basic' responses are cached.
  * - Old caches are deleted only after the new one is complete.
  */
-var CACHE = 'digivice-v85';
+var CACHE = 'digivice-v86'; // v36 Ver.1 audit (live was v85)
 var APP_SHELL = './index.html';
 var ASSETS = [
   './',
@@ -22,6 +22,7 @@ var ASSETS = [
   './js/user-sprites.js',
   './assets/user-sprites/manifest.json',
   './js/items.js',
+  './js/lcd-kana.js',
   './js/save.js',
   './icons/bezel/status.png',
   './icons/bezel/feed.png',

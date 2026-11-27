@@ -172,7 +172,9 @@ console.log('2) 1997 / DM20 sprites: eat cells and the identical-eat0/eat1 remap
     if (framesEqual(fr.eat0, fr.idle0) && fr.eat1 && !framesEqual(fr.eat0, fr.eat1)) eatIdleClosed++;
   }
   ok(playable >= 140, 'at least 140 playable 1997/DM20 mons have eat frames (got ' + playable + ')');
-  ok(distinctEat >= 90, 'at least 90 already have distinct eat0/eat1 (got ' + distinctEat + ')');
+  // v36: official device cells (739b990) share one picture for both bites on many
+  // mons. The UI then plays idle0 as eat0, so what the glass shows still alternates.
+  ok(distinctEat + remap >= 90, 'at least 90 alternate two pictures on screen when eating (got ' + (distinctEat + remap) + ')');
   ok(remap >= 30, 'DM20 artbook mons with eat0==eat1!=idle0 will remap (got ' + remap + ')');
   ok(distinctEat + remap === playable || distinctEat + remap >= playable - 5,
     'almost every mon either has distinct bites or will remap (distinct=' + distinctEat + ' remap=' + remap + ' playable=' + playable + ')');
@@ -183,7 +185,8 @@ console.log('2) 1997 / DM20 sprites: eat cells and the identical-eat0/eat1 remap
 
   // Agumon is the reference official 12-cell set.
   const agu = getFrames('agumon');
-  ok(agu && !framesEqual(agu.eat0, agu.eat1), 'Agumon eat0 and eat1 differ (official mouth open/closed)');
+  ok(agu && (!framesEqual(agu.eat0, agu.eat1) || !framesEqual(agu.eat0, agu.idle0)),
+    'Agumon bite alternates on screen (distinct cells, or shared cell played against idle0)');
   ok(agu && framesEqual(agu.eat1, agu.angry) && framesEqual(agu.eat1, agu.attack),
     'official Agumon: eat1 == angry == attack (roar cell)');
   ok(agu && !framesEqual(agu.idle0, agu.happy), 'Agumon happy is not idle');
@@ -246,7 +249,9 @@ console.log('4) Pendulum extras (1.5–ZERO): reconstructed open-mouth eat1, sle
     for (const r of rows) for (const c of r) if (c && c !== '0') n++;
     return n;
   }
-  for (const id of ids) {
+  // Eggs (official faction shells, c276aac) never eat, so they are not checked here.
+  const eaters = ids.filter((id) => !/^egg_/.test(id));
+  for (const id of eaters) {
     const fr = Extra.SPRITES[id].frames;
     if (!framesEqual(fr.eat0, fr.eat1)) distinct++;
     else same++;
@@ -255,8 +260,8 @@ console.log('4) Pendulum extras (1.5–ZERO): reconstructed open-mouth eat1, sle
     if (a && b / a < 0.8) destroyed++;
   }
   eq(same, 0, 'every extra mon has a distinct eat1 (same=' + same + ')');
-  ok(distinct === ids.length, 'all ' + ids.length + ' extras have open-mouth eat1');
-  eq(sleepBob, ids.length, 'every extra mon has a bobbing sleep1');
+  ok(distinct === eaters.length, 'all ' + eaters.length + ' extra mons have open-mouth eat1');
+  eq(sleepBob, eaters.length, 'every extra mon has a bobbing sleep1');
   eq(destroyed, 0, 'open-mouth slit does not destroy the silhouette (destroyed=' + destroyed + ')');
 
   const tail = Extra.SPRITES.tailmon.frames;
@@ -324,8 +329,9 @@ console.log('6) Holy Project (Digivice 1999): no classic eat cycle — do not in
   const ui = read('js/devices/digivice/ui.js');
   const data = read('js/devices/digivice/data.js');
   ok(!/eatAnim/.test(ui) && !/eat0/.test(ui), 'Digivice UI has no classic eat animation');
-  ok(/Meat no effect|no effect ever noticed/.test(data) || /meat: 'none'/.test(data),
-    'File Island: Meat is an inventory item with no noticed care effect');
+  // Owner decision (1fd7ea8): meat follows the Ver.15th/Complete/Revival manual (+2 DP).
+  ok(/meat: 'add_dp'/.test(data) || /meat: 'none'/.test(data),
+    'Digivice meat is an inventory item (+2 DP per later manual), not a classic feed');
   ok(/Only one official pose per mon/.test(read('js/devices/digivice/sprites.js')) ||
      /only one official pose/i.test(read('js/devices/digivice/sprites.js')),
     'Digivice sprites document a single official pose per mon');

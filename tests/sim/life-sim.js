@@ -140,6 +140,11 @@
       }
       s.lastReal = T;
       var lastMon = null, monSince = 0, nextCare = 0, steps = Math.floor(maxDays * 86400 / stepSec);
+      // v36: record the starting form before the first tick. The 1997 egg now
+      // hatches 1 minute after SET (owner choice, 3388e01), so a 60 s sampler
+      // would otherwise never see the egg.
+      var id0 = monOf(cfg, s);
+      if (id0 != null) { out.path.push(id0); out.stages.push(stageOf(cfg, s)); lastMon = id0; }
       for (var i = 0; i < steps; i++) {
         T += stepSec * 1000;
         root.Devices.tick(s, T);

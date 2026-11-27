@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Official sleep-disturbance / wake rules (DMC + 1997).
- * The awake-window length is an unverified placeholder (see ui-spec.md).
+ * Awake window after a disturbance: 10 min, then back to sleep (Eric's rule).
  * See /workspace/ui-research/ui-spec.md.
  */
 'use strict';
@@ -103,19 +103,23 @@ console.log('4) toggleLights does not wake and does not start a second call');
   ok(s.callLightsAt == null, 'turning lights on does not start a new call');
 }
 
-console.log('5) Lights-left-on care mistake still applies on the first fall-asleep');
+console.log('5) Lights-left-on care mistake: Ver.1 20 min (Eric), others 60 min');
 {
   const s = nightAgumon();
   advance(s, 60);
   const started = s.callLightsAt;
   ok(started != null, 'call running');
-  advance(s, 21 * 60);
-  ok(s.calls === 0, '21 min is still inside the NHOKO 60 min lights window');
-  ok(Engine.isCallLit(s), 'lights call icon stays on past the 20 min hunger timeout');
-  advance(s, 40 * 60);
-  ok(s.calls === 1, 'unanswered lights call is a care mistake after 60 min (NHOKO)');
+  advance(s, 19 * 60);
+  ok(s.calls === 0, 'Ver.1: 19 min is still inside the 20 min lights window');
+  ok(Engine.isCallLit(s), 'lights call icon is on inside the window');
+  advance(s, 2 * 60);
+  ok(s.calls === 1, 'Ver.1: unanswered lights call is a care mistake after 20 min (Eric\'s decision)');
   ok(s.sleeping, 'still asleep');
   ok(s.sleepDist === 0, 'that is a care mistake, not a sleep disturbance');
+}
+{
+  ok(Engine.VER1_LIGHTS_CALL_TIMEOUT === 20 * 60, 'Ver.1 lights timeout constant is 20 min');
+  ok(Engine.LIGHTS_CALL_TIMEOUT === 60 * 60, 'Ver.2-5 keep 60 min until audited');
 }
 
 console.log('6) Natural morning wake at 8:00, no sleepDist, DP refill, new night can call again');

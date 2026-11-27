@@ -71,7 +71,9 @@
   var motionOn = false;
   var pedometer = null;
   var healthAppliedThisSession = false;
-  var soundOn = false;
+  // v36, Eric's decision: sound is ON by default (the bricks beep out of
+  // the box). A stored '0' (the player turned it off) is still respected.
+  var soundOn = true;
   var audioCtx = null;
   var suppressClickBeep = false;
   var keyA = false, keyB = false, keyC = false;
@@ -303,15 +305,6 @@
       old.firstChild.style.background = top[id] ? art.bgTop : art.bgBot;
       el.classList.add('has-art');
     });
-  }
-
-  function sizeLcd() {
-    var c = $('screen');
-    if (!c) return;
-    // CSS (height:100%; width:auto; max-width:100%) fills the official
-    // window with contain + letterbox. Clear any stale inline size.
-    c.style.width = '';
-    c.style.height = '';
   }
 
   function tryLockOrient(orient) {
@@ -592,6 +585,9 @@
       else if (phase <= 2) piece = 'half_meat';
       else if (phase <= 4) piece = 'empty_meat';
       if (!piece) return null;
+      // v36: Bandai Ver.1 manual mock-up: the food sits on the left and
+      // the Digimon on the right faces it. DM20 keeps food at x=24.
+      if (is1997Brick()) return { food: piece, xDots: 3, yDots: 8 };
       return { food: piece, xDots: 24, yDots: 8 };
     }
     var food = 'meat';
@@ -644,18 +640,35 @@
     return false;
   }
 
+  // v36: on the 1997 brick every LCD dot is a whole number of DEVICE
+  // pixels, so no dot renders 10 px next to an 11 px one. The old integer
+  // sizer looked for a missing .lcd-well and a second sizeLcd cleared the
+  // size, leaving a fractional CSS scale. Other devices keep the CSS
+  // contain fit (one device at a time).
+  function lcdIntegerSize(availW, availH, dotsW, dotsH, dpr) {
+    dpr = dpr || 1;
+    var k = Math.floor(Math.min(availW * dpr / dotsW, availH * dpr / dotsH));
+    if (!(k >= 1)) return null;
+    return { k: k, w: dotsW * k / dpr, h: dotsH * k / dpr };
+  }
   function sizeLcd() {
-    if (!canvas) return;
-    var well = document.querySelector('.lcd-well');
-    if (!well) return;
-    var aw = well.clientWidth, ah = well.clientHeight;
-    var s = Math.max(1, Math.floor(Math.min(aw / LCD_W, ah / LCD_H)));
-    canvas.style.width = (LCD_W * s) + 'px';
-    canvas.style.height = (LCD_H * s) + 'px';
+    var c = $('screen');
+    if (!c) return;
+    c.style.width = '';
+    c.style.height = '';
+    if (!is1997Brick()) return;
+    var win = $('lcd-window');
+    if (!win || !win.clientWidth || !win.clientHeight) return;
+    var dotsW = Math.round(c.width / DOT), dotsH = Math.round(c.height / DOT);
+    var dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+    var fit = lcdIntegerSize(win.clientWidth, win.clientHeight, dotsW, dotsH, dpr);
+    if (!fit) return;
+    c.style.width = fit.w + 'px';
+    c.style.height = fit.h + 'px';
   }
 
-  // 1997 lamp-off stays on the playfield. Sleep is the clock, not the lamp.
-  // A dim is drawn over the scene so the lamp state is visible.
+  // 1997 lamp-off: the play screen is fully dark (Bandai Ver.1 manual).
+  // Sleep is still the clock, not the lamp.
   // DM20 does not go dark; the sleep cell and a Z stay visible when sleeping.
   function lcdGlassDark() {
     var d = currentDevice();
@@ -780,10 +793,29 @@
     ]}
   };
 
+  // v36: the version can be unset (no save yet, egg picker, lobby, an old
+  // save without `version`). parseInt gave NaN, NaN passed the old range
+  // check, DM1997_BG[NaN] was undefined and `.rows` threw every frame.
+  function backdropVersion() {
+    var cand = [];
+    if (state) {
+      cand.push(state.version);
+      var m = null;
+      try { m = state.mon && window.Engine && window.Engine.mon ? window.Engine.mon(state) : null; } catch (eM) { m = null; }
+      if (m) cand.push(m.version);
+    }
+    var d = null;
+    try { d = currentDevice(); } catch (eD) { d = null; }
+    if (d) cand.push(d.version);
+    for (var i = 0; i < cand.length; i++) {
+      var v = parseInt(cand[i], 10);
+      if (v >= 1 && v <= 5) return v;
+    }
+    return 1;
+  }
   function draw1997Backdrop() {
-    var ver = parseInt(state && state.version, 10);
-    if (ver < 1 || ver > 5) ver = 1;
-    var bg = DM1997_BG[ver];
+    var ver = backdropVersion();
+    var bg = DM1997_BG[ver] || DM1997_BG[1];
     var y, x, row;
     for (y = 0; y < 16; y++) {
       row = bg.rows[y];
@@ -913,7 +945,9 @@
   function drawPlay() {
     lcdBg();
     if (!state) return;
-    if (is1997PlayDark()) return; // blank dark LCD: no mon, poop, or Z
+    // Lamp off (Bandai Ver.1 manual): the play screen is fully dark; only the
+    // small z + big Z show, in light dots, while the Digimon sleeps.
+    if (is1997PlayDark()) { drawDarkSleepZ(); return; }
     if (state.dead && view !== 'dying') {
       drawGrave();
       return;
@@ -929,6 +963,10 @@
       flip = false;
     } else if (state.sleeping) {
       mx = fx(Math.floor((FW - monW) / 2));
+      flip = false;
+    } else if (eatAnim.on && is1997Brick()) {
+      // v36: Bandai Ver.1 manual: food left (x=3), Digimon right facing it.
+      mx = fx(14);
       flip = false;
     } else if (eatAnim.on) {
       // Official: Digimon at 32-8-16=8, facing the food at x=24
@@ -956,6 +994,7 @@
       flip = false;
     }
     drawMonAt(mx, my, fr, flip);
+    if (poseFx.name === 'happy' && poseFx.extra === 'heal' && is1997Brick()) drawDots(SUN_DOTS, 25, 1);
 
     if (eatAnim.on && !eatAnim.refused) {
       var food = eatFoodSprite(eatAnim);
@@ -963,11 +1002,26 @@
     }
     drawPoop();
     drawSleepZ();
-    // Lamp off: dim the glass. The pose stays whatever the clock chose.
-    if (state.lights === false && currentDevice().family === 'dm1997') {
-      ctx.fillStyle = 'rgba(16, 20, 28, 0.28)';
-      ctx.fillRect(0, 0, LCD_W, LCD_H);
+  }
+
+  // v36: small z + big Z on the dark lights-off screen (manual mock-up: a
+  // small z left of a big Z, right of centre). Same dot size as everything
+  // else; drawn as light dots on the NIGHT fill.
+  var DARK_Z_SMALL = ['111', '001', '010', '111'];
+  var DARK_Z_BIG = ['11111', '00010', '00100', '01000', '11111'];
+  function drawDarkSleepZ() {
+    if (!state || !state.sleeping || state.dead) return;
+    var blink = shotMode ? 0 : (animTick() % 2);
+    ctx.fillStyle = '#e8eef0';
+    function zz(rows, cx, cy) {
+      for (var r = 0; r < rows.length; r++) {
+        for (var c = 0; c < rows[r].length; c++) {
+          if (rows[r].charAt(c) === '1') ctx.fillRect(fx(cx + c), fy(cy + r), DOT, DOT);
+        }
+      }
     }
+    zz(DARK_Z_SMALL, 17, 7 + blink);
+    zz(DARK_Z_BIG, 21, 4 + blink);
   }
 
   function drawClock() {
@@ -980,17 +1034,24 @@
     var s = Math.floor(sec % 60);
     var isAM = h24 < 12;
     var h = h24 % 12;
-    if (h === 0) h = 12;
+    // v36: the 1997 brick shows 0:00 at midnight / noon with no leading
+    // zero (Bandai Ver.1 manual SET mock-up "0:00", AM). Others keep 12.
+    var jpHour = is1997Brick();
+    if (h === 0 && !jpHour) h = 12;
     var I = items();
     // Official SET: the word SET is solid; hour, minute, and AM/PM blink
     // at 2 Hz (ANIM_MS). Triangles (running seconds) are hidden. Colon stays.
     // Screenshots force the digits visible so the frame is readable.
     var blinkOn = !setting || shotMode || (animTick() % 2) === 0;
+    if (jpHour) { drawClock1997(I, setting, blinkOn, isAM, h, min, s); return; }
     if (setting) I.drawText(ctx, 'SET', fx(14), fy(10), ITEM);
     if (blinkOn) blitItem(isAM ? 'am' : 'pm', fx(0), fy(8), ITEM);
     var dx = fx(8);
     var dy = fy(2);
-    if (blinkOn) I.drawNumber(ctx, h, dx, dy, ITEM, 2);
+    if (blinkOn) {
+      if (jpHour) I.drawNumber(ctx, h, h < 10 ? dx + 5 * ITEM : dx, dy, ITEM, 0);
+      else I.drawNumber(ctx, h, dx, dy, ITEM, 2);
+    }
     dx += 5 * ITEM * 2;
     ctx.fillStyle = INK;
     ctx.fillRect(dx, dy + 1 * ITEM, DOT, DOT);
@@ -1011,6 +1072,32 @@
     }
   }
 
+  // v36: 1997 clock as in the Bandai Ver.1 manual SET mock-up
+  // ("0:00 00" on top, "AM  SET" below): big hour (no leading zero, 0 for
+  // the 12 o'clock hour), colon, big minutes, then small seconds digits
+  // bottom-aligned on the right. No triangles. Every glyph is drawn at the
+  // same ITEM scale, so all dots are the same size.
+  //   hour cols 0-8, colon col 10, minutes cols 12-20 (rows 1-7);
+  //   seconds 3x5 digits at cols 23-25 and 27-29 (rows 3-7);
+  //   AM/PM at col 0 rows 8-15; SET at col 14 row 10.
+  function clock1997Layout() {
+    return { hourX: 0, colonX: 10, minX: 12, bigY: 1, secX: 23, secY: 3, amX: 0, amY: 8, setX: 14, setY: 10 };
+  }
+  function drawClock1997(I, setting, blinkOn, isAM, h, min, s) {
+    var L = clock1997Layout();
+    if (setting) I.drawText(ctx, 'SET', fx(L.setX), fy(L.setY), ITEM);
+    if (blinkOn) blitItem(isAM ? 'am' : 'pm', fx(L.amX), fy(L.amY), ITEM);
+    if (blinkOn) I.drawNumber(ctx, h, h < 10 ? fx(L.hourX + 5) : fx(L.hourX), fy(L.bigY), ITEM, 0);
+    ctx.fillStyle = INK;
+    ctx.fillRect(fx(L.colonX), fy(L.bigY + 1), DOT, DOT);
+    ctx.fillRect(fx(L.colonX), fy(L.bigY + 5), DOT, DOT);
+    if (blinkOn) I.drawNumber(ctx, min, fx(L.minX), fy(L.bigY), ITEM, 2);
+    // Seconds keep running on the face; on the SET screen they read 00
+    // (the manual mock-up) because SET zeroes the seconds.
+    var shownSec = setting ? 0 : s;
+    if (I.drawSmallNumber) I.drawSmallNumber(ctx, shownSec, fx(L.secX), fy(L.secY), ITEM, 2);
+  }
+
   function drawStatus() {
     lcdBg();
     if (!state) return;
@@ -1024,24 +1111,38 @@
       if (I.drawTextFit) I.drawTextFit(ctx, nm, fx(0), fy(5), ITEM, FW, 1, animNow());
       else I.drawText(ctx, nm, fx(0), fy(5), ITEM);
     } else if (page === 'age') {
-      // 7-dot digits: rows 1-7 and 9-15 keep both inside the 16-row LCD.
-      blitItem('age', fx(1), fy(0), ITEM);
-      I.drawNumber(ctx, s.age, fx(10), fy(1), ITEM, 2);
-      blitItem('weight', fx(1), fy(8), ITEM);
-      I.drawNumber(ctx, s.weight, fx(10), fy(9), ITEM, 2);
+      if (is1997Brick() && kanaApi()) {
+        // Bandai Ver.1 manual: "1才" / "5G", numbers right-aligned in front
+        // of the unit, no leading zeros.
+        blitItem('age', fx(1), fy(0), ITEM);
+        drawRightNumber(I, s.age, 25, 1);
+        kanaApi().drawKana(ctx, '才', fx(26), fy(1), ITEM);
+        blitItem('weight', fx(1), fy(8), ITEM);
+        drawRightNumber(I, s.weight, 25, 9);
+        I.drawText(ctx, 'G', fx(27), fy(10), ITEM);
+      } else {
+        // 7-dot digits: rows 1-7 and 9-15 keep both inside the 16-row LCD.
+        blitItem('age', fx(1), fy(0), ITEM);
+        I.drawNumber(ctx, s.age, fx(10), fy(1), ITEM, 2);
+        blitItem('weight', fx(1), fy(8), ITEM);
+        I.drawNumber(ctx, s.weight, fx(10), fy(9), ITEM, 2);
+      }
     } else if (page === 'hunger') {
-      I.drawHearts(ctx, fx(0), fy(4), s.hunger, 4, ITEM);
+      if (statusLabel('おなか')) I.drawHearts(ctx, fx(0), fy(8), s.hunger, 4, ITEM);
+      else I.drawHearts(ctx, fx(0), fy(4), s.hunger, 4, ITEM);
     } else if (page === 'strength') {
-      I.drawHearts(ctx, fx(0), fy(4), s.strength, 4, ITEM);
+      if (statusLabel('きんりょく')) I.drawHearts(ctx, fx(0), fy(8), s.strength, 4, ITEM);
+      else I.drawHearts(ctx, fx(0), fy(4), s.strength, 4, ITEM);
     } else if (page === 'effort') {
       var effort = Math.min(4, Math.floor((s.train || 0) / 4));
       I.drawHearts(ctx, fx(0), fy(4), effort, 4, ITEM);
     } else if (page === 'dp') {
       if (is1997Brick()) {
-        // Official gauge is four hearts, same size and row as hunger.
-        // The words DP / MAX are wider than the 32-dot glass and are not on the brick.
-        var dpHearts = Math.max(0, Math.min(4, s.dp || 0));
-        I.drawHearts(ctx, fx(0), fy(4), dpHearts, 4, ITEM);
+        // Bandai Ver.1 manual: たいりょく over a segmented meter
+        // (満タン / ふつう / カラ). 14 bars, floor(14 x energy / default)
+        // (BladeSabre real-device measurement). Overfill reads full.
+        statusLabel('たいりょく');
+        drawEnergyBar(energyBars(s.dp, s.dpMax));
       } else {
         // DM20: label on the left, two digits on the right.
         // MAX is 16 dots (cols 1–16). A number starting at col 14 covered
@@ -1059,13 +1160,72 @@
       }
     } else {
       var pct = Math.round((s.winRate || 0) * 100);
-      var w = I.drawNumber(ctx, pct, fx(6), fy(4), ITEM, 0);
-      blitItem('percent', fx(6) + w + DOT, fy(4), ITEM);
+      if (statusLabel('しょうりつ')) {
+        // Manual: しょうりつ, then "20%" on the lower half, right side.
+        var nd = String(Math.max(0, pct | 0)).length;
+        var px0 = 31 - 8 - 1 - (nd * 5 - 1);
+        I.drawNumber(ctx, pct, fx(px0), fy(9), ITEM, 0);
+        blitItem('percent', fx(31 - 8), fy(8), ITEM);
+      } else {
+        var w = I.drawNumber(ctx, pct, fx(6), fy(4), ITEM, 0);
+        blitItem('percent', fx(6) + w + DOT, fy(4), ITEM);
+      }
+    }
+  }
+
+  function kanaApi() {
+    var K = (typeof window !== 'undefined' && window.LcdKana) || null;
+    return K && K.drawKana ? K : null;
+  }
+  // 1997 status label on the top row (rows 0-6). Returns true when drawn.
+  function statusLabel(word) {
+    if (!is1997Brick() || !kanaApi()) return false;
+    kanaApi().drawKana(ctx, word, fx(1), fy(0), ITEM);
+    return true;
+  }
+  // Number whose last digit ends on LCD column `endCol` (4-wide digits, 1 gap).
+  function drawRightNumber(I, n, endCol, row) {
+    var str = String(Math.max(0, n | 0));
+    var x0 = endCol - (str.length * 5 - 1) + 1;
+    I.drawNumber(ctx, n, fx(x0), fy(row), ITEM, 0);
+  }
+
+  // v36: 1997 energy meter. 14 bars = floor(14 x energy / species default)
+  // (BladeSabre real-device test); overfill (Ver.1 wrap) reads full.
+  // One battle from the default loses the rightmost bar (DMComm).
+  var ENERGY_BARS = 14;
+  function energyBars(dp, dpMax) {
+    dp = dp || 0; dpMax = dpMax || 0;
+    if (dp <= 0 || dpMax <= 0) return 0;
+    return Math.max(0, Math.min(ENERGY_BARS, Math.floor(ENERGY_BARS * dp / dpMax)));
+  }
+  // Frame cols 0-30 / rows 9-15, cap at col 31, bars 1 dot wide on cols
+  // 2,4,..,28 rows 11-13. Every mark is one whole LCD dot.
+  function drawEnergyBar(bars) {
+    ctx.fillStyle = INK;
+    var x, y;
+    for (x = 0; x <= 30; x++) { ctx.fillRect(fx(x), fy(9), DOT, DOT); ctx.fillRect(fx(x), fy(15), DOT, DOT); }
+    for (y = 9; y <= 15; y++) { ctx.fillRect(fx(0), fy(y), DOT, DOT); ctx.fillRect(fx(30), fy(y), DOT, DOT); }
+    for (y = 11; y <= 13; y++) ctx.fillRect(fx(31), fy(y), DOT, DOT);
+    for (var i = 0; i < bars; i++) {
+      for (y = 11; y <= 13; y++) ctx.fillRect(fx(2 + 2 * i), fy(y), DOT, DOT);
+    }
+  }
+
+  // v36: 1997 two-word menus from the Bandai Ver.1 manual: an arrow on
+  // the chosen line, words in kana (→エサ / プロテイン, →おん / おふ).
+  function drawKanaMenu(words, selIdx) {
+    var K = kanaApi();
+    for (var i = 0; i < words.length; i++) {
+      var row = i === 0 ? 0 : 9;
+      if (i === selIdx) K.drawKana(ctx, '→', fx(0), fy(row), ITEM);
+      K.drawKana(ctx, words[i], fx(5), fy(row), ITEM);
     }
   }
 
   function drawFoodMenu() {
     lcdBg();
+    if (is1997Brick() && kanaApi()) { drawKanaMenu(['エサ', 'プロテイン'], foodSel); return; }
     blitItem(foodSel === 0 ? 'triangle' : 'empty_triangle', fx(1), fy(2), ITEM);
     blitItem('meat', fx(10), fy(0), ITEM);   // v33: 8-row icons on rows 0-7 / 8-15
     blitItem(foodSel === 1 ? 'triangle' : 'empty_triangle', fx(1), fy(10), ITEM);
@@ -1102,6 +1262,7 @@
     var I = items();
     // Humulos DM20 manual: "you are given an option for On and Off".
     // Bandai English: "LIGHTS (wake up/put to sleep)". LCD labels are ON / OFF.
+    if (is1997Brick() && kanaApi()) { drawKanaMenu(['おん', 'おふ'], lightSel); return; }
     menuItem(I, lightSel === 0, fy(2), 'ON');
     menuItem(I, lightSel === 1, fy(10), 'OFF');
   }
@@ -1164,16 +1325,9 @@
     if (mode === 'tag') { drawDm20Tag(); return; }
     // Monster on the left. The minigame is drawn after it so the bar,
     // number, and HI/LO stay readable instead of disappearing under the sprite.
+    if (mode === 'highlow') { drawVer1Train(fr); return; }
     blitMon(state.mon, fx(0), fy(0), MON, fr, true);
-    if (mode === 'highlow') {
-      // Ver.1: five attacks on your shadow. A is high, B is low, 3 hits win.
-      // The guard is the mark, not a word that prints the answer.
-      var high = train.target === 1;
-      blitMon(state.mon, fx(16), fy(0), MON, high ? 'attack' : 'idle0', false);
-      ctx.fillStyle = INK;
-      ctx.fillRect(fx(14), fy(high ? 1 : 13), 2 * DOT, DOT);
-      I.drawNumber(ctx, train.hits || 0, fx(26), fy(9), ITEM, 0);
-    } else if (mode === 'mash') {
+    if (mode === 'mash') {
       var bx = fx(17), by = fy(2), bw = 14 * DOT, bh = 3 * DOT;
       ctx.fillStyle = 'rgba(30, 36, 28, 0.35)';
       ctx.fillRect(bx, by, bw, bh);
@@ -1186,6 +1340,57 @@
     } else {
       drawMeter(fy(6), mode === 'meter_slow');
     }
+  }
+
+  // v36: Ver.1 shadow training (Bandai Ver.1 manual, トレーニング):
+  // your shadow stands on the LEFT behind a shield, you stand on the RIGHT.
+  // A attacks high, B attacks low; the shot lands when its height differs
+  // from the shield's. The shield is hidden until you have pressed, so the
+  // screen never shows the answer. 5 rounds, 3 hits win; then "3 VS 2".
+  var V1_ROUND_MS = 900, V1_RESULT_MS = 1600;
+  var V1_SHIELD = ['111', '101', '101', '101', '010'];
+  function ver1RoundHit(attack, guard) { return attack !== guard; }
+  function drawDots(rows, col, row) {
+    ctx.fillStyle = INK;
+    for (var r = 0; r < rows.length; r++) {
+      for (var c = 0; c < rows[r].length; c++) {
+        if (rows[r].charAt(c) === '1') ctx.fillRect(fx(col + c), fy(row + r), DOT, DOT);
+      }
+    }
+  }
+  function drawVer1Train(fr) {
+    var I = items();
+    var now = Date.now();
+    if (train.resultAt && (shotMode || now - train.resultAt < V1_RESULT_MS)) {
+      // 5回戦後結果: you (left icon) vs the shadow (right), hits VS misses.
+      blitItem('pet', fx(4), fy(0), ITEM);
+      drawDots(V1_SHIELD, 23, 1);
+      var hits = train.hits || 0, miss = 5 - hits;
+      I.drawNumber(ctx, hits, fx(5), fy(9), ITEM, 0);
+      I.drawText(ctx, 'VS', fx(12), fy(10), ITEM);
+      I.drawNumber(ctx, miss, fx(23), fy(9), ITEM, 0);
+      return;
+    }
+    if (train.done) {
+      blitMon(state.mon, fx(8), fy(0), MON, fr, false);
+      return;
+    }
+    var a = train.anim;
+    var u = a ? Math.min(1, (now - a.at) / V1_ROUND_MS) : 0;
+    if (shotMode && a) u = 0.5;
+    // Shadow: your own Digimon, mirrored to face you. It stands 4 dots
+    // into the left edge so the shield (cols 12-14) has clear glass.
+    blitMon(state.mon, fx(-4), fy(0), MON, 'idle0', true);
+    blitMon(state.mon, fx(16), fy(0), MON, a ? 'attack' : ((animTick() % 2) ? 'train1' : 'train0'), false);
+    if (!a) return;
+    var top = a.attack === 1;
+    drawDots(V1_SHIELD, 12, a.guard === 1 ? 1 : 9);
+    // The shot flies left from your mouth. A blocked shot stops at the
+    // shield; a hit flies on into the shadow and flashes.
+    var endX = a.hit ? 4 : 15;
+    var sx = Math.round(16 - Math.min(1, u * 1.6) * (16 - endX));
+    blitItem('shot', fx(sx), fy(top ? 0 : 8), ITEM);
+    if (a.hit && u > 0.62 && ((animTick() % 2) === 0 || shotMode)) drawBang(fx(1), fy(top ? 0 : 8));
   }
 
   function drawBang(x, y) {
@@ -1296,37 +1501,93 @@
     if (u > 0.55) blitItem('hit', end - 4 * DOT, fy(yDot - 2), ITEM);
   }
 
-  /* 1997 battle is not a menu. The brick plays four exchanges: three
-     single shots, then the winner fires twice. Both sprites stay on the
-     32×16 glass (16 dots each). */
+  /* v36: 1997 battle as drawn in the Bandai Ver.1 manual (バトル開始):
+     one Digimon per screen (yours on the right, facing left), a jagged
+     "BATTLE" banner, your shot leaves to the left, the foe's shot comes in
+     from the left, a full-screen hit burst with a skull (dark on the
+     winner's screen, light on the loser's), then suns on both sides for a
+     win or four corner skulls for a loss. t ticks at 2 Hz.
+       0-3 banner | 4-5 your shot | 6-7 foe's shot | 8-9 hit | 10-15 result */
+  var BATTLE97_END = 15;
+  var SUN_DOTS = ['1001001', '0101010', '0011100', '1111111', '0011100', '0101010', '1001001'];
+  var LCD_LIGHT = '#e8eef0';
+  function battle97Phase(t) {
+    if (t < 4) return 'banner';
+    if (t < 6) return 'shot';
+    if (t < 8) return 'incoming';
+    if (t < 10) return 'hit';
+    return 'result';
+  }
+  function zig(x) { return [0, 1, 2, 1][x % 4]; }
+  function drawBattleBanner() {
+    var I = items();
+    ctx.fillStyle = INK;
+    for (var x = 0; x < 32; x++) {
+      for (var y = 0; y < 16; y++) {
+        var inBand = y >= 4 && y <= 11;
+        var edge = y < 4 ? (y >= 3 - zig(x)) : (y > 11 ? (y <= 12 + zig(x + 2)) : false);
+        if (!inBand && edge) ctx.fillRect(fx(x), fy(y), DOT, DOT);
+      }
+    }
+    I.drawText(ctx, 'BATTLE', fx(0), fy(5), ITEM);
+  }
+  function drawHitBurst(dark) {
+    // Jagged starburst over the whole glass, skull in the middle.
+    for (var x = 0; x < 32; x++) {
+      var top = zig(x), bot = 15 - zig(x + 2);
+      for (var y = 0; y < 16; y++) {
+        var inside = y >= top && y <= bot && x >= zig(y) && x <= 31 - zig(y + 2);
+        var border = inside && (y === top || y === bot || x === zig(y) || x === 31 - zig(y + 2));
+        if (dark ? inside : border) { ctx.fillStyle = INK; ctx.fillRect(fx(x), fy(y), DOT, DOT); }
+      }
+    }
+    var sk = items() && items().ITEMS && items().ITEMS.skull;
+    var rows = sk && sk.frames && sk.frames.idle0;
+    if (rows) {
+      // Skull silhouette with its eye holes: light on the dark burst,
+      // LCD ink on the light one.
+      ctx.fillStyle = dark ? LCD_LIGHT : INK;
+      for (var r = 0; r < rows.length; r++) {
+        for (var c = 0; c < rows[r].length; c++) {
+          if (rows[r].charAt(c) !== '0') ctx.fillRect(fx(12 + c), fy(4 + r), DOT, DOT);
+        }
+      }
+    } else {
+      blitItem('skull', fx(12), fy(4), ITEM);
+    }
+  }
   function drawBattle1997() {
     var self = state && state.mon;
     var t = battleFx.t;
     var win = battleFx.result === 'win';
-    var selfFr = 'idle0', foeFr = 'idle0';
-    var selfDy = 0, foeDy = 0;
-    if (t >= 10) {
-      selfFr = win ? 'happy' : ((animTick() % 2) ? 'angry' : 'idle0');
-      foeFr = win ? ((animTick() % 2) ? 'angry' : 'idle0') : 'happy';
-      if (win && (animTick() % 2) === 1) selfDy = -DOT;
-      if (!win && (animTick() % 2) === 1) foeDy = -DOT;
-    } else if (t >= 7) {
-      selfFr = win ? 'attack' : 'hurt';
-      foeFr = win ? 'hurt' : 'attack';
-    } else if (t >= 1) {
-      var fromRight = (Math.floor((t - 1) / 2) % 2) === 1;
-      selfFr = fromRight ? 'hurt' : 'attack';
-      foeFr = fromRight ? 'attack' : 'hurt';
+    var ph = battle97Phase(t);
+    if (ph === 'banner') { drawBattleBanner(); return; }
+    if (ph === 'hit') {
+      if ((animTick() % 2) === 0 || shotMode) drawHitBurst(win);
+      return;
     }
-    blitMon(self, fx(0), fy(0) + selfDy, MON, selfFr, true);
-    blitMon(battleFx.foe, fx(16), fy(0) + foeDy, MON, foeFr, false);
-    if (t >= 1 && t < 7) {
-      var fromRight2 = (Math.floor((t - 1) / 2) % 2) === 1;
-      drawShot(fromRight2, ((t - 1) % 2) * 0.55 + 0.2, 4);
-    } else if (t >= 7 && t < 10) {
-      var u = (t - 7) / 3;
-      drawShot(!win, Math.min(1, u + 0.15), 3);
-      drawShot(!win, Math.min(1, u), 8);
+    if (ph === 'result') {
+      var hop = (animTick() % 2) === 1;
+      blitMon(self, fx(8), fy(0) + (win && hop ? -DOT : 0), MON, win ? 'happy' : (hop ? 'angry' : 'idle0'), false);
+      if (win) {
+        drawDots(SUN_DOTS, 0, 4);
+        drawDots(SUN_DOTS, 25, 4);
+      } else {
+        blitItem('skull', fx(0), fy(0), ITEM);
+        blitItem('skull', fx(24), fy(0), ITEM);
+        blitItem('skull', fx(0), fy(8), ITEM);
+        blitItem('skull', fx(24), fy(8), ITEM);
+      }
+      return;
+    }
+    // Your Digimon on the right, facing left. One per screen.
+    var u = shotMode ? 0.5 : ((t % 2) + 0.5) / 2;
+    if (ph === 'shot') {
+      blitMon(self, fx(16), fy(0), MON, 'attack', false);
+      blitItem('shot', fx(Math.round(12 - u * 12)), fy(4), ITEM, false);
+    } else {
+      blitMon(self, fx(16), fy(0), MON, 'idle0', false);
+      blitItem('shot', fx(Math.round(u * 8)), fy(4), ITEM, true);
     }
   }
 
@@ -1416,6 +1677,16 @@
 
   function drawGrave() {
     lcdBg();
+    if (is1997Brick() && state) {
+      // v36: Bandai Ver.1 manual (デジモンの最期): the grave appears with the
+      // Digimon's survival record shown as a number (its age).
+      blitItem('grave', fx(2), fy(0), ITEM);
+      var I = items();
+      var age = 0;
+      try { age = window.Engine.status(state).age || 0; } catch (eA) { age = state.age || 0; }
+      drawRightNumber(I, age, 29, 5);
+      return;
+    }
     blitItem('grave', fx(8), fy(0), ITEM);
   }
 
@@ -1621,6 +1892,11 @@
     // stays open, and the icon index behind it stays put. A choice list
     // (meat / protein, on / off, the battle rows) moves only its own cursor.
     if (view !== 'play') {
+      // v36: Bandai Ver.1 manual (ステータス): A or B turns the status page.
+      if (view === 'status' && is1997Brick()) {
+        statusPage = (statusPage + 1) % statusPages().length;
+        return;
+      }
       if (view === 'food') foodSel = (foodSel + 1) % 2;
       else if (view === 'battleMenu' && !is1997Brick()) {
         battleSel = (battleSel + 1) % battleMenuItems().length;
@@ -1632,6 +1908,10 @@
     }
     var list = selectable();
     sel = (sel + 1);
+    // v36: 1997 firmware (disassembly §9, measured): A on the last icon
+    // (MEDIC) wraps the mode to 0 = home with no icon selected. The next A
+    // starts again at STATUS.
+    if (is1997Brick() && sel >= list.length) { sel = -1; return; }
     if (sel < 0 || sel >= list.length) {
       // 治療 is the last icon. The next A returns to 儀表板 (STATUS)
       // on every brick and Pendulum. It must not go blank and must
@@ -1693,7 +1973,11 @@
     // DM20: a sleeping Digimon has to be woken with LIGHTS → ON first; then it
     // stays up 15 min for feeding / training (Bandai manual, NHOKO). Feed /
     // train / battle while asleep do nothing (no wake, no disturbance).
-    return currentDevice().family === 'dm20' && state && state.sleeping;
+    if (currentDevice().family === 'dm20' && state && state.sleeping) return true;
+    // v36, 1997: a sleep disturbance needs the lights ON (NHOKO 初代 「電気を
+    // つけながら寝ている時」, CUBE blog). With the lights off it sleeps on:
+    // food / train / battle do nothing, no wake, no count.
+    return !!(state && window.Engine.asleepInDark && window.Engine.asleepInDark(state));
   }
 
   function startTrain() {
@@ -1725,6 +2009,7 @@
       t: 0, pos: 0, dir: 1, done: false, success: false,
       mode: mode, mash: 0, round: 0, hits: 0,
       target: Math.random() < 0.5 ? 1 : 0,
+      guard: Math.random() < 0.5 ? 1 : 0, anim: null, resultAt: 0,
       num: 0, startAt: Date.now(), lastMs: Date.now(), acc: 0
     };
     view = 'train';
@@ -1772,6 +2057,24 @@
       if (view === 'train') view = 'play';
       playPose(train.success ? 'happy' : 'angry', 1500);
     }, DM20_RESULT_MS);
+  }
+
+  // Ver.1: the result screen first, then the happy / angry pose.
+  function finishVer1Train() {
+    if (train.done) return;
+    train.success = (train.hits || 0) >= 3;
+    window.Engine.finishTraining(state, train.success, true);
+    persist();
+    var thisTrain = train;
+    setTimeout(function () {
+      if (train !== thisTrain) return;
+      train.done = true;
+      setTimeout(function () {
+        if (train !== thisTrain) return;
+        if (view === 'train') view = 'play';
+        playPose(train.success ? 'happy' : 'angry', 2000);
+      }, 700);
+    }, V1_RESULT_MS);
   }
 
   function finishTrainRound(success) {
@@ -1822,14 +2125,25 @@
       return;
     }
     if (mode === 'highlow') {
-      var choice = (btn === 'A') ? 1 : 0;
-      if (choice === train.target) train.hits++;
+      if (btn !== 'A' && btn !== 'B') return;
+      if (train.anim || train.resultAt) return; // one press per round
+      var attack = (btn === 'A') ? 1 : 0;     // A high, B low
+      var guard = train.guard;
+      var hit = ver1RoundHit(attack, guard);
+      if (hit) train.hits++;
       train.round++;
-      if (train.round >= 5) {
-        finishTrainRound(train.hits >= 3);
-      } else {
-        train.target = Math.random() < 0.5 ? 1 : 0;
-      }
+      train.anim = { attack: attack, guard: guard, hit: hit, at: Date.now() };
+      var thisTrain = train;
+      setTimeout(function () {
+        if (train !== thisTrain || train.done) return;
+        train.anim = null;
+        if (train.round >= 5) {
+          train.resultAt = Date.now();
+          finishVer1Train();
+        } else {
+          train.guard = Math.random() < 0.5 ? 1 : 0;
+        }
+      }, V1_ROUND_MS);
       return;
     }
     if (mode === 'mash') {
@@ -1858,12 +2172,27 @@
       view = 'lightMenu';
       return;
     }
+    // v36: Bandai Ver.1 manual (電気アイコン): B opens おん / おふ; A moves
+    // the arrow, B sets the lamp, C cancels. The arrow starts on the
+    // current lamp state.
+    if (is1997Brick()) {
+      lightSel = state.lights === false ? 1 : 0;
+      view = 'lightMenu';
+      return;
+    }
     window.Engine.toggleLights(state);
     persist();
   }
 
   function confirmLight() {
     if (!state) return;
+    if (is1997Brick()) {
+      // 1997: the lamp only; it does not wake or put the pet to sleep.
+      window.Engine.setLights(state, lightSel === 0);
+      persist();
+      view = 'play';
+      return;
+    }
     // Humulos DM20: On (sel 0) / Off (sel 1). Engine always turns the lamp
     // on for On, so lights can never get stuck off. 1997 uses doLights toggle.
     if (window.Engine && window.Engine.confirmDm20Light) {
@@ -1894,7 +2223,9 @@
     persist();
     // A dose that counts plays happy, including a monster that still needs
     // another shot. Healthy (nothing to treat) plays the refuse pose.
-    if (r && r.ok) playPose('happy', 1600);
+    // v36: Bandai Ver.1 manual (治療): the cured Digimon is happy with a
+    // sun beside it.
+    if (r && r.ok) playPose('happy', 1600, 'heal');
     else playPose('refuse', 1200);
   }
 
@@ -2218,9 +2549,22 @@
   }
 
   var lastFrameAt = 0;
+  // v36: schedule the next frame first and contain any draw error, so one
+  // bad frame can never stop the loop or spam a throw 60 times a second.
+  var frameErrors = 0;
   function loop() {
-    frameStep();
     requestAnimationFrame(loop);
+    safeFrameStep();
+  }
+  function safeFrameStep() {
+    try {
+      frameStep();
+    } catch (err) {
+      frameErrors++;
+      if (frameErrors === 1 && typeof console !== 'undefined' && console.error) {
+        console.error('[vpet] frame error (logged once):', err);
+      }
+    }
   }
 
   // Catch up simulation + clock right now (resume, pageshow, watchdog).
@@ -2233,6 +2577,18 @@
     } catch (e) {}
   }
 
+  // v36: the 1997 call icon lights with a sign sound (Bandai Ver.1 manual,
+  // 呼び出しアイコン). Beep once on each new call, never while muted.
+  var callWasLit = false;
+  function callSoundStep() {
+    var lit = !!(state && !state.dead && isCalling());
+    var fam = currentDevice() && currentDevice().family;
+    if (lit && !callWasLit && fam === 'dm1997' && soundEnabled() && window.DeviceAudio && window.DeviceAudio.callAlarm) {
+      window.DeviceAudio.callAlarm(true);
+    }
+    callWasLit = lit;
+  }
+
   function frameStep() {
     lastFrameAt = Date.now();
     if (shotMode) {
@@ -2240,6 +2596,7 @@
       return;
     }
     frame++;
+    callSoundStep();
     var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
     if (poseFx.name && now >= poseFx.until) {
       poseFx.name = null;
@@ -2274,9 +2631,9 @@
       }
       if (view === 'battle') {
         battleFx.t++;
-        // 1997: stance + 3 exchanges + double hit + result (about 6 s).
+        // 1997: banner, both shots, hit burst, result (about 8 s, manual).
         // DM20: two frames per shot, then the win pose.
-        var battleEnd = is1997Brick() ? 12 : 8;
+        var battleEnd = is1997Brick() ? BATTLE97_END : 8;
         if (!is1997Brick() && currentDevice().family === 'dm20' && battleFx.log) {
           battleEnd = battleFx.log.length * 2 + 2;
         }
@@ -2467,7 +2824,9 @@
       healthApplied: healthAppliedThisSession,
       alreadyDismissed: stepsPromptDismissed,
       fromShortcut: !!(parsed && parsed.present),
-      isIOS: isIOSDevice()
+      isIOS: isIOSDevice(),
+      family: currentDevice() && currentDevice().family,
+      deviceSteps: currentDevice() ? currentDevice().steps !== false : true
     })) return;
     stepsPromptDismissed = true;
     showOverlay('overlay-steps-prompt', true);
@@ -3234,7 +3593,7 @@
     window.addEventListener('resize', sizeLcd);
     window.addEventListener('orientationchange', function () { setTimeout(sizeLcd, 350); });
 
-    try { soundOn = localStorage.getItem('digivice-sound') === '1'; } catch (e) {}
+    try { soundOn = localStorage.getItem('digivice-sound') !== '0'; } catch (e) {}
     updateSoundBtn();
 
     function tryChord() {
@@ -3543,7 +3902,7 @@
     window.addEventListener('focus', function () { catchUpNow(); });
     setInterval(function () {
       if (document.visibilityState === 'hidden') return;
-      if (Date.now() - lastFrameAt > 1500) frameStep();
+      if (Date.now() - lastFrameAt > 1500) safeFrameStep();
     }, 1000);
 
     // v35: user sprite overrides (assets/user-sprites/manifest.json).
@@ -3582,6 +3941,9 @@
         if (o.charge) { for (var c in o.charge) charge[c] = o.charge[c]; }
         if (o.evoFx) { for (var e in o.evoFx) evoFx[e] = o.evoFx[e]; }
         if (o.battleFx) { for (var b in o.battleFx) battleFx[b] = o.battleFx[b]; }
+        if (o.pose) playPose(o.pose.name, o.pose.ms || 600000, o.pose.extra);
+        if (o.eatAnim) eatAnim = o.eatAnim;
+        if ('walkX' in o) walk.x = o.walkX;
         draw();
         return view;
       },

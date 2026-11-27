@@ -97,7 +97,9 @@
       buttonStyle: 'brick-1997',
       lightsOff: 'blank',
       clockSet: '1997',
-      hatchMinutes: 10,
+      // v36: Eric's decision, Ver.1 hatches 5 min after SET (Bandai manual).
+      // Ver.2-5 keep the 1-minute engine hatch until each is audited.
+      hatchMinutes: ver === 1 ? 5 : 1,
       engine: 'Engine',
       steps: true
     };

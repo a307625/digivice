@@ -23,7 +23,7 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
 const block = sw.slice(sw.indexOf('var ASSETS = ['), sw.indexOf('];', sw.indexOf('var ASSETS = [')));
 const assets = new Set((block.match(/'([^']+)'/g) || []).map((s) => s.slice(1, -1)));
-eq((sw.match(/var CACHE = '([^']+)'/) || [])[1], 'digivice-v85', 'cache name bumped to digivice-v85');
+eq((sw.match(/var CACHE = '([^']+)'/) || [])[1], 'digivice-v86', 'cache name bumped to digivice-v86');
 const refs = [];
 html.replace(/(?:src|href)="(\.\/[^"#?]+)"/g, (m, u) => { refs.push(u); return m; });
 ok(refs.length > 40, 'index.html local refs parsed (' + refs.length + ')');
@@ -195,7 +195,7 @@ ok(/state\.lastReal > nowLoad/.test(load), 'loadGame only resets a missing/futur
 ok(/visibilitychange[\s\S]{0,300}catchUpNow\(\)[\s\S]{0,220}persist\(\)/.test(ui), 'visibilitychange: catch up when visible, save when hidden');
 ok(/addEventListener\('pageshow', function \(\) \{ catchUpNow\(\); ingestUrl\(\); \}\)/.test(ui), 'pageshow catches up');
 ok(/addEventListener\('pagehide', function \(\) \{[\s\S]{0,40}persist\(\)/.test(ui), 'pagehide saves');
-ok(/setInterval\(function \(\) \{[\s\S]{0,160}frameStep\(\)/.test(ui), '1 s watchdog redraws if rAF stalls');
+ok(/setInterval\(function \(\) \{[\s\S]{0,160}(?:safeFrameStep|frameStep)\(\)/.test(ui), '1 s watchdog redraws if rAF stalls');
 ok(/window\.Devices\.tick/.test(ui), 'UI ticks through Devices.tick (clock anchoring)');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

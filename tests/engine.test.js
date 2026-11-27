@@ -599,6 +599,8 @@ console.log('8) Save migration');
 }
 
 console.log('9) Mega: 48 h awake, 0–2 calls; 3 stays; Monzaemon has no mega');
+// v36: Eric's choice (2026-11-28) keeps the Megas on 1997 Ver.1, a
+// deliberate deviation from the ROM (which ends at Perfect). v35 behaviour.
 {
   const s = form('metalgreymon', {
     calls: 1, awakeInStage: 48 * 3600, megaChecked: false,
@@ -614,6 +616,22 @@ console.log('9) Mega: 48 h awake, 0–2 calls; 3 stays; Monzaemon has no mega');
   });
   const ev = Engine.tryEvolve(s);
   ok(!ev && s.mon === 'metalgreymon', '3 care mistakes: stays Ultimate');
+}
+{
+  const s = form('mamemon', {
+    calls: 0, awakeInStage: 48 * 3600, megaChecked: false,
+    gameTime: 48 * 3600, evoDueAt: 108 * 60, clockOffset: 10 * 3600
+  });
+  const ev = Engine.tryEvolve(s);
+  ok(ev && s.mon === 'banchomamemon', 'Mamemon, 0–2 CM, 48 h awake → BanchoMamemon (got ' + s.mon + ')');
+}
+{
+  const s = form('skullgreymon', {
+    calls: 1, awakeInStage: 48 * 3600, megaChecked: false,
+    gameTime: 48 * 3600, evoDueAt: 108 * 60, clockOffset: 10 * 3600
+  });
+  const ev = Engine.tryEvolve(s);
+  ok(ev && s.mon === 'skullmammon', 'Ver.2 SkullGreymon, 0–2 CM, 48 h awake → SkullMammon (got ' + s.mon + ')');
 }
 {
   const s = form('monzaemon', {

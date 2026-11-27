@@ -573,6 +573,10 @@
     if (opts.healthApplied) return false;
     if (opts.fromShortcut) return false;
     if (opts.isIOS === false) return false;
+    // v36: the 1997 bricks (Ver.1-5) have no pedometer. The launch overlay
+    // must never sit on top of play there.
+    if (opts.family === 'dm1997') return false;
+    if (opts.deviceSteps === false) return false;
     return true;
   }
 

@@ -8,7 +8,8 @@
  *
  * Sleep wake (UI worker): disturbSleep / awakeUntil / DISTURB_AWAKE_SEC
  * and sleepCalledTonight / toggleLights behaviour are kept. The 10-minute
- * DISTURB_AWAKE_SEC is an unverified placeholder, not an official figure.
+ * DISTURB_AWAKE_SEC is Eric's rule (2026-11-28): woken, stay awake 10 min,
+ * then sleep again.
  */
 (function (root) {
   'use strict';
@@ -20,13 +21,16 @@
   // care mistake. The call icon also stays up for those 60 min. This is not
   // the 20 min hunger call.
   var LIGHTS_CALL_TIMEOUT = 60 * 60;
+  // v36, Eric's decision (2026-11-28): on 1997 Ver.1 the lights call is a
+  // care mistake after 20 minutes, the same ROM timer as the hunger call
+  // (BladeSabre real-device test, 1997 ROM 20-min call timer). Ver.2-5 keep
+  // the NHOKO 60 min until each is audited.
+  var VER1_LIGHTS_CALL_TIMEOUT = 20 * 60;
   // NHOKO: once a meal is refused (満腹), hunger hearts do not drop for about 1 h.
   var HUNGER_FREEZE_SEC = 60 * 60;
-  // Awake window after a sleep disturbance. The exact official duration is
-  // unverified (1997 firmware does not quote one; rules-audit §4). The
-  // "10 minutes" on Humulos DMC Sleep is the *call timeout*, not this
-  // window — do not cite it as official. 10 min is a non-official
-  // placeholder so the pet is not immediately put back to sleep.
+  // Awake window after a sleep disturbance. Eric's decision (2026-11-28):
+  // a Digimon woken during sleep stays awake 10 minutes, then sleeps again.
+  // (The exact ROM duration is not published; this is the owner's rule.)
   var DISTURB_AWAKE_SEC = 10 * 60;
   var POOP_INTERVAL = 3 * 3600;    // NHOKO ~3 h; Wikimon ~2 h — unverified vs ROM, keep current
   var INJURY_DEATH = 6 * 3600;
@@ -216,8 +220,18 @@
   // The egg hatches 1 minute after the clock is first set. It does not
   // hatch at all before that SET. The old 10 was egg lifespanMin, a CARE
   // placeholder, and it left the egg sitting after a full minute.
+  // v36, Eric's decision (2026-11-28): the 1997 Ver.1 egg hatches 5 minutes
+  // after the clock SET, as the Bandai manual says (「約5分後」, p.1 and p.6).
+  // One device at a time: Ver.2-5 and DM20 keep the 1-minute hatch for now.
+  var VER1_HATCH_MIN = 5;
+  function isVer1Brick(state) {
+    if (!state || isDm20(state)) return false;
+    var m = data.MONSTERS[state.mon];
+    var v = m && m.version != null ? m.version : state.version;
+    return Number(v) === 1;
+  }
   function eggHatchMinutes(state) {
-    return 1;
+    return isVer1Brick(state) ? VER1_HATCH_MIN : 1;
   }
   function beginClockSet(state) {
     if (!state) return { ok: false };
@@ -382,6 +396,14 @@
     var rules = data.BRANCHES[m.id] || [];
     for (var i = 0; i < rules.length; i++) if (rules[i].perfectRoll) return true;
     return false;
+  }
+
+  // v36 note: the 1997 Ver.1 ROM ends at Perfect (BlitzGreymon and
+  // BanchoMamemon come from the 2017 Ver.20th). Eric's choice (2026-11-28):
+  // KEEP the Megas on Ver.1 so it can reach Ultimate. Deliberate deviation
+  // from the original brick; v35 behaviour is unchanged.
+  function megaAllowed(state, m) {
+    return !!(m && hasMegaBranch(m) && !m.noMega);
   }
 
   function hasMegaBranch(m) {
@@ -574,7 +596,7 @@
   }
 
   function stageMinsForEvo(state, m) {
-    if (m.stage === 'ultimate' && hasMegaBranch(m) && !m.noMega) {
+    if (m.stage === 'ultimate' && megaAllowed(state, m)) {
       return (state.awakeInStage || 0) / 60;
     }
     return timeInStage(state) / 60;
@@ -602,7 +624,7 @@
     var rng = rngOf(rngOrOpts);
 
     // Mega: 48 h AWAKE (DM20), independent of the 1997 Perfect lifespan window.
-    if (m.stage === 'ultimate' && hasMegaBranch(m) && !m.noMega && !state.megaChecked) {
+    if (m.stage === 'ultimate' && megaAllowed(state, m) && !state.megaChecked) {
       var need = m.megaAwakeMin || 2880;
       if ((state.awakeInStage || 0) / 60 >= need) {
         state.megaChecked = true;
@@ -628,7 +650,7 @@
 
     // Ultimates with a Mega: Mega is only via the 48 h awake path above.
     // At the 1997 Perfect window, start old-age (5 CM) if still in this form.
-    if (m.stage === 'ultimate' && hasMegaBranch(m) && !m.noMega) {
+    if (m.stage === 'ultimate' && megaAllowed(state, m)) {
       state.lifespanElapsed = true;
       return false;
     }
@@ -746,7 +768,8 @@
   }
 
   function lightsCallTimeout(state) {
-    return isDm20(state) ? DM20_CALL_TIMEOUT : LIGHTS_CALL_TIMEOUT;
+    if (isDm20(state)) return DM20_CALL_TIMEOUT;
+    return isVer1Brick(state) ? VER1_LIGHTS_CALL_TIMEOUT : LIGHTS_CALL_TIMEOUT;
   }
 
   function isCallLit(state) {
@@ -1027,8 +1050,17 @@
    * (see the DISTURB_AWAKE_SEC comment); it is not the Humulos DMC "10 minutes",
    * which is a call timeout.
    */
+  // v36, 1997 only: asleep with the lights off. NHOKO (初代: 「電気をつけ
+  // ながら寝ている時」 food/train/battle wake it = 睡眠妨害) and the CUBE
+  // blog (「電気が付いているときに妨害することが可能」) both limit sleep
+  // disturbance to lights ON. With the lights off nothing wakes it.
+  function asleepInDark(state) {
+    return !!(state && !state.dead && state.sleeping && !state.lights && !isDm20(state));
+  }
+
   function disturbSleep(state, reason) {
     if (!state || state.dead || !state.sleeping) return { woken: false };
+    if (asleepInDark(state)) return { woken: false, dark: true };
     if (reason !== 'food' && reason !== 'train' && reason !== 'battle') {
       return { woken: false };
     }
@@ -1069,6 +1101,7 @@
   }
 
   function feedMeat(state) {
+    if (asleepInDark(state)) return { ok: false, reason: 'asleep-dark' };
     if (state.dead) return { ok: false, reason: 'dead' };
     var m = mon(state);
     if (!m || m.stage === 'egg') return { ok: false, reason: 'egg' };
@@ -1100,14 +1133,32 @@
     return { ok: false, reason: 'full' };
   }
 
+  // Energy from every 4th protein.
+  // Ver.1 (JP V1, DMComm "Wrapping"): energy can rise past the default by up
+  // to +9; the protein that would make it default+10 resets it to the default.
+  // Other bricks (DMComm "No overfill", EN V2/V3, JP V4/V5) stop at the default.
+  // JP V2 also wraps per DMComm, but only Ver.1 is changed here (v36 scope).
+  var ENERGY_WRAP_AT = 10;
+  function proteinEnergy(state, m) {
+    var max = state.dpMax || 0;
+    var cur = state.dp || 0;
+    if (!isDm20(state) && m && Number(m.version) === 1 && max > 0) {
+      if (cur < max) return cur + 1;
+      var next = cur + 1;
+      return next >= max + ENERGY_WRAP_AT ? max : next;
+    }
+    return Math.min(max, cur + 1);
+  }
+
   function feedProtein(state) {
+    if (asleepInDark(state)) return { ok: false, reason: 'asleep-dark' };
     if (state.dead) return { ok: false, reason: 'dead' };
     var m = mon(state);
     if (!m || m.stage === 'egg') return { ok: false, reason: 'egg' };
     wakePenalty(state, 'food');
     // +1 strength (no overfill past 4), +2 g, always accepted (protein is
-    // not a 満腹 refuse). Every 4 proteins: +1 Energy (DP, no overfill past
-    // dpMax), +1 overdose (0–15), +1 power-up (0–4). Remainder 0–3 carries.
+    // not a 満腹 refuse). Every 4 proteins: +1 Energy (see proteinEnergy:
+    // Ver.1 wraps at default+10, others stop at dpMax), +1 overdose (0–15), +1 power-up (0–4). Remainder 0–3 carries.
     if (state.strength < 4) state.strength = state.strength + 1;
     state.weight = Math.min(99, (state.weight || 0) + 2);
     clearStrengthCall(state);
@@ -1116,7 +1167,7 @@
       rem = 0;
       state.overdose = Math.min(15, (state.overdose || 0) + 1);
       state.proteinPowerUp = Math.min(4, (state.proteinPowerUp || 0) + 1);
-      state.dp = Math.min(state.dpMax || 0, (state.dp || 0) + 1);
+      state.dp = proteinEnergy(state, m);
     }
     state.proteinRemainder = rem;
     state._proteinBank = rem; // alias for older UI
@@ -1124,6 +1175,7 @@
   }
 
   function noteTrainingOpened(state) {
+    if (asleepInDark(state)) return { ok: false, reason: 'asleep-dark' };
     if (!state || state.dead) return { ok: false };
     var m = mon(state);
     if (!m || m.stage === 'egg' || m.stage === 'baby1' || m.stage === 'baby2') {
@@ -1150,6 +1202,7 @@
 
   function finishTraining(state, success, attempted) {
     if (state.dead) return { ok: false };
+    if (asleepInDark(state)) return { ok: false, reason: 'asleep-dark' };
     var m = mon(state);
     if (!m || m.stage === 'egg' || m.stage === 'baby1' || m.stage === 'baby2') return { ok: false, reason: 'too-young' };
     wakePenalty(state, 'train');
@@ -1329,6 +1382,7 @@
 
   function recordBattle(state, result, rng) {
     if (state.dead) return;
+    if (asleepInDark(state)) return { ok: false, reason: 'asleep-dark' };
     var m = mon(state);
     if (!m || !m.canBattle || !STAGE_TRAIN_BATTLE[m.stage]) return { ok: false, reason: 'cannot-battle' };
     if (state.dp <= 0) return { ok: false, reason: 'no-dp' };
@@ -1599,9 +1653,14 @@
     mon: mon,
     isSleepHours: isSleepHours,
     disturbSleep: disturbSleep,
+    asleepInDark: asleepInDark,
     DISTURB_AWAKE_SEC: DISTURB_AWAKE_SEC,
     CALL_TIMEOUT: CALL_TIMEOUT,
     LIGHTS_CALL_TIMEOUT: LIGHTS_CALL_TIMEOUT,
+    VER1_LIGHTS_CALL_TIMEOUT: VER1_LIGHTS_CALL_TIMEOUT,
+    VER1_HATCH_MIN: VER1_HATCH_MIN,
+    lightsCallTimeout: lightsCallTimeout,
+    isVer1Brick: isVer1Brick,
     HUNGER_FREEZE_SEC: HUNGER_FREEZE_SEC,
     MAX_CATCHUP: Infinity, // v32: no cap (whole closed period simulated on SIM_GRID)
     STARVE_DEATH: STARVE_DEATH,

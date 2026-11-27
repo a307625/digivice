@@ -70,6 +70,38 @@
     }
   }
 
+  /**
+   * v36 call alarm: the 1997 call icon lights "with a sign sound"
+   * (Bandai Ver.1 manual: サイン音と一緒に点灯). Three short beeps, the
+   * same square tone as the key click. No-ops when enabled is false.
+   */
+  var CALL_BEEPS = [0, 0.16, 0.32];
+  function callAlarm(enabled) {
+    if (!enabled) return false;
+    var c = audioContext();
+    if (!c) return false;
+    if (c.state === 'suspended' && typeof c.resume === 'function') {
+      try { c.resume(); } catch (e) {}
+    }
+    try {
+      for (var i = 0; i < CALL_BEEPS.length; i++) {
+        var o = c.createOscillator();
+        var g = c.createGain();
+        o.type = 'square';
+        o.frequency.value = 1760;
+        g.gain.value = 0.045;
+        o.connect(g);
+        g.connect(c.destination);
+        var t = c.currentTime + CALL_BEEPS[i];
+        o.start(t);
+        o.stop(t + 0.09);
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function state() {
     return ctx ? ctx.state : 'none';
   }
@@ -82,6 +114,8 @@
     audioContext: audioContext,
     unlock: unlock,
     beep: beep,
+    callAlarm: callAlarm,
+    CALL_BEEPS: CALL_BEEPS,
     state: state,
     _resetForTests: _resetForTests
   };
