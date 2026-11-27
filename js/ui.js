@@ -1614,11 +1614,22 @@
     if (id) blitMon(id, fx(8), fy(0), MON, efr, false);
   }
 
-  function drawShot(fromRight, u, yDot) {
+  // Official 8×8 技ドット for this species. Right-pointing art; flip when
+  // the shot travels left. No published cell → the shared shot.
+  function attackItem(monId) {
+    var A = window.VpetAttack;
+    var fam = (currentDevice() && currentDevice().family) || '';
+    var name = A && monId ? A.itemFor(monId, fam) : null;
+    var I = items();
+    if (name && I && I.ITEMS && I.ITEMS[name]) return name;
+    return 'shot';
+  }
+
+  function drawShot(fromRight, u, yDot, monId) {
     var start = fromRight ? fx(20) : fx(12);
     var end = fromRight ? fx(8) : fx(24);
     var px = start + (end - start) * u;
-    blitItem('shot', px, fy(yDot), ITEM, fromRight);
+    blitItem(attackItem(monId), px, fy(yDot), ITEM, fromRight);
     if (u > 0.55) blitItem('hit', end - 4 * DOT, fy(yDot - 2), ITEM);
   }
 
@@ -1705,10 +1716,10 @@
     var u = shotMode ? 0.5 : ((t % 2) + 0.5) / 2;
     if (ph === 'shot') {
       blitMon(self, fx(16), fy(0), MON, 'attack', false);
-      blitItem('shot', fx(Math.round(12 - u * 12)), fy(4), ITEM, false);
+      blitItem(attackItem(self), fx(Math.round(12 - u * 12)), fy(4), ITEM, true);
     } else {
       blitMon(self, fx(16), fy(0), MON, 'idle0', false);
-      blitItem('shot', fx(Math.round(u * 8)), fy(4), ITEM, true);
+      blitItem(attackItem(battleFx.foe), fx(Math.round(u * 8)), fy(4), ITEM, false);
     }
   }
 
@@ -1756,8 +1767,9 @@
     if (cur && !over) {
       var fromRight = cur.side !== 'self';
       var u = landed ? 0.85 : 0.35;
-      drawShot(fromRight, u, 6);
-      if (cur.dmg >= 3) drawShot(fromRight, u * 0.65, 9);
+      var shooter = fromRight ? battleFx.foe : self;
+      drawShot(fromRight, u, 6, shooter);
+      if (cur.dmg >= 3) drawShot(fromRight, u * 0.65, 9, shooter);
       if (landed && cur.hit) {
         var I2 = items();
         if (I2 && I2.drawNumber) I2.drawNumber(ctx, cur.dmg, fx(fromRight ? 6 : 18), fy(8), ITEM, 0);
@@ -1787,7 +1799,7 @@
     blitMon(battleFx.foe, fx(16), fy(0) + foeDy, MON, foeFr, false);
     if (t >= 2 && t < 5) {
       var goingRight = battleFx.result === 'win';
-      drawShot(!goingRight, (t - 2) / 3, 4);
+      drawShot(!goingRight, (t - 2) / 3, 4, goingRight ? self : battleFx.foe);
     }
     if (battleFx.shots && battleFx.shots.length && t >= 1) {
       var I2 = items();

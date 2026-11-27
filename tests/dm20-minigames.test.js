@@ -172,5 +172,20 @@ console.log('5) DM20 care timers for the Dracomon line');
   eq(s.sleepStart, 0, 'Breakdramon bedtime 0:00 AM (Humulos guide)');
 }
 
+console.log('6) battle shots use the species attack dot');
+{
+  require(path.join(ROOT, 'js/items.js'));
+  require(path.join(ROOT, 'js/attack-dots.js'));
+  const A = global.VpetAttack;
+  eq(A.itemFor('agumon', 'dm1997'), 'atk_fire', 'Agumon fires the fire dot');
+  eq(A.itemFor('elecmon', 'dm1997'), 'atk_thunder', 'Elecmon fires lightning');
+  eq(A.itemFor('devimon', 'dm1997'), 'atk_punch', 'Devimon fires the fist');
+  eq(A.itemFor('greymon', 'dm20'), 'atk_flame', 'Greymon on the 20th brick fires the flame');
+  eq(A.itemFor('whamon', 'dm1997'), 'atk_hari', 'Whamon normal shot is the needle');
+  eq(A.itemFor('whamon', 'pendulum'), 'atk_nami', 'Whamon on Pendulum fires the wave');
+  eq(A.itemFor('coredramon_blue', 'dm20'), null, 'Coredramon has no published attack dot');
+  ok(/function attackItem\(/.test(ui) && /drawShot\(fromRight, u, 6, shooter\)/.test(ui), '20th battle draws the shooter\'s dot');
+}
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed ? 1 : 0);

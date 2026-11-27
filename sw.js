@@ -1,4 +1,4 @@
-/* Offline cache for 數碼怪獸對打機 — v85 (20th single battle uses hit points)
+/* Offline cache for 數碼怪獸對打機 — v89 (each species fires its own attack dot)
  * - Precaches every file index.html loads plus ALL device shells (WebP,
  *   ~2.4 MB), so any device works on an offline first launch.
  * - Precache requests bypass the HTTP cache (cache: 'reload'), so a new
@@ -9,7 +9,7 @@
  * - Only same-origin, non-redirected, 200 'basic' responses are cached.
  * - Old caches are deleted only after the new one is complete.
  */
-var CACHE = 'digivice-v88'; // v88 Ver.1 training fidelity (live was v87)
+var CACHE = 'digivice-v89'; // v89 species attack dots (live was v88)
 var APP_SHELL = './index.html';
 var ASSETS = [
   './',
@@ -22,6 +22,7 @@ var ASSETS = [
   './js/user-sprites.js',
   './assets/user-sprites/manifest.json',
   './js/items.js',
+  './js/attack-dots.js',
   './js/lcd-kana.js',
   './js/save.js',
   './icons/bezel/status.png',

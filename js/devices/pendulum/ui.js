@@ -457,6 +457,12 @@
       num(host, battle.hpF, host.fx(22), host.fy(0), host.ITEM, 1);
       blitMon(host, host.state.mon, host.fx(0), host.fy(4), 'attack', false);
       blitMon(host, battle.foe, host.fx(16), host.fy(4), 'attack', true);
+      // Each species fires its own 8×8 技ドット (NHOKO). Unlisted species keep the shared shot.
+      var Atk = window.VpetAttack;
+      var selfDot = (Atk && Atk.itemFor(host.state.mon, 'pendulum')) || 'shot';
+      var foeDot = (Atk && Atk.itemFor(battle.foe, 'pendulum')) || 'shot';
+      host.blitItem(selfDot, host.fx(10), host.fy(6), host.ITEM, false);
+      host.blitItem(foeDot, host.fx(18), host.fy(6), host.ITEM, true);
     } else if (battle.phase === 'result') {
       text(host, battle.result === 'win' ? 'WIN' : 'LOSE', host.fx(8), host.fy(5), host.ITEM);
     }
