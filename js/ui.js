@@ -1692,8 +1692,12 @@
     var burst0 = v1HatchFrame(from, 'burst0');
     var burst1 = v1HatchFrame(from, 'burst1');
     if (t < 2) return { id: from, fr: idleFrame() };
-    // Cracked egg alternates with the squat egg cell (video 0:25-0:27.5).
-    if (t < 4) return { id: from, fr: (crack && t === 2) ? 'crack' : 'hatch' };
+    // Ver.1–5: official Color split shell, then the newborn in that shell.
+    // A user crack PNG still replaces the first of those two.
+    if (t < 4) {
+      if (t === 2 && (crack || from.indexOf('egg_v') === 0)) return { id: from, fr: 'crack' };
+      return { id: from, fr: 'hatch' };
+    }
     if (burst0 && t < 6) return { id: from, fr: (t === 5 && burst1) ? 'burst1' : 'burst0' };
     return { id: to, fr: idleFrame() };
   }
@@ -1711,7 +1715,12 @@
     }
     var id = t < 4 ? evoFx.from : evoFx.to;
     var efr = 'idle0';
-    if (id && id.indexOf && id.indexOf('egg_') === 0 && t < 4) efr = (t > 1) ? 'hatch' : idleFrame();
+    if (id && id.indexOf && id.indexOf('egg_') === 0 && t < 4) {
+      if (t > 2) efr = 'hatch';
+      else if (t > 1 && id.indexOf('egg_v') === 0) efr = 'crack';
+      else if (t > 1) efr = 'hatch';
+      else efr = idleFrame();
+    }
     else efr = idleFrame();
     if (id) blitMon(id, fx(8), fy(0), MON, efr, false);
   }
