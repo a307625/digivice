@@ -484,7 +484,11 @@
     if (!state) return;
     var n = state.poop || 0;
     if (poopSeen == null) { poopSeen = n; return; }
-    if (n > poopSeen && view === 'play' && !state.dead && !state.sleeping && !eatAnim.on && !flushAnim.on) {
+    // v93 (Eric: follow the original): on the 1997 bricks the squat is ROM mode A,
+    // reached only from mode 0 (plain home screen, no icon lit). A pile that falls
+    // due with an icon lit or a menu open (modes 2-8) is just added (disassembly §10).
+    var v1Quiet = is1997Brick() && sel >= 0;
+    if (n > poopSeen && view === 'play' && !v1Quiet && !state.dead && !state.sleeping && !eatAnim.on && !flushAnim.on) {
       playPose('poop', 2000);
     }
     poopSeen = n;

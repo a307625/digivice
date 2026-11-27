@@ -47,11 +47,12 @@ console.log('1997 Ver.1 buttons during actions, on the egg, and in clock SET');
 console.log('================================================================\n');
 
 const NAMES = ['goHome', 'isMenuView', 'cycleSel', 'confirmSel', 'pressA', 'pressB', 'pressC',
-  'v1ActionBusy', 'v1EggLocked', 'v1IdleHome', 'maybeNewEggCombo'];
-const code = block('feedReturnPending') + NAMES.map(fn).join('\n') + `
+  'v1ActionBusy', 'v1EggLocked', 'v1IdleHome', 'maybeNewEggCombo', 'playPose', 'notePoop'];
+const code = block('feedReturnPending') + block('poopSeen') + NAMES.map(fn).join('\n') + `
   this.api = { pressA: pressA, pressB: pressB, pressC: pressC,
-    busy: v1ActionBusy, eggLocked: v1EggLocked, idleHome: v1IdleHome, eggCombo: maybeNewEggCombo,
-    setFeedPending: function (v) { feedReturnPending = v; } };`;
+    busy: v1ActionBusy, eggLocked: v1EggLocked, idleHome: v1IdleHome, eggCombo: maybeNewEggCombo, notePoop: notePoop,
+    setFeedPending: function (v) { feedReturnPending = v; },
+    getPose: function () { return poseFx; } };`;
 
 function makeWorld(family) {
   const w = {
@@ -285,6 +286,48 @@ console.log('10) Eric\'s poop squat (refuse cell, then happy) locks the keys (RO
   const t = makeWorld();
   t.ctx.view = 'status';
   ok(t.api.idleHome() && t.ctx.view === 'play', 'menu timeout lands on play, where a later pile can squat');
+}
+
+console.log('10b) v93: 1997 squat only from the plain home screen (ROM mode 0)');
+{
+  function pile(family, view, sel, extra) {
+    const w = makeWorld(family);
+    w.ctx.state = Object.assign({ mon: 'agumon', dead: false, sleeping: false, poop: 0 }, extra || {});
+    w.ctx.view = view; w.ctx.sel = sel;
+    w.api.notePoop();                 // first tick only records the count
+    w.ctx.state.poop = 1;
+    w.api.notePoop();
+    return w;
+  }
+  let w = pile('dm1997', 'play', -1);
+  eq(w.api.getPose().name, 'poop', '1997 home screen, no icon lit: squat plays');
+  eq(w.ctx.state.poop, 1, 'and the pile is there');
+  ok(w.api.busy(), 'keys locked while it plays');
+  for (const s of [0, 3, 5]) {
+    w = pile('dm1997', 'play', s);
+    eq(w.api.getPose().name, null, '1997 icon ' + s + ' lit: no squat');
+    eq(w.ctx.state.poop, 1, '1997 icon ' + s + ' lit: pile still added');
+    w.press('A'); eq(w.ctx.sel, s + 1, '1997 icon ' + s + ' lit: A still moves the cursor (not locked)');
+  }
+  for (const v of ['status', 'food', 'lightMenu', 'clock', 'train']) {
+    w = pile('dm1997', v, -1);
+    eq(w.api.getPose().name, null, '1997 ' + v + ' open: no squat');
+    eq(w.ctx.state.poop, 1, '1997 ' + v + ' open: pile still added');
+  }
+  // Later pile after going back home with no icon lit squats again.
+  w = pile('dm1997', 'play', 2);
+  w.ctx.sel = -1; w.ctx.state.poop = 2; w.api.notePoop();
+  eq(w.api.getPose().name, 'poop', '1997: next pile after returning to the plain home screen squats');
+  w = pile('dm1997', 'play', -1, { sleeping: true });
+  eq(w.api.getPose().name, null, '1997 asleep: no squat (unchanged)');
+  // Other families keep Eric's b00ed93 behaviour (ROM rule only known for Ver.1).
+  for (const f of ['dmc', 'dm20', 'pen20', 'pendulum']) {
+    w = pile(f, 'play', 2);
+    eq(w.api.getPose().name, 'poop', f + ' with an icon lit: squat unchanged (Eric b00ed93)');
+    w = pile(f, 'status', -1);
+    eq(w.api.getPose().name, null, f + ' on a menu: no squat (unchanged)');
+  }
+  ok(/var v1Quiet = is1997Brick\(\) && sel >= 0;/.test(src), 'notePoop carries the 1997 icon-lit check');
 }
 
 console.log('11) Source wiring');
