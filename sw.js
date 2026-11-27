@@ -1,4 +1,4 @@
-/* Offline cache for 數碼怪獸對打機 — v94 (official color on attack dots that match a Color cell)
+/* Offline cache for 數碼怪獸對打機 — v95 (fist missile needle wave gaia fang use the first color cell)
  * - Precaches every file index.html loads plus ALL device shells (WebP,
  *   ~2.4 MB), so any device works on an offline first launch.
  * - Precache requests bypass the HTTP cache (cache: 'reload'), so a new
@@ -9,7 +9,7 @@
  * - Only same-origin, non-redirected, 200 'basic' responses are cached.
  * - Old caches are deleted only after the new one is complete.
  */
-var CACHE = 'digivice-v94'; // v94 official color attack dots (live was v93)
+var CACHE = 'digivice-v95'; // v95 first color cell for fist missile needle wave gaia fang (live was v94)
 var APP_SHELL = './index.html';
 var ASSETS = [
   './',
