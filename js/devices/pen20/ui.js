@@ -64,6 +64,12 @@
   }
 
   function monFrame(host) {
+    var p = host.poseFx;
+    var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    if (p && p.name === 'poop' && p.until && now < p.until) {
+      var span = (p.until - (p.started || p.until)) || 1;
+      return (now - (p.started || 0) < span / 2) ? 'refuse' : 'happy';
+    }
     return (host.animTick() % 2 === 0) ? 'idle0' : 'idle1';
   }
 

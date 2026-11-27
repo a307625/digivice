@@ -64,6 +64,7 @@
   var evoFx = { t: 0, from: '', to: '' };
   var battleFx = { t: 0, foe: '', result: '', active: false };
   var poseFx = { name: null, until: 0, extra: null };
+  var poopSeen = null;
   var eatAnim = { on: false, t: 0, kind: 'meat', refused: false };
   var flushAnim = { on: false, t: 0, n: 0, off: 0 };
   var walk = { x: 8, dir: -1 };
@@ -477,6 +478,18 @@
     poseFx = { name: name, until: performance.now() + (ms || 1000), extra: extra || null, started: performance.now() };
   }
 
+  // A new pile, while the pet is on screen and awake, plays the squat then the sit.
+  // Catch-up that happens off the play screen only leaves the pile.
+  function notePoop() {
+    if (!state) return;
+    var n = state.poop || 0;
+    if (poopSeen == null) { poopSeen = n; return; }
+    if (n > poopSeen && view === 'play' && !state.dead && !state.sleeping && !eatAnim.on && !flushAnim.on) {
+      playPose('poop', 2000);
+    }
+    poopSeen = n;
+  }
+
   function decodeIndex(ch) {
     if (window.SpriteAtlas && window.SpriteAtlas.decodeIndex) return window.SpriteAtlas.decodeIndex(ch);
     var n = parseInt(ch, 36);
@@ -616,6 +629,12 @@
       // One angry cell, swapped with the standing cell at 2 Hz. A frozen roar is not the fail pose.
       if (poseFx.name === 'angry') return (animTick() % 2) ? 'angry' : 'idle0';
       if (poseFx.name === 'refuse') return 'refuse';
+      // Poop reuses two existing cells: squat is refuse, then the sit is happy.
+      // DVPet SpriteAnim poop() is sheet frame 4 then frame 5. No separate poop body.
+      if (poseFx.name === 'poop') {
+        var span = (poseFx.until - (poseFx.started || poseFx.until)) || 1;
+        return (performance.now() - (poseFx.started || 0) < span / 2) ? 'refuse' : 'happy';
+      }
     } else if (poseFx.name && performance.now() >= poseFx.until) {
       poseFx = { name: null, until: 0, extra: null };
     }
@@ -2799,6 +2818,7 @@
     try {
       var r = (window.Devices && window.Devices.tick) ? window.Devices.tick(state, Date.now()) : window.Engine.tick(state, Date.now());
       if (r && r.died && view !== 'dying' && view !== 'grave') { dyingT = 0; view = 'dying'; }
+      notePoop();
       draw();
     } catch (e) {}
   }
@@ -2885,6 +2905,7 @@
     if (state && (view === 'play' || view === 'train' || view === 'charge' || view === 'clock' || view === 'status' || view === 'food' || view === 'battleMenu' || view === 'lightMenu' || view === 'album' || view === 'albumView' || view === 'albumRecord' || view === 'connect' || view === 'healMenu' || view === 'soundMenu')) {
       var prevMon = state.mon;
       var r = (window.Devices && window.Devices.tick) ? window.Devices.tick(state, Date.now()) : window.Engine.tick(state, Date.now());
+      notePoop();
       if (r.evolved) {
         evoFx = { t: 0, from: prevMon, to: state.mon };
         view = 'evo';

@@ -1,4 +1,4 @@
-/* Offline cache for 數碼怪獸對打機 — v90 (each species fires its own attack dot)
+/* Offline cache for 數碼怪獸對打機 — v91 (poop squat uses the refuse cell, then happy)
  * - Precaches every file index.html loads plus ALL device shells (WebP,
  *   ~2.4 MB), so any device works on an offline first launch.
  * - Precache requests bypass the HTTP cache (cache: 'reload'), so a new
@@ -9,7 +9,7 @@
  * - Only same-origin, non-redirected, 200 'basic' responses are cached.
  * - Old caches are deleted only after the new one is complete.
  */
-var CACHE = 'digivice-v90'; // v90 species attack dots (live was v89)
+var CACHE = 'digivice-v91'; // v91 poop squat is the refuse cell (live was v90)
 var APP_SHELL = './index.html';
 var ASSETS = [
   './',

@@ -124,6 +124,10 @@
         if (n === 'happy') return 'happy';
         if (n === 'refuse') return 'refuse';
         if (n === 'angry') return 'angry';
+        if (n === 'poop') {
+          var span = (host.poseFx.until - (host.poseFx.started || host.poseFx.until)) || 1;
+          return (now - (host.poseFx.started || 0) < span / 2) ? 'refuse' : 'happy';
+        }
       }
     }
     return (tick % 2) ? 'idle1' : 'idle0';
