@@ -10,6 +10,7 @@
   --danger: #c44848;
   --panel: #1a222c;
   --app-h: 100vh;
+  --app-w: 100vw;
   --device-aspect: 1.440694;
   --lcd-l: 12.249%;
   --lcd-t: 39.634%;
@@ -93,7 +94,7 @@ body {
 .device {
   position: relative;
   aspect-ratio: var(--shell-aw, 1494) / var(--shell-ah, 1037);
-  width: min(calc(100vw - 8px), calc((var(--app-h) - 8px) * var(--shell-aw, 1494) / var(--shell-ah, 1037)));
+  width: min(calc(var(--app-w, 100vw) - 8px), calc((var(--app-h, 100vh) - 8px) * var(--shell-aw, 1494) / var(--shell-ah, 1037)));
   height: auto;
   flex: 0 0 auto;
 }
