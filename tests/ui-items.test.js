@@ -101,7 +101,7 @@ console.log('3) Flush wave is the shared Ver.1–5 scroll, drawn in front of eve
   const ui = fs.readFileSync(path.join(__dirname, '../js/ui.js'), 'utf8');
   ok(/Ver\.1–5 share this system graphic/.test(ui), 'flush comment covers Ver.1 through Ver.5');
   ok(/for \(c = 0; c < cols; c\+\+\)[\s\S]{0,220}poopwave/.test(ui), 'each poop column scrolls a wave');
-  ok(/if \(!flushAnim\.on\) return;[\s\S]{0,80}for \(c = 0/.test(ui), 'waves are drawn after the piles, so the upper pile cannot hide them');
+  ok(/if \(!flushAnim\.on \|\| v1f\) return;[\s\S]{0,80}for \(c = 0/.test(ui), 'waves are drawn after the piles, so the upper pile cannot hide them (v96: 1997 uses the sweep instead)');
 }
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

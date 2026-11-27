@@ -194,7 +194,7 @@ console.log('9) Ver.1 training: frame-by-frame layout vs the manual + real-devic
   ok(/if \(hits < 3 && blocks < 3\) return;/.test(ui), 'strength applies the moment 3 hits (or 3 blocks) decide it');
   ok(/if \(ver1CancelLocked\(\)\) return;/.test(ui), 'C ignored while a shot is flying or on the result');
   ok(/playPose\(train\.success \? 'happy' : 'angry', V1T\.pose, 'train'\)/.test(ui), 'result → happy (sun) or angry, 4 s');
-  ok(/poseFx\.extra === 'train' && is1997Brick\(\) && \(animTick\(\) % 2\) === 1\) drawDots\(SUN_DOTS, 25, 0\)/.test(ui), 'sun shown with the happy picture');
+  ok(/v1 && poseFx\.name === 'happy' && \(animTick\(\) % 2\) === 1\)[\s\S]{0,80}extra === 'train'\) blitGlyph97\('sun97', SUN97_COL, 0\)/.test(ui), 'sun shown with the happy picture (v96 DMC-colour sun)');
   ok(/if \(mode === 'highlow'\) ver1TrainTick\(nowTr\);/.test(ui), 'timeline runs from the frame loop');
 }
 {
@@ -215,8 +215,8 @@ console.log('10) 1997 battle: banner, shots, burst, suns / skulls');
   eq(ph(8), 'hit', 't8 hit burst'); eq(ph(12), 'result', 't12 result');
   ok(/var battleEnd = is1997Brick\(\) \? BATTLE97_END : 8;/.test(ui), 'battle runs to the end of the result');
   ok(/drawText\(ctx, 'BATTLE', fx\(0\), fy\(5\), ITEM\)/.test(ui), 'BATTLE banner at native dot size');
-  ok(/drawDots\(SUN_DOTS, 0, 4\);\s*drawDots\(SUN_DOTS, 25, 4\);/.test(ui), 'win: suns on both sides');
-  ok((ui.match(/blitItem\('skull', fx\((0|24)\), fy\((0|8)\), ITEM\);/g) || []).length >= 4, 'loss: four corner skulls');
+  ok(/blitGlyph97\('sun97', 0, 4\);\s*blitGlyph97\('sun97', SUN97_COL, 4\);/.test(ui), 'win: suns on both sides');
+  ok((ui.match(/blitGlyph97\('skull97', (0|24), (0|8)\);/g) || []).length >= 4, 'loss: four corner skulls (v96 DMC dark skull)');
 }
 
 console.log('11) lights off, heal sun, grave number, integer dots');
@@ -226,7 +226,7 @@ console.log('11) lights off, heal sun, grave number, integer dots');
   eq(LO.playfieldMode({ lights: false }, 'food', 'dm1997'), 'paper', 'menus still paint');
   ok(/if \(is1997PlayDark\(\)\) \{ drawDarkSleepZ\(\); return; \}/.test(ui), 'dark screen shows only the zZ');
   ok(!/rgba\(16, 20, 28, 0\.28\)/.test(ui), 'old half-dim overlay is gone');
-  ok(/playPose\('happy', 1600, 'heal'\)/.test(ui) && /extra === 'heal' && is1997Brick\(\)\) drawDots\(SUN_DOTS/.test(ui), 'heal: happy + sun');
+  ok(/playPose\('happy', 1600, 'heal'\)/.test(ui) && /extra === 'heal' \|\| poseFx\.extra === 'flush'\) blitGlyph97\('sun97', SUN97_COL, 1\)/.test(ui), 'heal: happy + sun');
   ok(/drawRightNumber\(I, age, 29, 5\)/.test(ui), 'grave shows the survival number');
   const sz = fn('lcdIntegerSize');
   for (const [w, h, dpr] of [[300, 150, 2], [347, 171, 3], [181, 90, 1], [520, 262, 2.625]]) {

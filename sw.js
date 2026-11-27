@@ -1,4 +1,4 @@
-/* Offline cache for 數碼怪獸對打機 — v97 (gaia is the blue sphere)
+/* Offline cache for 數碼怪獸對打機 — v98 (1997 expressions: walk with poop/calls, DMC sun/skull/flush wave, refuse in place, no evo wash; on top of v97)
  * - Precaches every file index.html loads plus ALL device shells (WebP,
  *   ~2.4 MB), so any device works on an offline first launch.
  * - Precache requests bypass the HTTP cache (cache: 'reload'), so a new
@@ -9,7 +9,7 @@
  * - Only same-origin, non-redirected, 200 'basic' responses are cached.
  * - Old caches are deleted only after the new one is complete.
  */
-var CACHE = 'digivice-v97'; // v97 gaia is the blue sphere (live was v96)
+var CACHE = 'digivice-v98'; // v98 1997 expression fixes on top of v97 (live was v97; v96 was already used by a654af6)
 var APP_SHELL = './index.html';
 var ASSETS = [
   './',

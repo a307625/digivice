@@ -975,7 +975,8 @@
     if (!state && !flushAnim.on) return;
     var n = poopCount();
     if (n <= 0) return;
-    var off = flushAnim.on ? flushAnim.off : 0;
+    var v1f = flushAnim.on && is1997Brick();
+    var off = (flushAnim.on && !v1f) ? flushAnim.off : 0;
     // Sitting poop wiggles. During a flush the scroll is the motion;
     // mirroring the wave makes the water flip instead of flow.
     var flip = !flushAnim.on && (animTick() % 2) === 1;
@@ -988,7 +989,7 @@
       y = ((i % 2 === 0) ? pw : 0) + off;
       if (y < FH) blitItem('poop', fx(x), fy(y), ITEM, flip);
     }
-    if (!flushAnim.on) return;
+    if (!flushAnim.on || v1f) return;
     for (c = 0; c < cols; c++) {
       x = FW - pw - pw * c;
       for (t = -1; t <= 2; t++) {
@@ -1009,8 +1010,15 @@
     return id === 'pen_egg' || id.indexOf('egg_') === 0;
   }
 
+  // Rightmost walk position: the Digimon stays left of the piles.
+  function walkMaxX() {
+    return Math.max(0, FW - 16 - poopCols() * 8);
+  }
+
   function walkUpdate() {
-    if (!state || state.dead || state.sleeping || state.injured || isCalling() || poseFx.name || eatAnim.on || flushAnim.on) return;
+    // v96: on the 1997 bricks a call only lights the icon and beeps; the
+    // Digimon keeps walking (Ver.1 manual JP p4R; real-device video).
+    if (!state || state.dead || state.sleeping || state.injured || (!is1997Brick() && isCalling()) || poseFx.name || eatAnim.on || flushAnim.on) return;
     if (view !== 'play') return;
     // 1997 egg: two frames rock it by one dot, in the center. It does not
     // patrol the glass the way a hatched Digimon does. Same on DM20.
@@ -1019,8 +1027,7 @@
       walk.dir = -1;
       return;
     }
-    var monW = 16;
-    var maxX = Math.max(0, FW - monW - poopCols() * 8);
+    var maxX = walkMaxX();
     var minX = 0;
     walk.x += walk.dir;
     if (walk.x <= minX) { walk.x = minX; walk.dir = 1; }
@@ -1030,7 +1037,7 @@
   function drawMonAt(x, y, fr, flip) {
     if (!state || !state.mon) return;
     blitMon(state.mon, x, y, MON, fr, flip);
-    if (state.injured && view !== 'dying' && view !== 'grave' && !state.dead) {
+    if (state.injured && view !== 'dying' && view !== 'grave' && !state.dead && !is1997Brick()) {
       var bob = (animTick() % 2) ? DOT : 0;
       blitItem('skull', x + 8 * DOT, y + bob, ITEM);
     }
@@ -1051,7 +1058,9 @@
     var my = fy(0);
     var mx = fx(walk.x);
     var flip = false;
-    var calling = isCalling() && !state.sleeping && !eatAnim.on && !poseFx.name && !state.injured;
+    var v1 = is1997Brick();
+    // v96: 1997 call = icon + beep only, no centring or hop.
+    var calling = !v1 && isCalling() && !state.sleeping && !eatAnim.on && !poseFx.name && !state.injured;
     if (isEggStage()) {
       mx = fx(8);
       flip = false;
@@ -1068,16 +1077,27 @@
       flip = true;
     } else if (poseFx.name === 'refuse') {
       flip = (animTick() % 2) === 1;
-      mx = fx(Math.floor((FW - monW) / 2));
+      // v96: 1997 head-shake happens where the Digimon stands (left of any
+      // piles), as in the real-device video; others keep the centre.
+      mx = v1 ? fx(Math.min(walk.x, walkMaxX())) : fx(Math.floor((FW - monW) / 2));
+    } else if (flushAnim.on && v1) {
+      // v96: the Digimon stays where it was until the wave sweeps it away.
+      mx = fx(Math.min(walk.x, walkMaxX()));
+      flip = walk.dir > 0;
     } else if (poseFx.name) {
       mx = fx(Math.floor((FW - monW) / 2));
       flip = false;
       // One happy cell. The brick hops that same picture up one dot at 2 Hz.
-      if (poseFx.name === 'happy' && poseFx.extra === 'train' && is1997Brick()) {
+      if (poseFx.name === 'happy' && (poseFx.extra === 'train' || poseFx.extra === 'flush') && is1997Brick()) {
         // Ver.1 training success: normal / happy picture at 2 Hz, the sun
         // shown with the happy one (real-device frames), no hop.
         if ((animTick() % 2) === 0) fr = 'idle0';
       } else if (poseFx.name === 'happy' && (animTick() % 2) === 1) my = fy(0) - DOT;
+    } else if (state.injured && v1) {
+      // v96: injured stays put, centred but never over the piles; the skull
+      // blinks on its own in the top-right corner (drawn below).
+      mx = fx(Math.min(Math.floor((FW - monW) / 2), walkMaxX()));
+      flip = false;
     } else if (state.injured || calling) {
       // Sick, or the attention hop: stay put. A call lifts the sprite one dot.
       mx = fx(Math.floor((FW - monW) / 2));
@@ -1092,15 +1112,44 @@
       flip = false;
     }
     drawMonAt(mx, my, fr, flip);
-    if (poseFx.name === 'happy' && poseFx.extra === 'heal' && is1997Brick()) drawDots(SUN_DOTS, 25, 1);
-    if (poseFx.name === 'happy' && poseFx.extra === 'train' && is1997Brick() && (animTick() % 2) === 1) drawDots(SUN_DOTS, 25, 0);
+    // v96 (1997): sun = Ver.1 shape in DMC colours, top right. Training,
+    // heal and the after-flush cheer all blink it at 2 Hz with the happy cell.
+    if (v1 && poseFx.name === 'happy' && (animTick() % 2) === 1) {
+      if (poseFx.extra === 'train') blitGlyph97('sun97', SUN97_COL, 0);
+      else if (poseFx.extra === 'heal' || poseFx.extra === 'flush') blitGlyph97('sun97', SUN97_COL, 1);
+    }
+    // v96 (1997): injury skull, DMC dark skull, top-right corner, blinking.
+    if (v1 && state.injured && view !== 'dying' && !state.dead && (animTick() % 2) === 0) {
+      blitGlyph97('skull97', SKULL97_COL, SKULL97_ROW);
+    }
 
     if (eatAnim.on && !eatAnim.refused) {
       var food = eatFoodSprite(eatAnim);
       if (food && food.food) blitItem(food.food, fx(food.xDots), fy(food.yDots), ITEM, false);
     }
     drawPoop();
+    if (v1 && flushAnim.on) drawFlushSweep97();
     drawSleepZ();
+  }
+
+  /* v96: 1997 flush (real-device video, about 1.2 s): one upright wave
+     column enters at the right edge and sweeps left across the whole glass;
+     everything it has passed (piles and the Digimon) is gone behind it. */
+  function flush97WaveCol() {
+    return FW - (flushAnim.off || 0);
+  }
+  function drawFlushSweep97() {
+    var wx = flush97WaveCol();
+    var clearFrom = Math.max(0, wx + 8);
+    if (clearFrom < FW) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(fx(clearFrom), 0, LCD_W - fx(clearFrom), LCD_H);
+      ctx.clip();
+      draw1997Backdrop();
+      ctx.restore();
+    }
+    if (wx < FW && wx > -8) blitGlyph97('wave97', wx, 0);
   }
 
   // v36: small z + big Z on the dark lights-off screen (manual mock-up: a
@@ -1623,9 +1672,39 @@
     if (charge.foe) blitMon(charge.foe, fx(20), fy(0), MON, 'idle0', false);
   }
 
+  /* v96 (1997): no cream wash (a B/W or DMC LCD cannot show a translucent
+     layer). Evolution plays the old and new forms alternating at 2 Hz, then
+     the new form (no Ver.1 footage of evolution was found: low confidence).
+     Hatch: egg, cracked egg, burst shell if Eric's user frames exist
+     (<egg>_crack.png, <egg>_burst0.png, <egg>_burst1.png), else as before. */
+  function v1HatchFrame(eggId, name) {
+    var US = window.UserSprites;
+    return !!(US && US.getExact && US.getExact('dm1997', eggId, name));
+  }
+  function evo97Pick(t) {
+    var from = evoFx.from, to = evoFx.to;
+    var isEgg = from && from.indexOf && from.indexOf('egg_') === 0;
+    if (!isEgg) {
+      if (t >= 6) return { id: to, fr: idleFrame() };
+      return { id: (t % 2 === 0) ? from : to, fr: 'idle0' };
+    }
+    var crack = v1HatchFrame(from, 'crack');
+    var burst0 = v1HatchFrame(from, 'burst0');
+    var burst1 = v1HatchFrame(from, 'burst1');
+    if (t < 2) return { id: from, fr: idleFrame() };
+    // Cracked egg alternates with the squat egg cell (video 0:25-0:27.5).
+    if (t < 4) return { id: from, fr: (crack && t === 2) ? 'crack' : 'hatch' };
+    if (burst0 && t < 6) return { id: from, fr: (t === 5 && burst1) ? 'burst1' : 'burst0' };
+    return { id: to, fr: idleFrame() };
+  }
   function drawEvo() {
     lcdBg();
     var t = evoFx.t;
+    if (is1997Brick()) {
+      var pk = evo97Pick(t);
+      if (pk.id) blitMon(pk.id, fx(8), fy(0), MON, pk.fr, false);
+      return;
+    }
     if (t % 2 === 0) {
       ctx.fillStyle = 'rgba(255, 248, 210, 0.45)';
       ctx.fillRect(0, 0, LCD_W, LCD_H);
@@ -1665,6 +1744,38 @@
        0-3 banner | 4-5 your shot | 6-7 foe's shot | 8-9 hit | 10-15 result */
   var BATTLE97_END = 15;
   var SUN_DOTS = ['1001001', '0101010', '0011100', '1111111', '0011100', '0101010', '1001001'];
+  /* v96: 1997 system glyphs in official Digital Monster COLOR colours
+     (tero0x/dmc-sprites original/dmc/v1, 24 px = 8 dots x3).
+     sun97: DMC sprite 540 verbatim (Eric, v96: filled centre, official
+       colours). Same 8 outer dots and ring outline as the Ver.1 manual sun.
+     skull97: DMC sprite 543 (dark skull), as on the manual's medical / loss
+       screens. skull97_light: DMC 544, used only on the dark hit burst.
+     wave97: DMC sprite 534, the upright flush wave column (8 x 16). */
+  var GLYPHS97 = {
+    sun97: { w: 8, h: 8, pal: ['#00000000', '#ff6900ff', '#ff9a52ff', '#f7c6a5ff', '#ce5500ff'],
+      frames: { idle0: ['00001000', '01000010', '00021000', '10231101', '00111400', '00044000', '01000001', '00010100'] }, src: 'dmc-color-540' },
+    skull97: { w: 8, h: 8, pal: ['#00000000', '#101042ff', '#3a358cff', '#9c96e6ff', '#e6ebadff', '#191863ff', '#8c8e84ff'],
+      frames: { idle0: ['00000000', '00111120', '01333112', '01445442', '01112112', '02516152', '00515120', '00202020'] }, src: 'dmc-color-543' },
+    skull97_light: { w: 8, h: 8, pal: ['#00000000', '#9c9eb5ff', '#c5c2deff', '#7b7dc5ff', '#f7f7ffff', '#cecaefff', '#525573ff', '#9492c5ff', '#b5b6d6ff'],
+      frames: { idle0: ['00000000', '00122330', '01444553', '02665663', '02552553', '07856583', '00858570', '00505050'] }, src: 'dmc-color-544' },
+    wave97: { w: 8, h: 16, pal: ['#00000000', '#295dd6ff', '#3a8af7ff', '#def7ffff'],
+      frames: { idle0: ['00123200', '01232000', '12320000', '01232000', '00123200', '01232000', '12320000', '01232000',
+        '00123200', '01232000', '12320000', '01232000', '00123200', '01232000', '12320000', '01232000'] }, src: 'dmc-color-534' }
+  };
+  function glyph97(name) {
+    var I = items();
+    if (!I || !I.ITEMS) return null;
+    if (!I.ITEMS[name] && GLYPHS97[name]) I.ITEMS[name] = GLYPHS97[name];
+    return I.ITEMS[name] ? name : null;
+  }
+  function blitGlyph97(name, col, row) {
+    if (glyph97(name)) blitItem(name, fx(col), fy(row), ITEM);
+  }
+  var SUN97_COL = 24;   // 8-dot cell, right edge on column 31 like the old 7-dot sun
+  var SKULL97_COL = 24, SKULL97_ROW = 1;
+  var FLUSH97_MS = 30;  // 40 one-dot steps = 1.2 s sweep (real-device video)
+  var FLUSH97_STEPS = 40;
+  var FLUSH97_HAPPY_MS = 3000;
   var LCD_LIGHT = '#e8eef0';
   function battle97Phase(t) {
     if (t < 4) return 'banner';
@@ -1696,6 +1807,11 @@
         if (dark ? inside : border) { ctx.fillStyle = INK; ctx.fillRect(fx(x), fy(y), DOT, DOT); }
       }
     }
+    // v96: DMC skulls (light 544 on the dark burst, dark 543 on the light one).
+    if (glyph97('skull97') && glyph97('skull97_light')) {
+      blitItem(dark ? 'skull97_light' : 'skull97', fx(12), fy(4), ITEM);
+      return;
+    }
     var sk = items() && items().ITEMS && items().ITEMS.skull;
     var rows = sk && sk.frames && sk.frames.idle0;
     if (rows) {
@@ -1724,14 +1840,15 @@
     if (ph === 'result') {
       var hop = (animTick() % 2) === 1;
       blitMon(self, fx(8), fy(0) + (win && hop ? -DOT : 0), MON, win ? 'happy' : (hop ? 'angry' : 'idle0'), false);
+      // v96: Ver.1 sun shape and the DMC dark skull, in DMC colours.
       if (win) {
-        drawDots(SUN_DOTS, 0, 4);
-        drawDots(SUN_DOTS, 25, 4);
+        blitGlyph97('sun97', 0, 4);
+        blitGlyph97('sun97', SUN97_COL, 4);
       } else {
-        blitItem('skull', fx(0), fy(0), ITEM);
-        blitItem('skull', fx(24), fy(0), ITEM);
-        blitItem('skull', fx(0), fy(8), ITEM);
-        blitItem('skull', fx(24), fy(8), ITEM);
+        blitGlyph97('skull97', 0, 0);
+        blitGlyph97('skull97', 24, 0);
+        blitGlyph97('skull97', 0, 8);
+        blitGlyph97('skull97', 24, 8);
       }
       return;
     }
@@ -2949,14 +3066,20 @@
       }
     }
     if (flushAnim.on) {
+      var v1fl = is1997Brick();
+      var fms = v1fl ? FLUSH97_MS : FLUSH_MS;
       if (!flushLastAt) flushLastAt = now;
-      if (now - flushLastAt >= FLUSH_MS) {
-        flushLastAt += FLUSH_MS;
-        if (now - flushLastAt >= FLUSH_MS * 8) flushLastAt = now;
+      if (now - flushLastAt >= fms) {
+        flushLastAt += fms;
+        if (now - flushLastAt >= fms * 8) flushLastAt = now;
         flushAnim.off += 1;
-        if (flushAnim.off > 24) {
+        if (flushAnim.off > (v1fl ? FLUSH97_STEPS : 24)) {
           flushAnim.on = false;
-          if (state && !state.dead) playPose('happy', 2000);
+          // v96 (1997): centred cheer with the blinking sun, about 3 s.
+          if (state && !state.dead) {
+            if (v1fl) playPose('happy', FLUSH97_HAPPY_MS, 'flush');
+            else playPose('happy', 2000);
+          }
         }
       }
     }
