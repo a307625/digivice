@@ -311,6 +311,47 @@
     return root.Engine.hatchIfEggSelect(prev, version, !!randomize, special || null);
   }
 
+  /* v99 (Eric, 2026-11-28): only these lines can be picked or started for
+     now. Everything else (Pendulum 1.0–5.5 / ZERO, Pen20, 神聖計畫 Digivice,
+     …) stays in the code, assets and tests but is hidden. To bring a line
+     back, add its family here (one line). */
+  var ENABLED_FAMILIES = ['dm1997', 'dm20'];
+
+  function isFamilyEnabled(family) {
+    return ENABLED_FAMILIES.indexOf(String(family || 'dm1997')) >= 0;
+  }
+
+  // Picker value (data-egg) or eggKind → device family.
+  function familyOfEgg(egg) {
+    var k = String(egg == null ? '' : egg);
+    if (/^[1-5]$/.test(k) || /^ver[1-5]$/.test(k)) return 'dm1997';
+    var p = profileByEgg(k);
+    if (p && p.family) return p.family;
+    if (DM20_EGGS[k]) return 'dm20';
+    if (/^pen_20th/.test(k)) return 'pen20';
+    if (/^pen_/.test(k)) return 'pendulum';
+    if (/^dv1999/.test(k)) return 'digivice';
+    return 'unknown';
+  }
+
+  function isEggEnabled(egg) {
+    return isFamilyEnabled(familyOfEgg(egg));
+  }
+
+  // A save belongs to an enabled line? (Hidden-line saves are kept, not loaded.)
+  function stateFamily(state) {
+    if (!state) return null;
+    if (state.family) return String(state.family);
+    if (state.eggKind && familyOfEgg(state.eggKind) !== 'unknown') return familyOfEgg(state.eggKind);
+    var p = profileFor(state);
+    return (p && p.family) || 'dm1997';
+  }
+
+  function isStateEnabled(state) {
+    if (!state) return true;
+    return isFamilyEnabled(stateFamily(state));
+  }
+
   var api = {
     LAYOUT_1997: LAYOUT_1997,
     DM20_EGGS: DM20_EGGS,
@@ -332,6 +373,12 @@
     clockSeconds: clockSeconds,
     migrate: migrate,
     hatchEgg: hatchEgg,
+    ENABLED_FAMILIES: ENABLED_FAMILIES,
+    isFamilyEnabled: isFamilyEnabled,
+    familyOfEgg: familyOfEgg,
+    isEggEnabled: isEggEnabled,
+    stateFamily: stateFamily,
+    isStateEnabled: isStateEnabled,
     allProfiles: function () {
       return Object.keys(byId).map(function (k) { return byId[k]; });
     },

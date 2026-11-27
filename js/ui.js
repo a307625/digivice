@@ -2123,6 +2123,7 @@
   }
 
   function newEgg(version, special, randomize) {
+    if (!eggAllowed(special || String(version))) { toast('這個版本目前暫停使用'); return; }
     if (window.Devices && window.Devices.hatchEgg) {
       state = window.Devices.hatchEgg(state, version, !!randomize, special || null);
     } else {
@@ -2135,6 +2136,47 @@
     persist();
     fillStepsPanels();
     applyShell();
+  }
+
+  /* v99: only the lines in Devices.ENABLED_FAMILIES can be picked or
+     started. A save of a hidden line is never loaded and never deleted:
+     its raw JSON is also copied to PARKED_PREFIX + family, so it survives
+     even after a new egg is started in the main slot. */
+  var PARKED_PREFIX = 'digivice-save-v1-parked-';
+  function eggAllowed(dataEgg) {
+    var D = window.Devices;
+    return !(D && D.isEggEnabled) || D.isEggEnabled(dataEgg);
+  }
+  function stateAllowed(s) {
+    var D = window.Devices;
+    return !(D && D.isStateEnabled) || D.isStateEnabled(s);
+  }
+  function parkHiddenSave(raw) {
+    try {
+      var D = window.Devices;
+      var fam = (D && D.stateFamily) ? D.stateFamily(raw) : 'hidden';
+      var key = PARKED_PREFIX + fam;
+      var json = JSON.stringify(raw);
+      if (localStorage.getItem(key) !== json) localStorage.setItem(key, json);
+      return key;
+    } catch (e) { return null; }
+  }
+  function showPickerOnly(note) {
+    state = null;
+    fillEggGrid();
+    var cancel = $('egg-cancel');
+    if (cancel) cancel.style.display = 'none';
+    showOverlay('overlay-egg', true);
+    if (note) toast(note, 3200);
+  }
+
+  function shotSelectsHidden(name, egg) {
+    if (egg && !eggAllowed(egg)) return true;
+    var n = String(name || '');
+    if (/^(pen-|pen_|night-pen)/.test(n) && !eggAllowed('pen_1_0')) return true;
+    if (/^pen-20th/.test(n) && !eggAllowed('pen_20th_sk')) return true;
+    if (/^digivice/.test(n) && !eggAllowed('dv1999_v1')) return true;
+    return false;
   }
 
   function confirmOverwrite(msg, fn) {
@@ -3210,6 +3252,7 @@
     var fromLocal = false;
     if (!target) {
       target = window.SaveIO.loadLocal();
+      if (target && !stateAllowed(target)) target = null;  // v99: hidden save stays untouched
       fromLocal = !!target;
     }
     if (!target) {
@@ -3337,6 +3380,7 @@
   function doImportText(code) {
     try {
       var obj = window.SaveIO.decode(code);
+      if (!stateAllowed(obj.state)) { toast('這個存檔的版本目前暫停使用，沒有匯入'); return; }
       if (state && window.SaveIO.hasLocal()) {
         if (!window.confirm('匯入會覆蓋目前的育成進度，確定嗎？')) return;
       }
@@ -3607,7 +3651,7 @@
     var row = $('egg-row');
     if (!row || !items()) return;
     row.innerHTML = '';
-    items().EGG_PICKER.forEach(function (egg) {
+    items().EGG_PICKER.filter(function (egg) { return eggAllowed(egg.dataEgg); }).forEach(function (egg) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'egg-card';
@@ -3654,6 +3698,7 @@
     row.querySelectorAll('[data-egg]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var v = btn.getAttribute('data-egg');
+        if (!eggAllowed(v)) return;
         confirmOverwrite('將覆蓋目前的育成進度，確定嗎？', function () {
           if (/^[1-5]$/.test(v)) newEgg(parseInt(v, 10), null, false);
           else newEgg(1, v, false);
@@ -4395,10 +4440,21 @@
 
     var params = new URLSearchParams(location.search);
     var shot = params.get('shot') || params.get('debug');
+    // v99: a link that would open a hidden line (?egg=pen_…, ?shot=pen-…,
+    // digivice…) is ignored; the app starts normally (save or picker).
+    if (shot && shot !== '1' && shotSelectsHidden(shot, params.get('egg'))) shot = null;
     if (shot && shot !== '1') {
       applyShot(shot);
     } else if (window.SaveIO.hasLocal()) {
-      try { loadGame(window.SaveIO.loadLocal()); } catch (e) { fillEggGrid(); showOverlay('overlay-egg', true); }
+      var saved = window.SaveIO.loadLocal();
+      if (saved && !stateAllowed(saved)) {
+        // v99: hidden line. Keep the save (main slot untouched, plus a parked
+        // copy) and open the picker with only the enabled lines.
+        parkHiddenSave(saved);
+        showPickerOnly('這個存檔的版本目前暫停使用，存檔已保留；請先選一般版或 20 週年版');
+      } else {
+        try { loadGame(saved); } catch (e) { fillEggGrid(); showOverlay('overlay-egg', true); }
+      }
     } else {
       fillEggGrid();
       var cancel = $('egg-cancel');
