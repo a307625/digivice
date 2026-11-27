@@ -88,6 +88,7 @@ function makeWorld(family) {
     selectable: () => ['STATUS', 'FEED', 'TRAIN', 'BATTLE', 'FLUSH', 'LIGHT', 'MEDIC'],
     trainInput(k) { w.calls.push('train:' + k); },
     ver1CancelLocked: () => false,
+    V25_MODES: { meter: 2, mash: 3, number: 4, meter_slow: 5 },
     openStatus() { ctx.statusPage = 0; ctx.view = 'status'; },
     openFood() { ctx.view = 'food'; w.calls.push('openFood'); },
     startTrain() { w.calls.push('startTrain'); ctx.view = 'train'; },

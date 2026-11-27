@@ -500,6 +500,14 @@
     return isNaN(n) ? 0 : n;
   }
 
+  // v101: an egg's own crack / hatch / burst cell yields only to a user PNG
+  // of that exact frame, never to the user idle0 / idle1 fallback.
+  function keepOfficialEggCell(US, fam, id, sp, frameName) {
+    var eggCell = !!(id && id.indexOf('egg_') === 0 && sp && sp.frames[frameName] &&
+      /^(crack|hatch|burst\d*)$/.test(frameName || ''));
+    return eggCell && !(US.getExact && US.getExact(fam, id, frameName));
+  }
+
   function spriteCanvas(id, frameName, scale, flip) {
     scale = scale || 1;
     var key = ((currentDevice() && currentDevice().family) || '') + ':' + id + ':' + (frameName || 'idle0') + ':' + scale + ':' + (flip ? 1 : 0);
@@ -536,11 +544,14 @@
     }
     // v35: a user PNG (assets/user-sprites/<family>/<id>_<frame>.png) for the
     // requested frame, else for the resolved frame, replaces the built-in one
-    // in the same box at the same dot size.
+    // in the same box at the same dot size. v101: not for an egg's official
+    // crack / hatch / burst cell (Eric's v100 Color cells in sprites.js): the
+    // user egg idle PNGs used to win through the fallback chain and hid them.
     var US = window.UserSprites;
     if (US) {
       var famU = (currentDevice() && currentDevice().family) || 'dm1997';
-      var userC = US.canvasFor(famU, id, frameName || 'idle0', sp.w * scale, sp.h * scale, flip);
+      var userC = keepOfficialEggCell(US, famU, id, sp, frameName) ? null :
+        US.canvasFor(famU, id, frameName || 'idle0', sp.w * scale, sp.h * scale, flip);
       if (userC) { cache[key] = userC; return userC; }
     }
     var img = atlas.renderToImageData(sp, fr, 1);
@@ -1444,23 +1455,6 @@
     blitItem('percent', fx(6) + w + DOT, fy(4), ITEM);
   }
 
-  function drawMeter(by, slow) {
-    // Right half only, so the monster on the left stays visible.
-    var bx = fx(17), bw = 14 * DOT, bh = 3 * DOT;
-    ctx.fillStyle = 'rgba(30, 36, 28, 0.55)';
-    ctx.fillRect(bx, by, bw, bh);
-    // Ver.2 / Ver.5 succeed when the gauge is full, so the mark sits on the right end.
-    var zone = Math.floor(bw * 0.18);
-    var zx = bx + bw - zone;
-    ctx.fillStyle = '#5a8a38';
-    ctx.fillRect(zx, by, zone, bh);
-    ctx.fillStyle = '#c8b040';
-    ctx.fillRect(zx + DOT, by, zone - 2 * DOT, bh);
-    var px = bx + Math.floor(train.pos * (bw - DOT));
-    ctx.fillStyle = INK;
-    ctx.fillRect(px, by - 1, DOT, bh + 2);
-  }
-
   function drawTrain() {
     lcdBg();
     if (!state) return;
@@ -1474,19 +1468,160 @@
     // Monster on the left. The minigame is drawn after it so the bar,
     // number, and HI/LO stay readable instead of disappearing under the sprite.
     if (mode === 'highlow') { drawVer1Train(); return; }
+    if (V25_MODES[mode]) { drawVer25Train(); return; }
     blitMon(state.mon, fx(0), fy(0), MON, fr, true);
-    if (mode === 'mash') {
-      var bx = fx(17), by = fy(2), bw = 14 * DOT, bh = 3 * DOT;
-      ctx.fillStyle = 'rgba(30, 36, 28, 0.35)';
-      ctx.fillRect(bx, by, bw, bh);
-      ctx.fillStyle = INK;
-      ctx.fillRect(bx, by, Math.floor(bw * Math.min(1, train.pos)), bh);
-      I.drawNumber(ctx, train.mash || 0, fx(22), fy(8), ITEM, 0);
-    } else if (mode === 'number') {
-      // Up to 3 digits (100). 3×5 dots starting at col 17 ends on col 31.
-      I.drawNumber(ctx, train.num || 0, fx(17), fy(4), ITEM, 0);
-    } else {
-      drawMeter(fy(6), mode === 'meter_slow');
+  }
+
+  /* v100 (Eric 「改 Ver.2 到 Ver.5」): Ver.2-5 training, original screens.
+     Ver.2 Bandai manual (トレーニングアイコン): a "Power" meter grows to the
+     right; A or B stops it; stopped full (満タン) = the sandbag (サンドバッグ)
+     on the LEFT is wrecked by the shot from you (自分) on the RIGHT and
+     strength goes up; stopped anywhere else = no strength. C cancels.
+     Real-device videos: Ver.2 (grZ127fKVqM 0:15-0:21: Power + meter, shot
+     from the right, burst, broken bag, happy + sun) and Ver.4 (5aK_-ohyp8o:
+     "Power" + "NN%" in 10 % steps about every 0.25 s, 100 % wins, then shot,
+     burst, happy + sun). NHOKO: Ver.4 stops the count on 100 %, Ver.5 is
+     Ver.2 with a slower meter; Wikimon/NHOKO: Ver.3 mashes B to fill it.
+     After the scene the happy + sun (or angry) pose is Ver.1's.
+     The meter, letters and digits are LCD ink. The target is Eric's art if
+     he uploads assets/user-sprites/dm1997/train_v<N>_idle0.png and
+     train_v<N>_broken.png (8x16); until then a plain placeholder outline
+     (our own UI glyph, not Bandai art) stands in. */
+  var V25_MODES = { meter: 2, mash: 3, number: 4, meter_slow: 5 };
+  var V25 = { segs: 10, step: { meter: 150, number: 250, meter_slow: 300 },
+    mashNeed: 16, mashMs: 5000, shotNear: 500, shot: 1000, burst: 1000, broken: 1000, miss: 1000, pose: 4000 };
+  var V25_BAG = ['00011000', '00011000', '00111100', '01111110', '01000010', '01000010', '01000010', '01000010',
+    '01000010', '01000010', '01000010', '01000010', '01000010', '01111110', '00111100', '00000000'];
+  /* v101 (Eric: Ver.3 uses the colour-version rule): fill the meter with B
+     within 5 s; the presses needed grow with the stage. NHOKO (DMC page,
+     【Ver.３式】): 5 s limit, 幼年期 7 presses, 究極体 (Mega) about 20;
+     Humulos DMC manual: fill it before the time runs out. The stages in
+     between are not published: rookie 10, champion 13, ultimate 16 are an
+     even spread between 7 and 20 (1997 babies cannot train). */
+  var V25_MASH_BY_STAGE = { baby1: 7, baby2: 7, rookie: 10, champion: 13, ultimate: 16, mega: 20 };
+  function v25MashNeed(stage) { return V25_MASH_BY_STAGE[stage] || V25.mashNeed; }
+  function v25Level(mode, t) {
+    var need = (t && t.mashNeed) || V25.mashNeed;
+    if (mode === 'mash') return Math.floor(Math.min(need, t.mash || 0) * V25.segs / need);
+    return t.level || 0;
+  }
+  // Pure layout of one Ver.2-5 training frame, in LCD dots (32x16).
+  function ver25TrainScene(mode, phase, ms, level, success) {
+    var o = [];
+    if (!phase) {
+      o.push({ kind: 'text', s: 'POWER', col: 1, row: 1 });
+      if (mode === 'number') {
+        var n = level * 10;
+        var len = String(n).length;
+        o.push({ kind: 'number', n: n, col: 24 - 5 * len, row: 8 });
+        o.push({ kind: 'icon', name: 'percent', col: 24, row: 8 });
+      } else {
+        o.push({ kind: 'bar', level: level, col: 0, row: 9 });
+      }
+      return o;
+    }
+    if (phase === 'shot') {
+      o.push({ kind: 'target', frame: 'idle0', col: 0 });
+      o.push({ kind: 'mon', x: 16, frame: 'attack', flip: false });
+      o.push({ kind: 'shot', col: ms < V25.shotNear ? 12 : 8, row: 4 });
+    } else if (phase === 'burst') {
+      // The hit mark, light then dark at 2 Hz (Ver.2 video 0:18 light with the
+      // skull; Ver.4 video light / dark frames).
+      o.push({ kind: 'burst', dark: (Math.floor(ms / 500) % 2) === 1 });
+    } else if (phase === 'broken') {
+      o.push({ kind: 'target', frame: 'broken', col: 0 });
+      o.push({ kind: 'mon', x: 16, frame: 'idle0', flip: false });
+    } else if (phase === 'miss') {
+      o.push({ kind: 'target', frame: 'idle0', col: 0 });
+      o.push({ kind: 'mon', x: 16, frame: (Math.floor(ms / 500) % 2) ? 'idle0' : 'angry', flip: false });
+    }
+    return o;
+  }
+  function ver25PhaseMs(phase) {
+    return phase === 'shot' ? V25.shot : phase === 'burst' ? V25.burst :
+      phase === 'broken' ? V25.broken : phase === 'miss' ? V25.miss : Infinity;
+  }
+  function ver25NextPhase(phase, success) {
+    if (phase === 'shot') return success ? 'burst' : 'miss';
+    if (phase === 'burst') return 'broken';
+    return 'end';
+  }
+  var v25TargetCache = {};
+  function v25TargetCanvas(ver, frame) {
+    var US = window.UserSprites;
+    var id = 'train_v' + ver;
+    if (!US || !US.getExact || !US.getExact('dm1997', id, frame) || !US.canvasFor) return null;
+    var key = id + '_' + frame + '@' + DOT;
+    if (!v25TargetCache[key]) v25TargetCache[key] = US.canvasFor('dm1997', id, frame, 8 * DOT, 16 * DOT, false);
+    return v25TargetCache[key];
+  }
+  function drawV25Target(ver, frame, col) {
+    var art = v25TargetCanvas(ver, frame);
+    if (art && art.getContext) { ctx.drawImage(art, fx(col), fy(0)); return; }
+    // Placeholder: whole outline, or only its bottom when broken.
+    drawDots(frame === 'broken' ? V25_BAG.slice(11) : V25_BAG, col, frame === 'broken' ? 11 : 0);
+  }
+  function drawV25Bar(level, col, row) {
+    ctx.fillStyle = INK;
+    for (var x = col; x < col + 32; x++) { ctx.fillRect(fx(x), fy(row), DOT, DOT); ctx.fillRect(fx(x), fy(row + 5), DOT, DOT); }
+    for (var y = row; y <= row + 5; y++) { ctx.fillRect(fx(col), fy(y), DOT, DOT); ctx.fillRect(fx(col + 31), fy(y), DOT, DOT); }
+    for (var i = 0; i < level; i++) ctx.fillRect(fx(col + 1 + i * 3), fy(row + 2), 2 * DOT, 2 * DOT);
+  }
+  function drawVer25Train() {
+    var I = items();
+    var mode = train.mode;
+    var ver = V25_MODES[mode];
+    var ms = Date.now() - (train.phaseAt || Date.now());
+    if (typeof train.clockMs === 'number') ms = train.clockMs;
+    var scene = ver25TrainScene(mode, train.phase, ms, v25Level(mode, train), train.success);
+    for (var i = 0; i < scene.length; i++) {
+      var e = scene[i];
+      if (e.kind === 'text') { ctx.fillStyle = INK; I.drawText(ctx, e.s, fx(e.col), fy(e.row), ITEM); }
+      else if (e.kind === 'number') I.drawNumber(ctx, e.n, fx(e.col), fy(e.row), ITEM, 0);
+      else if (e.kind === 'icon') blitItem(e.name, fx(e.col), fy(e.row), ITEM);
+      else if (e.kind === 'bar') drawV25Bar(e.level, e.col, e.row);
+      else if (e.kind === 'target') drawV25Target(ver, e.frame, e.col);
+      else if (e.kind === 'mon') blitMon(state.mon, fx(e.x), fy(0), MON, e.frame, e.flip);
+      else if (e.kind === 'shot') blitItem(attackItem(state.mon), fx(e.col), fy(e.row), ITEM, true);
+      else if (e.kind === 'burst') drawHitBurst(!!e.dark);
+    }
+  }
+  function beginVer25Shot(success) {
+    if (train.done) return;
+    train.success = !!success;
+    train.done = true;
+    train.phase = 'shot';
+    train.phaseAt = Date.now();
+    window.Engine.finishTraining(state, train.success, true);
+    persist();
+  }
+  function ver25TrainTick(now) {
+    if (!train.done) {
+      var mode = train.mode;
+      if (mode === 'mash') {
+        if (now - (train.startAt || now) > V25.mashMs) beginVer25Shot(false);
+        return;
+      }
+      var dt = Math.min(250, now - (train.lastMs || now));
+      train.acc = (train.acc || 0) + dt;
+      var step = V25.step[mode] || 150;
+      while (train.acc >= step) {
+        train.acc -= step;
+        // Grows one 10 % segment a step; after full it starts again from empty.
+        train.level = ((train.level || 0) + 1) % (V25.segs + 1);
+      }
+      train.num = (train.level || 0) * 10;
+      train.pos = (train.level || 0) / V25.segs;
+      return;
+    }
+    if (!train.phase || train.phase === 'end') return;
+    if (now - (train.phaseAt || now) < ver25PhaseMs(train.phase)) return;
+    var next = ver25NextPhase(train.phase, train.success);
+    train.phase = next;
+    train.phaseAt = now;
+    if (next === 'end') {
+      if (view === 'train') view = 'play';
+      playPose(train.success ? 'happy' : 'angry', V25.pose, 'train');
     }
   }
 
@@ -1694,11 +1829,13 @@
     if (t < 2) return { id: from, fr: idleFrame() };
     // Ver.1–5: official Color split shell, then the newborn in that shell.
     // A user crack PNG still replaces the first of those two.
-    if (t < 4) {
+    // v101 (Eric): the hatch cell stays about 2 s (t 3-6 on the 2 Hz clock),
+    // like the real Ver.1 (video 28.0-29.5 s), then the baby.
+    if (t < 7) {
       if (t === 2 && (crack || from.indexOf('egg_v') === 0)) return { id: from, fr: 'crack' };
+      if (burst0 && t >= 5) return { id: from, fr: (t === 6 && burst1) ? 'burst1' : 'burst0' };
       return { id: from, fr: 'hatch' };
     }
-    if (burst0 && t < 6) return { id: from, fr: (t === 5 && burst1) ? 'burst1' : 'burst0' };
     return { id: to, fr: idleFrame() };
   }
   function drawEvo() {
@@ -2232,8 +2369,11 @@
       sel = -1;
       return true;
     }
-    if (view === 'train' && train && train.mode === 'highlow' && !train.done &&
-        (train.phase === 'standoff' || train.phase === 'intro')) {
+    if (view === 'train' && train && !train.done &&
+        ((train.mode === 'highlow' && (train.phase === 'standoff' || train.phase === 'intro')) ||
+         V25_MODES[train.mode])) {
+      // v100: Ver.2 runs Ver.1's program (0x0866), so a meter left running
+      // 60 s goes home too; Ver.3-5 follow it.
       // Same as C before the attack: the session still counts on Ver.1.
       if (window.Engine && window.Engine.cancelTraining && !train.decided) window.Engine.cancelTraining(state);
       persist();
@@ -2378,7 +2518,8 @@
       target: Math.random() < 0.5 ? 1 : 0,
       guard: Math.random() < 0.5 ? 1 : 0, attack: 1, hit: false, decided: false,
       phase: mode === 'highlow' ? 'intro' : null, phaseAt: Date.now(),
-      num: 0, startAt: Date.now(), lastMs: Date.now(), acc: 0
+      num: 0, level: 0, startAt: Date.now(), lastMs: Date.now(), acc: 0,
+      mashNeed: mode === 'mash' ? v25MashNeed(m && m.stage) : 0
     };
     view = 'train';
   }
@@ -2466,6 +2607,8 @@
   // Ver.1 / Ver.2: C cancels only before the command (NHOKO); once a shot
   // is on its way, or on the result, C does nothing.
   function ver1CancelLocked() {
+    // v100: Ver.2-5 too, once A/B has stopped the meter (the shot scene is an action).
+    if (train && V25_MODES[train.mode] && train.done) return true;
     return !!(train && train.mode === 'highlow' && !train.done &&
       (train.phase === 'attack' || train.phase === 'after' || train.phase === 'result'));
   }
@@ -2487,17 +2630,14 @@
     var mode = train.mode || 'meter';
     if (mode === 'mash') {
       // Ver.3: the bar has to be full before the time runs out.
-      finishTrainRound(train.mash >= 16);
-      return;
-    }
-    if (mode === 'number') {
-      // Wikimon Ver.4: stop the count on 100. 96–99 is a miss.
-      finishTrainRound((train.num || 0) === 100);
+      beginVer25Shot(train.mash >= (train.mashNeed || V25.mashNeed));
       return;
     }
     if (mode === 'highlow') return;
-    // Ver.2 and the slower Ver.5: press while the gauge is full (right-end mark).
-    finishTrainRound(train.pos >= 0.82);
+    // v100: Ver.2 / Ver.5 meter and Ver.4 "NN%" grow in 10 % steps; only a
+    // stop on full (満タン, 100 %) wins (Ver.2 manual, Ver.4 video, NHOKO).
+    if (V25_MODES[mode]) { beginVer25Shot((train.level || 0) === V25.segs); return; }
+    finishTrainRound(false);
   }
 
   function trainInput(btn) {
@@ -2533,8 +2673,9 @@
       // Wikimon Ver.3: only B fills the bar. A does nothing.
       if (btn !== 'B') return;
       train.mash = (train.mash || 0) + 1;
-      train.pos = Math.min(1, train.mash / 16);
-      if (train.mash >= 16) finishTrainRound(true);
+      var need = train.mashNeed || V25.mashNeed;
+      train.pos = Math.min(1, train.mash / need);
+      if (train.mash >= need) beginVer25Shot(true);
       return;
     }
     resolveTrain();
@@ -3193,22 +3334,10 @@
       var dt = Math.min(50, nowTr - (train.lastMs || nowTr));
       if (mode === 'highlow') ver1TrainTick(nowTr);
       train.lastMs = nowTr;
-      if (mode === 'meter' || mode === 'meter_slow') {
-        // About one width per second (Ver.5 half of that), independent of frame rate.
-        var speed = (mode === 'meter_slow') ? 0.55 : 1.1;
-        train.pos += train.dir * speed * dt / 1000;
-        if (train.pos >= 1) { train.pos = 1; train.dir = -1; }
-        if (train.pos <= 0) { train.pos = 0; train.dir = 1; }
-      } else if (mode === 'number') {
-        // One count every 50 ms, so 0–100 takes about 5 s. Success is exactly 100.
-        train.acc = (train.acc || 0) + dt;
-        while (train.acc >= 50) {
-          train.acc -= 50;
-          train.num = ((train.num || 0) + 1) % 101;
-        }
-      } else if (mode === 'mash') {
-        if (nowTr - (train.startAt || nowTr) > 4000) resolveTrain();
-      }
+      if (V25_MODES[mode]) { train.lastMs = nowTr - dt; ver25TrainTick(nowTr); train.lastMs = nowTr; }
+    } else if (view === 'train' && train.done && V25_MODES[train.mode]) {
+      // v100: the Ver.2-5 shot / burst / broken-bag scene after the stop.
+      ver25TrainTick(Date.now());
     }
     /* evo / battle / dying advance on the 2 Hz ANIM_MS clock above */
     // Official idle timeout: 60s returns menus 2–8 to home (disassembly 0x0866)

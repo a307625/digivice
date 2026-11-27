@@ -62,7 +62,7 @@ console.log('4) Eric: hatch 5 min, lights 20 min, wake 10 min then sleep, sound 
 {
   eq(Engine.eggHatchMinutes(Engine.defaultState(1)), 5, 'Ver.1 hatch 5 minutes');
   eq(Engine.lightsCallTimeout(Object.assign(Engine.defaultState(1), { mon: 'agumon' })), 20 * 60, 'Ver.1 lights call 20 min');
-  eq(Engine.lightsCallTimeout(Object.assign(Engine.defaultState(2), { mon: 'elecmon' })), 60 * 60, 'Ver.2 keeps 60 min');
+  eq(Engine.lightsCallTimeout(Object.assign(Engine.defaultState(2), { mon: 'elecmon' })), 20 * 60, 'v100: Ver.2 lights call 20 min like Ver.1');
   const s = Engine.defaultState(1);
   s.mon = 'agumon'; s.clockOffset = 22 * 3600; s.gameTime = 0; s.speed = 1; s.lastReal = Date.now();
   s.clockInitialized = true; s.hunger = 4; s.strength = 4; s.lights = true; s.sleeping = true; s.sleepCalledTonight = true;

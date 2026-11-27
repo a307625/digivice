@@ -23,9 +23,15 @@
   var LIGHTS_CALL_TIMEOUT = 60 * 60;
   // v36, Eric's decision (2026-11-28): on 1997 Ver.1 the lights call is a
   // care mistake after 20 minutes, the same ROM timer as the hunger call
-  // (BladeSabre real-device test, 1997 ROM 20-min call timer). Ver.2-5 keep
-  // the NHOKO 60 min until each is audited.
+  // (BladeSabre real-device test, 1997 ROM 20-min call timer). v100: Ver.2-5
+  // use it too (below).
   var VER1_LIGHTS_CALL_TIMEOUT = 20 * 60;
+  // v100 (Eric 「改 Ver.2 到 Ver.5」): Ver.2 runs the same program as Ver.1 with
+  // another monster set (disassembly: bank0 82% shared, same routine
+  // addresses), and Wikimon's Ver.2-5 pages all give 20 min for the lights
+  // care mistake. So the whole 1997 Ver.1-5 line uses the 20-min ROM timer.
+  // NHOKO's 60 min is kept only for lines that are not 1997 bricks.
+  var BRICK97_LIGHTS_CALL_TIMEOUT = VER1_LIGHTS_CALL_TIMEOUT;
   // NHOKO: once a meal is refused (満腹), hunger hearts do not drop for about 1 h.
   var HUNGER_FREEZE_SEC = 60 * 60;
   // Awake window after a sleep disturbance. Eric's decision (2026-11-28):
@@ -222,7 +228,7 @@
   // placeholder, and it left the egg sitting after a full minute.
   // v36, Eric's decision (2026-11-28): the 1997 Ver.1 egg hatches 5 minutes
   // after the clock SET, as the Bandai manual says (「約5分後」, p.1 and p.6).
-  // One device at a time: Ver.2-5 and DM20 keep the 1-minute hatch for now.
+  // DM20 and the special lines keep the 1-minute hatch (v100: Ver.2-5 now 5).
   var VER1_HATCH_MIN = 5;
   function isVer1Brick(state) {
     if (!state || isDm20(state)) return false;
@@ -230,8 +236,21 @@
     var v = m && m.version != null ? m.version : state.version;
     return Number(v) === 1;
   }
+  // v100: the 1997 一般版 Ver.1-Ver.5 (not DM20 or the special lines).
+  function is1997Brick(state) {
+    if (!state || isDm20(state)) return false;
+    var m = data.MONSTERS[state.mon];
+    var v = Number(m && m.version != null ? m.version : NaN);
+    if (!(v >= 1 && v <= 5)) v = Number(state.version);
+    return v >= 1 && v <= 5;
+  }
+  // v100: Ver.2-5 hatch 5 minutes after the clock SET too. Ver.2 Bandai
+  // manual (「約5分後」, three places) + shared Ver.1/Ver.2 program; Ver.5
+  // real-device video (clock set 5:05:00, hatch 5:10:00). Ver.3/4 follow the
+  // same rule (no source says otherwise except NHOKO's lone 10 min).
+  var BRICK97_HATCH_MIN = VER1_HATCH_MIN;
   function eggHatchMinutes(state) {
-    return isVer1Brick(state) ? VER1_HATCH_MIN : 1;
+    return is1997Brick(state) ? BRICK97_HATCH_MIN : 1;
   }
   function beginClockSet(state) {
     if (!state) return { ok: false };
@@ -769,7 +788,7 @@
 
   function lightsCallTimeout(state) {
     if (isDm20(state)) return DM20_CALL_TIMEOUT;
-    return isVer1Brick(state) ? VER1_LIGHTS_CALL_TIMEOUT : LIGHTS_CALL_TIMEOUT;
+    return is1997Brick(state) ? BRICK97_LIGHTS_CALL_TIMEOUT : LIGHTS_CALL_TIMEOUT;
   }
 
   function isCallLit(state) {
@@ -1137,12 +1156,13 @@
   // Ver.1 (JP V1, DMComm "Wrapping"): energy can rise past the default by up
   // to +9; the protein that would make it default+10 resets it to the default.
   // Other bricks (DMComm "No overfill", EN V2/V3, JP V4/V5) stop at the default.
-  // JP V2 also wraps per DMComm, but only Ver.1 is changed here (v36 scope).
+  // JP V2 also wraps per DMComm (v100: applied, same program as Ver.1).
   var ENERGY_WRAP_AT = 10;
   function proteinEnergy(state, m) {
     var max = state.dpMax || 0;
     var cur = state.dp || 0;
-    if (!isDm20(state) && m && Number(m.version) === 1 && max > 0) {
+    // v100: JP Ver.2 wraps too (DMComm), and it runs Ver.1's program.
+    if (!isDm20(state) && m && (Number(m.version) === 1 || Number(m.version) === 2) && max > 0) {
       if (cur < max) return cur + 1;
       var next = cur + 1;
       return next >= max + ENERGY_WRAP_AT ? max : next;
@@ -1661,6 +1681,9 @@
     VER1_HATCH_MIN: VER1_HATCH_MIN,
     lightsCallTimeout: lightsCallTimeout,
     isVer1Brick: isVer1Brick,
+    is1997Brick: is1997Brick,
+    BRICK97_HATCH_MIN: BRICK97_HATCH_MIN,
+    BRICK97_LIGHTS_CALL_TIMEOUT: BRICK97_LIGHTS_CALL_TIMEOUT,
     HUNGER_FREEZE_SEC: HUNGER_FREEZE_SEC,
     MAX_CATCHUP: Infinity, // v32: no cap (whole closed period simulated on SIM_GRID)
     STARVE_DEATH: STARVE_DEATH,

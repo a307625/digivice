@@ -78,10 +78,10 @@ console.log('1) Official 2 Hz clock and food-shrink phases (1997 source, shared)
   ok(/version === 3\) mode = 'mash'/.test(src), 'Ver.3 training is the mash meter');
   ok(/version === 4\) mode = 'number'/.test(src), 'Ver.4 training stops the rising number');
   ok(/version === 5\) mode = 'meter_slow'/.test(src), 'Ver.5 training is the slower full gauge');
-  ok(/train\.pos >= 0\.82/.test(src), 'Ver.2 and Ver.5 succeed only when the gauge is full');
-  ok(/train\.mash >= 16/.test(src), 'Ver.3 succeeds when the mash bar is full');
+  ok(/beginVer25Shot\(\(train\.level \|\| 0\) === V25\.segs\)/.test(src), 'v100: Ver.2/4/5 succeed only when the meter is full (100 %)');
+  ok(/if \(train\.mash >= need\) beginVer25Shot\(true\)/.test(src) && /rookie: 10, champion: 13, ultimate: 16, mega: 20/.test(src), 'v101: Ver.3 succeeds when the mash bar is full (presses by stage)');
   ok(/if \(btn !== 'B'\) return;\s*train\.mash/.test(src), 'Ver.3 mash counts only B');
-  ok(/finishTrainRound\(\(train\.num \|\| 0\) === 100\)/.test(src), 'Ver.4 succeeds only at 100');
+  ok(/number: 250/.test(src) && /train\.num = \(train\.level \|\| 0\) \* 10/.test(src), 'v100: Ver.4 counts in 10 % steps every 250 ms; success only at 100');
 
   // Three bites: full, full-lowered, half, half, empty.
   const meat = [0, 1, 2, 3, 4].map((t) => eatFood('meat', t));

@@ -228,7 +228,7 @@ console.log('Clock-SET operation tests');
 }
 {
   const s = Engine.defaultState(2);
-  eq(Engine.eggHatchMinutes(s), 1, 'Ver.2 keeps the 1-minute hatch (one device at a time)');
+  eq(Engine.eggHatchMinutes(s), 5, 'v100: Ver.2 hatches 5 minutes after SET like Ver.1 (Ver.2 manual)');
 }
 {
   const s = Engine.defaultState(1, 'zuba');

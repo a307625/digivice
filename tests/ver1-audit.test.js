@@ -55,7 +55,18 @@ console.log('2) Other bricks keep "no overfill" (one device at a time)');
   if (v2) {
     s.mon = v2; Engine.applySpeciesCare(s, { setWeight: true });
     s.dp = s.dpMax; protein(s, 8);
-    eq(s.dp, s.dpMax, 'Ver.2 energy unchanged by protein at default (not changed in v36)');
+    // v100: JP Ver.2 wraps like Ver.1 (DMComm; Ver.2 runs Ver.1's program).
+    eq(s.dp, s.dpMax + 2, 'v100: Ver.2 energy rises past the default like Ver.1 (DMComm JP V2 wrap)');
+  }
+  const s3 = Engine.defaultState(3);
+  const v3 = Object.keys(global.EvolutionData.MONSTERS).find((id) => {
+    const m = global.EvolutionData.MONSTERS[id];
+    return Number(m.version) === 3 && m.dpMax > 0 && m.stage !== 'egg';
+  });
+  if (v3) {
+    s3.mon = v3; Engine.applySpeciesCare(s3, { setWeight: true });
+    s3.dp = s3.dpMax; protein(s3, 8);
+    eq(s3.dp, s3.dpMax, 'Ver.3 energy unchanged by protein at default (no overfill)');
   }
 }
 

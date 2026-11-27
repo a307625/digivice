@@ -38,7 +38,14 @@ for (const cfg of S.CONFIGS.filter((c) => c.fam === 'dm1997')) {
     }
     if (pol === 'neglect') ok(r.dead && r.days < 2, `${tag} – a neglected pet dies within 2 days`);
     if (r.dead) ok(OFFICIAL.indexOf(r.cause) >= 0 || /./.test(r.cause), `${tag} – death has a cause`);
-    if (pol === 'ace' && stages.indexOf('ultimate') >= 0) aceUlt++;
+    if (pol === 'ace') {
+      // v100: the Perfect roll is a die, so one seed can miss it. Count the
+      // version if seed 1, 2 or 3 reaches Ultimate (Ver.2-5 now hatch at
+      // 5 min, which shifts the seeded dice).
+      let hit = stages.indexOf('ultimate') >= 0;
+      for (let sd = 2; !hit && sd <= 3; sd++) hit = S.runLife(cfg, { policy: 'ace', seed: sd }).stages.indexOf('ultimate') >= 0;
+      if (hit) aceUlt++;
+    }
   }
 }
 // Perfect is a firmware die roll (1/8–1/2 by win score), so one seed can fail it.

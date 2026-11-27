@@ -237,11 +237,11 @@ console.log('5) Hatch: user crack / burst frames only when present');
 {
   const w = world();
   w.sb.evoFx = { t: 0, from: 'egg_v1', to: 'botamon' };
-  const plain = [0, 1, 2, 3, 4, 5, 6].map((t) => { const p = w.api.evo97Pick(t); return p.id + ':' + p.fr; });
-  eq(plain, ['egg_v1:idle0', 'egg_v1:idle0', 'egg_v1:hatch', 'egg_v1:hatch', 'botamon:idle0', 'botamon:idle0', 'botamon:idle0'], 'no user frames: same as before');
+  const plain = [0, 1, 2, 3, 4, 5, 6, 7].map((t) => { const p = w.api.evo97Pick(t); return p.id + ':' + p.fr; });
+  eq(plain, ['egg_v1:idle0', 'egg_v1:idle0', 'egg_v1:crack', 'egg_v1:hatch', 'egg_v1:hatch', 'egg_v1:hatch', 'egg_v1:hatch', 'botamon:idle0'], 'no user frames: official crack, then the hatch cell ~2 s like the real Ver.1 (v101)');
   w.user = { egg_v1_crack: {}, egg_v1_burst0: {}, egg_v1_burst1: {} };
-  const art = [0, 1, 2, 3, 4, 5, 6].map((t) => { const p = w.api.evo97Pick(t); return p.id + ':' + p.fr; });
-  eq(art, ['egg_v1:idle0', 'egg_v1:idle0', 'egg_v1:crack', 'egg_v1:hatch', 'egg_v1:burst0', 'egg_v1:burst1', 'botamon:idle0'], 'with crack + burst frames: egg → crack → burst → baby');
+  const art = [0, 1, 2, 3, 4, 5, 6, 7].map((t) => { const p = w.api.evo97Pick(t); return p.id + ':' + p.fr; });
+  eq(art, ['egg_v1:idle0', 'egg_v1:idle0', 'egg_v1:crack', 'egg_v1:hatch', 'egg_v1:hatch', 'egg_v1:burst0', 'egg_v1:burst1', 'botamon:idle0'], 'with crack + burst frames: egg → crack → hatch → burst (2 s total) → baby');
 }
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
