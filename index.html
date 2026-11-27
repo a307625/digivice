@@ -18,11 +18,31 @@
   <link rel="apple-touch-startup-image" href="./icons/splash-1280x800.png">
   <link rel="stylesheet" href="./css/style.css">
   <script>
+    /* v89: viewport size for the CSS (--app-w / --app-h). On iOS standalone
+       cold start in landscape this first read can still be the portrait size,
+       and iOS may not send a resize when it settles, so the UI script calls
+       window.__vpetFitViewport again on load, pageshow, every resize /
+       visualViewport resize / orientationchange, over the first seconds, and
+       whenever a cheap per-frame check sees the size change. */
     (function () {
-      function fit() { document.documentElement.style.setProperty('--app-h', window.innerHeight + 'px'); }
+      var last = '';
+      function fit() {
+        var de = document.documentElement;
+        var w = Math.round(window.innerWidth || de.clientWidth || 0);
+        var h = Math.round(window.innerHeight || de.clientHeight || 0);
+        if (!w || !h) return false;
+        var key = w + 'x' + h;
+        if (key === last) return false;
+        last = key;
+        de.style.setProperty('--app-w', w + 'px');
+        de.style.setProperty('--app-h', h + 'px');
+        return true;
+      }
+      window.__vpetFitViewport = fit;
+      window.__vpetViewportKey = function () { return last; };
       fit();
       window.addEventListener('resize', fit);
-      window.addEventListener('orientationchange', function () { setTimeout(fit, 300); });
+      window.addEventListener('orientationchange', function () { fit(); setTimeout(fit, 300); });
     })();
   </script>
 </head>

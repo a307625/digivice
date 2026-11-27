@@ -2688,6 +2688,79 @@
     if (view === 'play') sel = -1;
   }
 
+  // v89: one layout pass for the whole page. Cause of the cold-start bug:
+  // on iOS standalone, opened already in landscape, the head script read
+  // the viewport while it was still portrait (innerHeight 667), so
+  // --app-h stayed 667px; iOS sends no resize when the viewport settles,
+  // and sizeLcd only ran on resize / 350 ms after orientationchange. The
+  // shell was sized for a 667 px tall screen (too big, cut off) until a
+  // rotation fired those events. Now the viewport vars, the integer LCD
+  // fit and the rotate hint are recomputed together, from every signal,
+  // plus a settle schedule after launch and a cheap per-frame size check.
+  var LAYOUT_SETTLE_MS = [0, 50, 100, 200, 350, 500, 750, 1000, 1500, 2500];
+  var layoutKeyApplied = '';
+  var layoutRaf = 0, layoutTimer = 0, layoutWatchAt = 0;
+  function viewportKey() {
+    var vv = window.visualViewport;
+    return [window.innerWidth, window.innerHeight, window.devicePixelRatio || 1,
+      vv ? Math.round(vv.width) : 0, vv ? Math.round(vv.height) : 0].join('x');
+  }
+  function lcdLayoutKey() {
+    var win = $('lcd-window');
+    if (!win) return '';
+    var r = win.getBoundingClientRect();
+    return [r.left, r.top, r.width, r.height].map(function (v) { return Math.round(v * 100); }).join(',');
+  }
+  function relayout() {
+    layoutRaf = 0;
+    if (typeof window.__vpetFitViewport === 'function') window.__vpetFitViewport();
+    sizeLcd();
+    updateRotateHint();
+    layoutKeyApplied = viewportKey() + '|' + lcdLayoutKey();
+  }
+  // Coalesce bursts of events into one pass on the next frame, plus one
+  // trailing pass because iOS often reports the final size a little later.
+  function scheduleRelayout(trailMs) {
+    if (!layoutRaf) layoutRaf = (window.requestAnimationFrame || setTimeout)(relayout);
+    if (layoutTimer) clearTimeout(layoutTimer);
+    layoutTimer = setTimeout(function () { layoutTimer = 0; relayout(); }, trailMs || 150);
+  }
+  function settleLayout() {
+    LAYOUT_SETTLE_MS.forEach(function (ms) { setTimeout(relayout, ms); });
+  }
+  // Every 250 ms (every frame in the first 3 s): if the viewport or the
+  // LCD window moved without any event, lay out again.
+  var layoutBootAt = Date.now();
+  function layoutWatch() {
+    var now = Date.now();
+    if (now - layoutBootAt > 3000 && now - layoutWatchAt < 250) return;
+    layoutWatchAt = now;
+    if (!layoutKeyApplied) return;
+    if (viewportKey() + '|' + lcdLayoutKey() !== layoutKeyApplied) relayout();
+  }
+  function relayoutAndSettle() { relayout(); settleLayout(); }
+  function relayoutIfVisible() { if (document.visibilityState === 'visible') relayoutAndSettle(); }
+  function bindLayout() {
+    window.addEventListener('resize', function () { scheduleRelayout(150); });
+    window.addEventListener('orientationchange', function () {
+      scheduleRelayout(300);
+      setTimeout(relayout, 600);
+      setTimeout(function () { tryLockOrient(currentDevice().orient); }, 300);
+    });
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', function () { scheduleRelayout(150); });
+    window.addEventListener('pageshow', relayoutAndSettle);
+    window.addEventListener('load', relayoutAndSettle);
+    document.addEventListener('visibilitychange', relayoutIfVisible);
+    if (typeof ResizeObserver === 'function') {
+      try {
+        var ro = new ResizeObserver(function () { scheduleRelayout(100); });
+        ['lcd-window', 'device', 'stage'].forEach(function (id) { if ($(id)) ro.observe($(id)); });
+      } catch (e) {}
+    }
+    relayout();
+    settleLayout();
+  }
+
   var lastFrameAt = 0;
   // v36: schedule the next frame first and contain any draw error, so one
   // bad frame can never stop the loop or spam a throw 60 times a second.
@@ -2705,6 +2778,7 @@
         console.error('[vpet] frame error (logged once):', err);
       }
     }
+    try { layoutWatch(); } catch (e) {}
   }
 
   // Catch up simulation + clock right now (resume, pageshow, watchdog).
@@ -3730,9 +3804,7 @@
     canvas.height = LCD_H;
     ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
-    sizeLcd();
-    window.addEventListener('resize', sizeLcd);
-    window.addEventListener('orientationchange', function () { setTimeout(sizeLcd, 350); });
+    sizeLcd(); // the full layout pass is bound below (bindLayout)
 
     try { soundOn = localStorage.getItem('digivice-sound') !== '0'; } catch (e) {}
     updateSoundBtn();
@@ -4007,15 +4079,12 @@
 
     applyShellLayout();
     applyShell();
-    window.addEventListener('resize', function () { sizeLcd(); updateRotateHint(); });
-    window.addEventListener('orientationchange', function () {
-      setTimeout(function () { sizeLcd(); updateRotateHint(); tryLockOrient(currentDevice().orient); }, 300);
-    });
+    bindLayout();
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () { sizeLcd(); });
+      document.fonts.ready.then(function () { relayout(); });
     }
     var shellArt = $('shell-art');
-    if (shellArt) shellArt.addEventListener('load', function () { sizeLcd(); });
+    if (shellArt) shellArt.addEventListener('load', function () { relayout(); });
 
     ingestUrl();
     // pageshow fires on iOS for the initial load, bfcache restore, coming

@@ -9,7 +9,7 @@
  * - Only same-origin, non-redirected, 200 'basic' responses are cached.
  * - Old caches are deleted only after the new one is complete.
  */
-var CACHE = 'digivice-v88'; // v88 Ver.1 training fidelity (live was v87)
+var CACHE = 'digivice-v89'; // v89 landscape cold-start layout (live was v88)
 var APP_SHELL = './index.html';
 var ASSETS = [
   './',
