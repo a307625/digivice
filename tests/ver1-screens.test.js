@@ -126,18 +126,86 @@ console.log('8) feed / lights menus and eating layout');
   ok(/eatAnim\.on && is1997Brick\(\)\) \{[\s\S]{0,120}mx = fx\(14\);\s*flip = false;/.test(ui), 'Digimon on the right, facing the food');
 }
 
-console.log('9) Ver.1 training: hidden shield, shot, 3 VS 2');
+console.log('9) Ver.1 training: frame-by-frame layout vs the manual + real-device frames (v88)');
 {
   const hit = fn('ver1RoundHit');
   eq(hit(1, 0), true, 'high attack vs low shield hits');
   eq(hit(0, 1), true, 'low attack vs high shield hits');
   eq(hit(1, 1), false, 'same height is blocked');
-  const body = ui.match(/function drawVer1Train[\s\S]*?\n  \}/)[0];
-  ok(/if \(!a\) return;\s*var top/.test(body), 'nothing about the shield is drawn before the press');
-  ok(body.indexOf('if (!a) return;') < body.indexOf('drawDots(V1_SHIELD, 12'), 'shield only after the press');
-  ok(/'VS'/.test(body), 'result screen shows hits VS misses');
-  ok(!/fillRect\(fx\(14\), fy\(high \? 1 : 13\)/.test(ui), 'old answer mark is gone');
-  ok(/if \(train\.anim \|\| train\.resultAt\) return;/.test(ui), 'one press per round');
+  const consts = (ui.match(/var V1T = \{[\s\S]*?\};/) || [''])[0] + (ui.match(/var V1_SLOT = \{[^}]*\};/) || [''])[0];
+  ok(consts.length > 40, 'timing and slot tables exist');
+  const ms = fn('ver1PhaseMs', consts);
+  eq(ms('intro'), 1250, 'intro: 500 ms + three 250 ms slide steps');
+  eq(ms('attack', false), 1000, 'blocked shot held 1 s');
+  eq(ms('attack', true), 920, 'hit: 230 ms by the shield + 690 ms past it');
+  eq(ms('after'), 200, 'you alone, centred, between rounds');
+  eq(ms('result'), 1750, '"N VS M" shown 1.75 s');
+  eq(ms('standoff'), Infinity, 'stand-off waits for A / B');
+  const scene = fn('ver1TrainScene', consts);
+  const get = (o, k, w) => o.filter((e) => e.kind === k && (!w || e.who === w));
+  // Stand-off: four 8-dot slots, no shield, no shot.
+  let o = scene('standoff', 0, 1, 1, false, 0);
+  eq(get(o, 'mon', 'shadow')[0].x, -8, 'shadow drawn at -8: its front fills cols 0-7');
+  eq(get(o, 'mon', 'shadow')[0].flip, true, 'shadow faces right, towards you');
+  eq(get(o, 'mon', 'self')[0].x, 24, 'you at col 24, facing left');
+  eq(get(o, 'mon', 'self')[0].frame, 'idle0', 'you stand still (no attack frame before the press)');
+  eq(get(o, 'shield').length + get(o, 'shot').length, 0, 'shield hidden until you press');
+  // Attack.
+  o = scene('attack', 0, 1, 1, false, 0);
+  eq(JSON.stringify(get(o, 'shield')[0]), JSON.stringify({ kind: 'shield', col: 8, row: 0 }), 'high shield: cols 8-15, rows 0-7');
+  eq(JSON.stringify(get(o, 'shot')[0]), JSON.stringify({ kind: 'shot', col: 16, row: 1 }), 'high shot: cols 16-23, rows 1-7');
+  eq(get(o, 'mon', 'self')[0].frame + get(o, 'mon', 'shadow')[0].frame, 'attackattack', 'both Digimon in the attack picture');
+  o = scene('attack', 999, 0, 0, false, 0);
+  eq(get(o, 'shield')[0].row + ':' + get(o, 'shot')[0].col + ':' + get(o, 'shot')[0].row, '8:16:9', 'low block: shield rows 8-15, shot stays at col 16');
+  o = scene('attack', 229, 0, 1, true, 0);
+  eq(get(o, 'shot')[0].col, 16, 'hit: first 230 ms beside the shield column');
+  o = scene('attack', 230, 0, 1, true, 0);
+  eq(get(o, 'shot')[0].col, 8, 'hit: then one jump past it to cols 8-15');
+  // Intro slide.
+  eq([0, 500, 750, 1000].map((t) => get(scene('intro', t, 1, 1, false, 0), 'mon', 'self')[0].x).join(','), '-8,0,8,16', 'intro: you slide in 8 dots per step');
+  eq(get(scene('intro', 0, 1, 1, false, 0), 'shot').length, 4, 'intro: two shots high and two low');
+  eq(get(scene('intro', 750, 1, 1, false, 0), 'shot').length, 0, 'intro: shots gone by the third step');
+  // After / result.
+  eq(get(scene('after', 0, 1, 1, false, 0), 'mon', 'self')[0].x, 8, 'between rounds you stand centred (cols 8-23)');
+  o = scene('result', 0, 1, 1, false, 3);
+  const at = (k) => o.filter((e) => e.kind === k).map((e) => e.col + '/' + e.row + (e.n !== undefined ? '=' + e.n : '') + (e.g || '')).join(' ');
+  eq(at('icon'), '3/0', 'result: icon top-left at col 3');
+  eq(at('shield'), '22/0', 'result: shield top-right at col 22');
+  eq(at('digit'), '6/10=3 24/10=2', 'result: hits under the icon, blocks under the shield');
+  eq(at('glyph'), '13/10V 17/10S', 'result: V at col 13, S at col 17');
+  // Every glyph inside the 32x16 LCD; dots all one size (drawDots / DOT).
+  const glyphW = { shield: [8, 8], shot: [8, 7], glyph: [3, 5], digit: [3, 5], icon: [8, 6] };
+  let inside = true;
+  for (const ph of ['intro', 'standoff', 'attack', 'after', 'result']) for (const t of [0, 300, 600, 900, 1100]) for (const e of scene(ph, t, t % 2, (t + 1) % 2, t > 500, 2)) {
+    if (e.kind === 'mon') continue;
+    const [w, h] = glyphW[e.kind];
+    if (e.col < 0 || e.row < 0 || e.col + w > 32 || e.row + h > 16) inside = false;
+  }
+  ok(inside, 'no glyph is cut by the LCD edge (only the two Digimon, as on the device)');
+  const glyph = (n) => JSON.parse('[' + (ui.match(new RegExp('var ' + n + ' = \\[([^\\]]*)\\]')) || [, ''])[1].replace(/'/g, '"') + ']');
+  eq(glyph('V1_SHIELD').length + 'x' + glyph('V1_SHIELD')[0].length, '8x8', 'shield is 8x8 dots (manual size), our own ringed design');
+  eq(glyph('V1_SHOT').length + 'x' + glyph('V1_SHOT')[0].length, '7x8', 'shot is 8x7 dots');
+  eq(glyph('V1_V').length + 'x' + glyph('V1_S')[0].length, '5x3', 'V / S are 3x5 like the digits');
+  const draw = ui.match(/function drawVer1Train\(\) \{[\s\S]*?\n  \}/)[0];
+  ok(/drawDots\(V1_SHIELD, e\.col, e\.row\)/.test(draw) && /drawDots\(ver1DigitRows\(I, e\.n\)/.test(draw), 'all training glyphs drawn dot by dot at DOT size');
+  ok(!/drawBang|drawText|drawNumber/.test(draw), 'no "!" and no 4x7 / text font on the training screens');
+  // Flow.
+  ok(/if \(\(train\.phase \|\| 'standoff'\) !== 'standoff'\) return;/.test(ui), 'A / B only count at the stand-off (one press per round)');
+  ok(/if \(hits < 3 && blocks < 3\) return;/.test(ui), 'strength applies the moment 3 hits (or 3 blocks) decide it');
+  ok(/if \(ver1CancelLocked\(\)\) return;/.test(ui), 'C ignored while a shot is flying or on the result');
+  ok(/playPose\(train\.success \? 'happy' : 'angry', V1T\.pose, 'train'\)/.test(ui), 'result → happy (sun) or angry, 4 s');
+  ok(/poseFx\.extra === 'train' && is1997Brick\(\) && \(animTick\(\) % 2\) === 1\) drawDots\(SUN_DOTS, 25, 0\)/.test(ui), 'sun shown with the happy picture');
+  ok(/if \(mode === 'highlow'\) ver1TrainTick\(nowTr\);/.test(ui), 'timeline runs from the frame loop');
+}
+{
+  // Effects (Engine): Ver.1 success = strength +1, weight -1; fail = weight -1; counted once.
+  const mk = () => { const s = Engine.newGame ? Engine.newGame() : {}; Object.assign(s, { mon: 'agumon', strength: 1, weight: 40, train: 0, dead: false, sleeping: false, lights: true }); return s; };
+  const s1 = mk(); Engine.noteTrainingOpened(s1); Engine.finishTraining(s1, true, true);
+  eq([s1.strength, s1.weight, s1.train].join(','), '2,39,1', 'Ver.1 win: strength +1, weight -1, one training');
+  const s2 = mk(); Engine.noteTrainingOpened(s2); Engine.finishTraining(s2, false, true);
+  eq([s2.strength, s2.weight, s2.train].join(','), '1,39,1', 'Ver.1 loss: weight -1, still one training');
+  const s3 = mk(); Engine.noteTrainingOpened(s3); Engine.cancelTraining(s3);
+  eq([s3.strength, s3.weight, s3.train].join(','), '1,40,1', 'Ver.1 cancel: counted, no weight or strength change');
 }
 
 console.log('10) 1997 battle: banner, shots, burst, suns / skulls');

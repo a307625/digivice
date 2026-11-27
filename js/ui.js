@@ -1050,7 +1050,11 @@
       mx = fx(Math.floor((FW - monW) / 2));
       flip = false;
       // One happy cell. The brick hops that same picture up one dot at 2 Hz.
-      if (poseFx.name === 'happy' && (animTick() % 2) === 1) my = fy(0) - DOT;
+      if (poseFx.name === 'happy' && poseFx.extra === 'train' && is1997Brick()) {
+        // Ver.1 training success: normal / happy picture at 2 Hz, the sun
+        // shown with the happy one (real-device frames), no hop.
+        if ((animTick() % 2) === 0) fr = 'idle0';
+      } else if (poseFx.name === 'happy' && (animTick() % 2) === 1) my = fy(0) - DOT;
     } else if (state.injured || calling) {
       // Sick, or the attention hop: stay put. A call lifts the sprite one dot.
       mx = fx(Math.floor((FW - monW) / 2));
@@ -1066,6 +1070,7 @@
     }
     drawMonAt(mx, my, fr, flip);
     if (poseFx.name === 'happy' && poseFx.extra === 'heal' && is1997Brick()) drawDots(SUN_DOTS, 25, 1);
+    if (poseFx.name === 'happy' && poseFx.extra === 'train' && is1997Brick() && (animTick() % 2) === 1) drawDots(SUN_DOTS, 25, 0);
 
     if (eatAnim.on && !eatAnim.refused) {
       var food = eatFoodSprite(eatAnim);
@@ -1396,7 +1401,7 @@
     if (mode === 'tag') { drawDm20Tag(); return; }
     // Monster on the left. The minigame is drawn after it so the bar,
     // number, and HI/LO stay readable instead of disappearing under the sprite.
-    if (mode === 'highlow') { drawVer1Train(fr); return; }
+    if (mode === 'highlow') { drawVer1Train(); return; }
     blitMon(state.mon, fx(0), fy(0), MON, fr, true);
     if (mode === 'mash') {
       var bx = fx(17), by = fy(2), bw = 14 * DOT, bh = 3 * DOT;
@@ -1413,14 +1418,66 @@
     }
   }
 
-  // v36: Ver.1 shadow training (Bandai Ver.1 manual, トレーニング):
-  // your shadow stands on the LEFT behind a shield, you stand on the RIGHT.
-  // A attacks high, B attacks low; the shot lands when its height differs
-  // from the shield's. The shield is hidden until you have pressed, so the
-  // screen never shows the answer. 5 rounds, 3 hits win; then "3 VS 2".
-  var V1_ROUND_MS = 900, V1_RESULT_MS = 1600;
-  var V1_SHIELD = ['111', '101', '101', '101', '010'];
+  // v88: Ver.1 shadow training, frame by frame.
+  // Layout: Bandai Ver.1 manual (トレーニングアイコン mock-up): shadow 分身 on
+  // the LEFT with its shield 防御, you 自分 on the RIGHT, your shot 攻撃
+  // between; result 「5回戦後結果」 = icon + shield on top, "3 VS 2" below.
+  // Frame order, positions and timing: a frame-by-frame real-device
+  // recreation (クロモニウム, 2013) of the same screens. The LCD is four
+  // 8-dot slots: shadow 0-7 | shield 8-15 | shot 16-23 | you 24-31, so
+  // both Digimon are cut by the LCD edge exactly as on the device.
+  // Round: intro (shots slide right while you slide in, 8 dots / 250 ms)
+  // → stand-off (wait for A high / B low; the shield is hidden) → attack
+  // (shield and shot appear; blocked = the shot stays by the shield 1 s;
+  // hit = 230 ms there, then 690 ms past it at cols 8-15) → you alone,
+  // centred → next round. 5 rounds, 3 hits win.
+  var V1T = { intro0: 500, introStep: 250, introSteps: 3, block: 1000, hitNear: 230, hitFar: 690,
+    after: 200, result: 1750, pose: 4000 };
+  var V1_SLOT = { shadow: -8, shield: 8, shotNear: 16, shotFar: 8, self: 24, centre: 8 };
+  // Our own UI glyphs (not Bandai art): a ringed buckler, an energy ball
+  // with a dashed trail, and 3x5 V / S to match the 3x5 result digits.
+  var V1_SHIELD = ['00111100', '01000010', '10011001', '10100101', '10100101', '10011001', '01000010', '00111100'];
+  var V1_SHOT = ['00111000', '01111101', '11111100', '11111101', '11111100', '01111101', '00111000'];
+  var V1_V = ['101', '101', '101', '101', '010'];
+  var V1_S = ['111', '100', '111', '001', '111'];
   function ver1RoundHit(attack, guard) { return attack !== guard; }
+  function ver1PhaseMs(phase, hit) {
+    if (phase === 'intro') return V1T.intro0 + V1T.introStep * V1T.introSteps;
+    if (phase === 'attack') return hit ? V1T.hitNear + V1T.hitFar : V1T.block;
+    if (phase === 'after') return V1T.after;
+    if (phase === 'result') return V1T.result;
+    return Infinity; // stand-off waits for A / B
+  }
+  // Pure layout of one Ver.1 training frame, in LCD dots (32x16).
+  function ver1TrainScene(phase, ms, attack, guard, hit, hits) {
+    var o = [];
+    if (phase === 'intro') {
+      var k = ms < V1T.intro0 ? 0 : Math.min(V1T.introSteps, 1 + Math.floor((ms - V1T.intro0) / V1T.introStep));
+      o.push({ kind: 'mon', who: 'self', x: -8 + 8 * k, frame: 'idle0', flip: false });
+      for (var c = 16 + 8 * k; c < 32; c += 8) {
+        o.push({ kind: 'shot', col: c, row: 1 });
+        o.push({ kind: 'shot', col: c, row: 9 });
+      }
+    } else if (phase === 'standoff') {
+      o.push({ kind: 'mon', who: 'shadow', x: V1_SLOT.shadow, frame: 'idle0', flip: true });
+      o.push({ kind: 'mon', who: 'self', x: V1_SLOT.self, frame: 'idle0', flip: false });
+    } else if (phase === 'attack') {
+      o.push({ kind: 'mon', who: 'shadow', x: V1_SLOT.shadow, frame: 'attack', flip: true });
+      o.push({ kind: 'mon', who: 'self', x: V1_SLOT.self, frame: 'attack', flip: false });
+      o.push({ kind: 'shield', col: V1_SLOT.shield, row: guard === 1 ? 0 : 8 });
+      o.push({ kind: 'shot', col: (hit && ms >= V1T.hitNear) ? V1_SLOT.shotFar : V1_SLOT.shotNear, row: attack === 1 ? 1 : 9 });
+    } else if (phase === 'after') {
+      o.push({ kind: 'mon', who: 'self', x: V1_SLOT.centre, frame: 'idle0', flip: false });
+    } else if (phase === 'result') {
+      o.push({ kind: 'icon', name: 'pet', col: 3, row: 0 });
+      o.push({ kind: 'shield', col: 22, row: 0 });
+      o.push({ kind: 'digit', n: hits, col: 6, row: 10 });
+      o.push({ kind: 'glyph', g: 'V', col: 13, row: 10 });
+      o.push({ kind: 'glyph', g: 'S', col: 17, row: 10 });
+      o.push({ kind: 'digit', n: 5 - hits, col: 24, row: 10 });
+    }
+    return o;
+  }
   function drawDots(rows, col, row) {
     ctx.fillStyle = INK;
     for (var r = 0; r < rows.length; r++) {
@@ -1429,39 +1486,32 @@
       }
     }
   }
-  function drawVer1Train(fr) {
+  // The 3x5 result digits in solid LCD ink, like the V / S beside them
+  // (the shared small-digit bitmaps, every lit cell drawn as one dot).
+  function ver1DigitRows(I, n) {
+    var g = I && I.ITEMS && I.ITEMS['sdigit_' + (Math.abs(n | 0) % 10)];
+    var rows = g ? (g.frames.idle0 || []) : [];
+    var out = [];
+    for (var r = 0; r < rows.length; r++) out.push(rows[r].replace(/[^0]/g, '1'));
+    return out;
+  }
+  function ver1TrainMs() {
+    if (typeof train.clockMs === 'number') return train.clockMs;
+    return Date.now() - (train.phaseAt || Date.now());
+  }
+  function drawVer1Train() {
     var I = items();
-    var now = Date.now();
-    if (train.resultAt && (shotMode || now - train.resultAt < V1_RESULT_MS)) {
-      // 5回戦後結果: you (left icon) vs the shadow (right), hits VS misses.
-      blitItem('pet', fx(4), fy(0), ITEM);
-      drawDots(V1_SHIELD, 23, 1);
-      var hits = train.hits || 0, miss = 5 - hits;
-      I.drawNumber(ctx, hits, fx(5), fy(9), ITEM, 0);
-      I.drawText(ctx, 'VS', fx(12), fy(10), ITEM);
-      I.drawNumber(ctx, miss, fx(23), fy(9), ITEM, 0);
-      return;
+    var ph = train.phase || 'standoff';
+    var scene = ver1TrainScene(ph, ver1TrainMs(), train.attack, train.guard, train.hit, train.hits || 0);
+    for (var i = 0; i < scene.length; i++) {
+      var e = scene[i];
+      if (e.kind === 'mon') blitMon(state.mon, fx(e.x), fy(0), MON, e.frame, e.flip);
+      else if (e.kind === 'shield') drawDots(V1_SHIELD, e.col, e.row);
+      else if (e.kind === 'shot') drawDots(V1_SHOT, e.col, e.row);
+      else if (e.kind === 'icon') blitItem(e.name, fx(e.col), fy(e.row), ITEM);
+      else if (e.kind === 'glyph') drawDots(e.g === 'V' ? V1_V : V1_S, e.col, e.row);
+      else if (e.kind === 'digit') drawDots(ver1DigitRows(I, e.n), e.col, e.row);
     }
-    if (train.done) {
-      blitMon(state.mon, fx(8), fy(0), MON, fr, false);
-      return;
-    }
-    var a = train.anim;
-    var u = a ? Math.min(1, (now - a.at) / V1_ROUND_MS) : 0;
-    if (shotMode && a) u = 0.5;
-    // Shadow: your own Digimon, mirrored to face you. It stands 4 dots
-    // into the left edge so the shield (cols 12-14) has clear glass.
-    blitMon(state.mon, fx(-4), fy(0), MON, 'idle0', true);
-    blitMon(state.mon, fx(16), fy(0), MON, a ? 'attack' : ((animTick() % 2) ? 'train1' : 'train0'), false);
-    if (!a) return;
-    var top = a.attack === 1;
-    drawDots(V1_SHIELD, 12, a.guard === 1 ? 1 : 9);
-    // The shot flies left from your mouth. A blocked shot stops at the
-    // shield; a hit flies on into the shadow and flashes.
-    var endX = a.hit ? 4 : 15;
-    var sx = Math.round(16 - Math.min(1, u * 1.6) * (16 - endX));
-    blitItem('shot', fx(sx), fy(top ? 0 : 8), ITEM);
-    if (a.hit && u > 0.62 && ((animTick() % 2) === 0 || shotMode)) drawBang(fx(1), fy(top ? 0 : 8));
   }
 
   function drawBang(x, y) {
@@ -2080,7 +2130,8 @@
       t: 0, pos: 0, dir: 1, done: false, success: false,
       mode: mode, mash: 0, round: 0, hits: 0,
       target: Math.random() < 0.5 ? 1 : 0,
-      guard: Math.random() < 0.5 ? 1 : 0, anim: null, resultAt: 0,
+      guard: Math.random() < 0.5 ? 1 : 0, attack: 1, hit: false, decided: false,
+      phase: mode === 'highlow' ? 'intro' : null, phaseAt: Date.now(),
       num: 0, startAt: Date.now(), lastMs: Date.now(), acc: 0
     };
     view = 'train';
@@ -2130,22 +2181,47 @@
     }, DM20_RESULT_MS);
   }
 
-  // Ver.1: the result screen first, then the happy / angry pose.
-  function finishVer1Train() {
-    if (train.done) return;
-    train.success = (train.hits || 0) >= 3;
+  // Ver.1: strength / weight apply the moment the session is decided
+  // (3 hits, or 3 blocks), as on the original (NHOKO: 初代の判定は「成功・
+  // 失敗が決定した瞬間」). The rounds still play out to "N VS M".
+  function decideVer1Train() {
+    if (train.decided) return;
+    var hits = train.hits || 0, blocks = (train.round || 0) - hits;
+    if (hits < 3 && blocks < 3) return;
+    train.decided = true;
+    train.success = hits >= 3;
     window.Engine.finishTraining(state, train.success, true);
     persist();
-    var thisTrain = train;
-    setTimeout(function () {
-      if (train !== thisTrain) return;
-      train.done = true;
-      setTimeout(function () {
-        if (train !== thisTrain) return;
-        if (view === 'train') view = 'play';
-        playPose(train.success ? 'happy' : 'angry', 2000);
-      }, 700);
-    }, V1_RESULT_MS);
+  }
+  function setVer1Phase(ph) {
+    train.phase = ph;
+    train.phaseAt = Date.now();
+  }
+  // Advance the Ver.1 timeline (called every frame from the tick loop).
+  function ver1TrainTick(now) {
+    if (train.frozen || train.done) return;
+    var ph = train.phase || 'standoff';
+    if (now - (train.phaseAt || now) < ver1PhaseMs(ph, train.hit)) return;
+    if (ph === 'intro') setVer1Phase('standoff');
+    else if (ph === 'attack') setVer1Phase('after');
+    else if (ph === 'after') {
+      if ((train.round || 0) >= 5) { decideVer1Train(); setVer1Phase('result'); }
+      else { train.guard = Math.random() < 0.5 ? 1 : 0; setVer1Phase('intro'); }
+    } else if (ph === 'result') finishVer1Train();
+  }
+  // After "N VS M": straight to the happy (sun) or angry animation.
+  function finishVer1Train() {
+    if (train.done) return;
+    decideVer1Train();
+    train.done = true;
+    if (view === 'train') view = 'play';
+    playPose(train.success ? 'happy' : 'angry', V1T.pose, 'train');
+  }
+  // Ver.1 / Ver.2: C cancels only before the command (NHOKO); once a shot
+  // is on its way, or on the result, C does nothing.
+  function ver1CancelLocked() {
+    return !!(train && train.mode === 'highlow' && !train.done &&
+      (train.phase === 'attack' || train.phase === 'after' || train.phase === 'result'));
   }
 
   function finishTrainRound(success) {
@@ -2197,24 +2273,14 @@
     }
     if (mode === 'highlow') {
       if (btn !== 'A' && btn !== 'B') return;
-      if (train.anim || train.resultAt) return; // one press per round
+      if ((train.phase || 'standoff') !== 'standoff') return; // one press per round, at the stand-off
       var attack = (btn === 'A') ? 1 : 0;     // A high, B low
-      var guard = train.guard;
-      var hit = ver1RoundHit(attack, guard);
-      if (hit) train.hits++;
+      train.attack = attack;
+      train.hit = ver1RoundHit(attack, train.guard);
+      if (train.hit) train.hits++;
       train.round++;
-      train.anim = { attack: attack, guard: guard, hit: hit, at: Date.now() };
-      var thisTrain = train;
-      setTimeout(function () {
-        if (train !== thisTrain || train.done) return;
-        train.anim = null;
-        if (train.round >= 5) {
-          train.resultAt = Date.now();
-          finishVer1Train();
-        } else {
-          train.guard = Math.random() < 0.5 ? 1 : 0;
-        }
-      }, V1_ROUND_MS);
+      decideVer1Train();
+      setVer1Phase('attack');
       return;
     }
     if (mode === 'mash') {
@@ -2607,7 +2673,10 @@
     }
     if (view === 'charge') { charge.on = false; view = 'play'; return; }
     if (view === 'train') {
-      if (window.Engine && window.Engine.cancelTraining) window.Engine.cancelTraining(state);
+      if (window.Engine && window.Engine.cancelTraining) {
+        if (ver1CancelLocked()) return;
+        if (!train.decided) window.Engine.cancelTraining(state);
+      }
       persist();
       view = 'play';
       return;
@@ -2783,6 +2852,7 @@
       var mode = train.mode || 'meter';
       var nowTr = Date.now();
       var dt = Math.min(50, nowTr - (train.lastMs || nowTr));
+      if (mode === 'highlow') ver1TrainTick(nowTr);
       train.lastMs = nowTr;
       if (mode === 'meter' || mode === 'meter_slow') {
         // About one width per second (Ver.5 half of that), independent of frame rate.
@@ -4015,10 +4085,16 @@
         if (o.pose) playPose(o.pose.name, o.pose.ms || 600000, o.pose.extra);
         if (o.eatAnim) eatAnim = o.eatAnim;
         if ('walkX' in o) walk.x = o.walkX;
+        if ('animAt' in o) shotAnimAt = o.animAt;
         draw();
         return view;
       },
       statusPageCount: function () { return statusPages().length; },
+      /* v88 test hooks: leave the frozen screenshot mode so timers run, and
+         read the training state. No effect on a normal page. */
+      liveMode: function () { shotMode = false; },
+      trainState: function () { return JSON.parse(JSON.stringify(train || {})); },
+      viewName: function () { return view; },
       walkX: function () { return walk.x; }
     };
 
